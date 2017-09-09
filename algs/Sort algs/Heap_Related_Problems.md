@@ -77,5 +77,241 @@ void UpToDown(int i)
     * 假设插入一个数值i，则判断：i 小于等于大顶堆根结点 则将i插入大顶堆；如果i大于等于小顶堆根结点，则将i插入小顶堆。
     * 假设要获得中数，则先判断a是奇数还是偶数，如果是a奇数则继续判断x>d:那么中数就是小顶堆根节点， 如果x<d：中数就是大顶堆根节点。
     * 如果a是偶数，则默认取大顶堆根节点作为中数。
+ 
+ ```cpp
+ //
+//  midNumberHeap.cpp
+//  Main
+//
+//  Created by pg on 2017/9/9.
+//  Copyright © 2017年 jingyu. All rights reserved.
+//
+#include <vector>
+#include <cmath>
+#include <iostream>
+#include <algorithm>
+using namespace std;
 
+class M
+{
+private:
+	// s=所有数据的大小，x=小顶堆的大小, d=大顶堆的大小
+	int s, x, d;
+	vector<int> maxHeap, minHeap;
+	
+	void maxHeapify(vector<int> &v, int p)
+	{
+		int size = (int)v.size();
+		int largest = p;
+		int l = p * 2 + 1;
+		if (l <= size - 1)
+		{
+			if (v[l] > v[largest]) {
+				largest = l;
+			}
+			else
+			{
+				// do nothing
+			}
+			int r = p * 2 + 2;
+			if (r <= size - 1 && v[r] > v[largest])
+			{
+				largest = r;
+			}
+			else
+			{
+				//do nothing
+			}
+			if (largest != p)
+			{
+				int tmp = v[largest];
+				v[largest] = v[p];
+				v[p] = tmp;
+				maxHeapify(v, largest);
+			}
+		}
+		else
+		{
+			return;
+		}
+	}
+	
+	void minHeapify(vector<int> &v, int p)
+	{
+		int size = (int) v.size();
+		int min = p;
+		int l = p * 2 + 1;
+		if (l < size - 1)
+		{
+			if (v[l] < v[min])
+			{
+				min = l;
+			}
+			else
+			{
+				// do nothing
+			}
+			int r = p * 2 + 2;
+			if (r < size - 1 && v[r] < v[min])
+			{
+				min = r;
+			}
+			else
+			{
+				// do nothing
+			}
+			if (min != p)
+			{
+				int tmp = v[min];
+				v[min] = v[p];
+				v[p] = tmp;
+				minHeapify(v, min);
+			}
+		}
+		else
+		{
+			return;
+		}
+	}
+	
+	void buildMax(vector<int> &v)
+	{
+		int size = (int)v.size();
+		for (int p = size / 2 - 1; p >= 0; p--)
+		{
+			maxHeapify(v, p);
+		}
+	}
+	
+	void buildMin(vector<int> &v)
+	{
+		int size = (int)v.size();
+		for (int p = size / 2 - 1; p >=0; p--) {
+			minHeapify(v, p);
+		}
+	}
+	
+	void swap(int &a, int &b)
+	{
+		int temp = a;
+		a = b;
+		b = temp;
+	}
+	
+public:
+	M(vector<int> v)
+	{
+		s = (int)v.size();
+		if (s == 0)
+		{
+			d = 0;
+			x = 0;
+		}
+		else {
+			d = s / 2;
+			x = s - d;
+			sort(v.begin(), v.end());
+			maxHeap.assign(v.begin(), v.begin()+d);
+			minHeap.assign(v.begin() + d, v.end());
+			buildMax(maxHeap);
+			buildMin(minHeap);
+		}
+	}
+	void midnumber()
+	{
+		if (s == 0)
+		{
+			cout<< "The arry is empty." << endl;
+		}
+		else if (s % 2 != 0)
+		{
+			//odd
+			if (d > x) cout << "The mid number is: " << maxHeap[0] << endl;
+			else cout << "The mid number is: " << minHeap[0] << endl;
+		}
+		else
+		{
+			//even
+			cout << "The mid number is: " << maxHeap[0] << endl;
+		}
+		
+		for(vector<int>::iterator b = maxHeap.begin(), e = maxHeap.end(); b != e; ++b)
+		{
+			cout << *b << " ";
+		}
+		cout << endl;
+		for(vector<int>::iterator b = minHeap.begin(), e = minHeap.end(); b != e; ++b)
+		{
+			cout << *b << " ";
+		}
+		cout << endl;
+	}
+	void insert(int i)
+	{
+		if (s == 0)
+		{
+			++s;
+			++d;
+			maxHeap.push_back(i);
+			buildMax(maxHeap);
+		}
+		else
+		{
+			++s;
+			if (i <= maxHeap[0])
+			{
+				// insert into the maxHeap
+				++d;
+				maxHeap.push_back(i);
+				int son = d - 1;
+				for (int father = (int)floor((son - 1) / 2);
+					 father >= 0; son = father, father = (int)floor((son - 1) / 2))
+				{
+					if (maxHeap[son] > maxHeap[father])
+					{
+						swap(maxHeap[son], maxHeap[father]);
+					}
+					else
+					{
+						break;
+					}
+				}
+				
+			}
+			else
+			{
+				// insert into the minHeap
+				++x;
+				minHeap.push_back(i);
+				for (int son = x - 1, father = (int)floor((son - 1) / 2);
+					 father >= 0; son = father, father = (int)floor((son - 1) / 2))
+				{
+					if (minHeap[son] < minHeap[father])
+					{
+						swap(minHeap[son], minHeap[father]);
+					}
+					else {
+						break;
+					}
+				}
+				
+			}
+		}
+	}
+	~M(){}
+};
+
+
+/*测试，对给定数组做堆排序*/
+int main(int argc, char* argv[])
+{
+	int A[] = {19, 1, 10, 14, 16, 4, 7, 9, 3, 2, 8, 5, 11};
+	M m(vector<int>(A, A+(sizeof(A)/sizeof(A[0]))));
+	m.midnumber();
+	m.insert(6);
+	m.midnumber();
+	system("pause");
+	return 0;
+}
+ ```
 

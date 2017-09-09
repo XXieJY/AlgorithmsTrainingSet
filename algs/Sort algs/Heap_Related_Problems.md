@@ -6,8 +6,8 @@
   如果 data[i]的值小于或等于小顶堆的根结点，则i++，然后继续遍历余下数据。
   如果 data[i]的值大于小顶堆的根结点，则用data[i]替代小顶堆根节点，然后调整一趟小顶堆，最后令i++，继续遍历余下数据。
   
-  ‘’‘
-  #include<stdio.h>
+```cpp
+#include<stdio.h>
 int n;  ///数字个数，n很大(n>10000)
 int dui[10];
 #define K 10    ///Top K,K的取值
@@ -65,4 +65,4 @@ void UpToDown(int i)
         }
     }
 }
-  ’‘’
+```

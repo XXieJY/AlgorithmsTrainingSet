@@ -1,10 +1,25 @@
 //
-//  midNumberHeap.cpp
-//  Main
-//
-//  Created by pg on 2017/9/9.
-//  Copyright © 2017年 jingyu. All rights reserved.
-//
+//  quickSort.cpp -快速排序代码
+//  快速排序的定义：
+//  1. 进行每一趟排序时， 从数据中选出一个pivot，然后将大于等于或小于等于pivot的数值分别调整到pivot的左右两侧
+//  2. 然后再分别对pivot左右两部分数据再进行快速排序。 重复上述操作，直到待排序数据长度等于1.
+//  快速排序的特点：
+//  1. 时间复杂度O(nlogn) 空间复杂度O(1) 是不稳定排序算法
+//  2. 快速排序通常需要实现一个 quick函数（用来调用快速排序算法，分割排序后数据以及重复调用自身）
+//  和一个 partition函数（实现快速排序算法。每次调用它，都先确定一个pivot，然后将大于等于或小于等于pivot的数据分别放在pivot两侧）
+//  3. 快速排序有Lomuto 和 Hoare两种常见的实现方式。
+//  Lomuto快速排序:
+//  选择数据中的首个元素 或者 最后一个元素作为pivot。
+//  将大于或者小于pivot的数据 放到pivot前面 （这里看是升序还是降序）
+//  然后将当前pivot放到它的最终位置上。
+//  输出pivot的位置给quick函数，quick函数根据pivot的位置，调用两次quick函数，将pivot前后的待排序数据进行排序
+//  重复上述排序操作 直到待排序序列大小等于1
+//  Hoare快速排序：
+//  选择数据中的中间元素 作为pivot
+//  对整个数据设定头指针和尾指针，使用头尾指针相向遍历整组数据。
+//  在遍历过程中，将(head=大于等于pivot, tail=小于等于pivot) 或者 (head=小于等于pivot, tail=大于等于pivot)的逆序对交换位置，
+//  此番操作在head和tail相遇或者错开时结束。 不需要再调整pivot的位置。
+
 #include <vector>
 #include <cmath>
 #include <iostream>
@@ -35,7 +50,7 @@ int lpartition(vector<int> &v, int l, int h)
 	int pivot = v[h], i = l - 1;
 	for (int j = l; j < h; j++)
 	{
-		if (v[j] <= pivot)
+		if (v[j] < pivot)
 		{
 			swap(v[++i], v[j]);
 		}

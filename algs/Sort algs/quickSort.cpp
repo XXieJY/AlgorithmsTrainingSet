@@ -77,7 +77,7 @@ void hquick(vector<int> &v, int l, int h)
 
 int hpartition(vector<int> &v, int l, int h)
 {
-	int i = l, j = h, pivot = v[l + (h - l) / 2];
+	int i = l, j = h, pivot = v[l + (h - l) / 2]; // 取中间一个数还可以是v[(h+l)/2]
 	while (i < j)   //Hoare快排 在头尾指针相遇或者错过时结束
 	{
 		while (v[i] < pivot)

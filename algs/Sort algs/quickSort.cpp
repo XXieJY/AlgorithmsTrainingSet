@@ -19,6 +19,7 @@
 //  对整个数据设定头指针和尾指针，使用头尾指针相向遍历整组数据。
 //  在遍历过程中，将(head=大于等于pivot, tail=小于等于pivot) 或者 (head=小于等于pivot, tail=大于等于pivot)的逆序对交换位置，
 //  此番操作在head和tail相遇或者错开时结束。 不需要再调整pivot的位置。
+//  quick3way quicksort: The fastest quick sort code.
 
 #include <vector>
 #include <cmath>
@@ -100,18 +101,18 @@ int hpartition(vector<int> &v, int l, int h)
 void quick3way(vector<int> &v, int l, int h) 
 {
 	if (l >= h) return;
-	int lt = lo, i = lo + 1, gt = h;
+	int la = lo, i = lo + 1, hb = h;
 	int pivot = v[lo];
-	while (i <= gt)
+	while (i <= hb)
 	{
 		int cmp = v[i] <= pivot ? -1 : 1;
 		if (v[i] == pivot) cmp = 0;
-		if (cmp < 0) swap(v[lt++], v[i++]);
-		else if (cmp > 0) swap(v[i], v[gt--]);
+		if (cmp < 0) swap(v[la++], v[i++]);
+		else if (cmp > 0) swap(v[i], v[hb--]);
 		else i++;
 	}
-	quick3way(v, l, lt - 1);
-	quick3way(v, gt + 1， h);
+	quick3way(v, l, la - 1);
+	quick3way(v, hb + 1， h);
 }
 
 void swap(int &f, int &b)

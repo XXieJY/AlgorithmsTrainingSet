@@ -96,6 +96,24 @@ int hpartition(vector<int> &v, int l, int h)
 }
 
 
+
+void quick3way(vector<int> &v, int l, int h) 
+{
+	if (l >= h) return;
+	int lt = lo, i = lo + 1, gt = h;
+	int pivot = v[lo];
+	while (i <= gt)
+	{
+		int cmp = v[i] <= pivot ? -1 : 1;
+		if (v[i] == pivot) cmp = 0;
+		if (cmp < 0) swap(v[lt++], v[i++]);
+		else if (cmp > 0) swap(v[i], v[gt--]);
+		else i++;
+	}
+	quick3way(v, l, lt - 1);
+	quick3way(v, gt + 1， h);
+}
+
 void swap(int &f, int &b)
 {
 	int tmp = f;

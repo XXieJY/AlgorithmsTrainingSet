@@ -85,3 +85,97 @@ public:
 	
 };
 ```
+###349. Intersection of Two Arrays  
+Given two arrays, write a function to compute their intersection.
+
+Example:
+Given nums1 = [1, 2, 2, 1], nums2 = [2, 2], return [2].
+
+Note:
+Each element in the result must be unique.
+The result can be in any order.
+
+**集合论的题目，虽然LC把它归在sort类别里， 但是，本题 应该属于那种查找操作较为频繁的问题，因此事实上更好的解决方法是使用Hash查找。**
+
+解题思路ver0.1:
+
+1. 先对两个集合A,B进行排序和去重，减少后面判断intersection时的麻烦。  
+比如:  
+* 如果是两个无序的集合：则判断交集时，需要为A集合（假设A={2,1,4,3}）里的每个元素都去遍历一趟B集合中的元素（假设B={1，7，2}）,才能确认A的当前元素是否也在B中（也就是是否有交集）。因此，使用两个无序集合判断intersection的时间复杂度至少在O(n^2); 排序的时间复杂度是O(nlogn)，因此我们经过排序就把本题的时间复杂度降到了至少O(nlogn)。
+* 如果是两个含重复元素的集合：则判断交集时，为了保证结果和题目要求的一样，result must be unique。则还需要额外判断一次，现在的交集是否存在于结果数组中，那么就是O(n^2)的复杂度（因为O(nlogn\*n)); **因此我们需要进行集合排序去重来降低算法的时间复杂度和问题的麻烦程度**
+* 再对两个有序去重集合A,B进行遍历，具体思路参照归并排序时的merge方法:  
+	* (1)如果两个序列都没遍历完，则继续遍历.  
+	* (2)如果当前指向A的元素小于当前B的元素，那么根据有序的情况可知当前A元素不会与B有交集，因此指向A的指针++，B指针不动
+	
+	
+
+
+```cpp
+// 代码实现了： 原地去重算法unique， 这个算法经常会用到。
+
+#include "stdafx.h"
+#include <vector>
+#include <iostream>
+#include <algorithm>
+
+using namespace std;
+
+class Solution {
+private:
+	void unique(vector<int>& v) {
+		int s = v.size();
+		if (s == 0 || s == 1) return;
+		int f = 0;
+		for (int b = 1, i = 0, e = s; b != e; ++b) {
+			if (v[b] != v[f]) {
+				v[b - i] = v[b];
+				++f;
+			}
+			else
+			{
+				++i;
+			}
+		}
+		v.resize(f+1);
+	}
+public:
+	vector<int> intersection(vector<int>& nums1, vector<int>& nums2) {
+		if (nums1.size() == 0) return nums1;
+		else if (nums2.size() == 0) return nums2;
+		else {
+			sort(nums1.begin(), nums1.end());
+			sort(nums2.begin(), nums2.end());
+			unique(nums1);
+			unique(nums2);
+			vector<int> r;
+			int b1 = 0, b2 = 0, e1 = nums1.size(), e2 = nums2.size();
+			while (b1 != e1 && b2 != e2) {
+				if (nums1[b1] < nums2[b2]) {
+					++b1;
+				}
+				else if (nums1[b1] > nums2[b2]) {
+					++b2;
+				}
+				else {
+					r.push_back(nums1[b1]);
+					++b1;
+					++b2;
+				}
+			}
+			return r;
+		}
+	}
+};
+
+int main()
+{
+	vector<int> a{1 };
+	vector<int> b{1, 2};
+	Solution s;
+	vector<int> r = s.intersection(a, b);
+	for (vector<int>::iterator b = r.begin(), e = r.end(); b != e; ++b) {
+		cout << *b << ", ";
+	}
+    return 0;
+}
+```

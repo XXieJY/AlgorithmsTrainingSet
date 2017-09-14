@@ -8,6 +8,7 @@
 * };
 */
 
+#include "stdafx.h"
 #include <vector>
 #include <iostream>
 #include <algorithm>
@@ -18,47 +19,48 @@ struct ListNode {
 	int val;
 	ListNode *next;
 	ListNode(int x) : val(x), next(NULL) {}
-	
+
 };
 
 class Solution {
 private:
-	
 
-	
+
+
 	void swap(ListNode* f, ListNode* a) {
 		int tmp = f->val;
 		f->val = a->val;
 		a->val = tmp;
 	}
-	
-	void quickSort(ListNode b, ListNode e, ListNode* l, ListNode* h) {
+
+	void quickSort(ListNode& b, ListNode& e, ListNode* l, ListNode* h) {
 		if (l != h) {
 			ListNode* i = NULL;
 			partition(b, e, l, h, i);
-			ListNode* watch = i;
-			if (watch == &b) {
+			ListNode* watch = i, *b_ad = &b, *e_ad = &e;
+			if (watch == b_ad) {
 				watch = watch->next->next;
+				quickSort(b, e, watch, h);
 			}
-			else if (watch->next->next != &e) {
-				quickSort(b, e, l, i);
+			else if (watch->next->next != e_ad) {
+				quickSort(b, *(i->next), l, i);
 				quickSort(b, e, watch->next->next, h);
 			}
 			else {
-				quickSort(b, e, l, i);
+				quickSort(b, *h, l, i);
 			}
-			
+
 		}
 	}
-	
-	void partition(ListNode b, ListNode e, ListNode* l, ListNode* h, ListNode* &i) {
+
+	void partition(ListNode& b, ListNode& e, ListNode* l, ListNode* h, ListNode* &i) {
 		int pivot = h->val;
 		i = &b;
 		while (i->next != l) { //locate the place where before the start sorting point
 			i = i->next;
 		}
 		ListNode* t = l;
-		while (t!= h) {
+		while (t != h && t != NULL) {
 			if (t->val < pivot) {
 				i = i->next;
 				swap(i, l);
@@ -70,8 +72,8 @@ private:
 		}
 		swap(i->next, h);
 	}
-	
-	
+
+
 public:
 	ListNode* sortList(ListNode* head) {
 		if (head == NULL) return head;  //for empty and single element LinkedList
@@ -92,3 +94,17 @@ public:
 		return head;
 	}
 };
+
+
+int main() {
+	ListNode a = 3;
+	ListNode b = 4;
+	ListNode c = 1;
+	ListNode* head = &a;
+	a.next = &b;
+	b.next = &c;
+	Solution s;
+	s.sortList(head);
+	cout << head->val << ', ' << head->next->val;
+	return 1;
+}

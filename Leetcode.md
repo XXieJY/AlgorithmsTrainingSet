@@ -179,3 +179,51 @@ int main()
     return 0;
 }
 ```
+
+###147. Insertion Sort List
+Sort a linked list using insertion sort.
+
+解题思路：
+
+**一道关于链表排序的题目，一般来说 使用链表进行排序不能够随机读数据，也就是说在排序的时候，不能再像数组那样从后往前倒。我们需要为链表维护一个
+表头元素，每次排序时都从表头开始遍历整个链表（PS.这是链表排序比数组排序耗时大的地方）**
+
+1.链表插入排序思路和一般插入排序思路相同，首先维护一个游标cur指向左侧有序子链表的最后一个节点。不同的是，我们还需要维护一个pre指针，
+初始化时指向链表表头节点new_head，其作用是：每次需要将右侧无序元素插入到左侧在子链表时，都使用pre指针从new_head位置开始遍历有序子链表
+直至找到合适的插入位置，此时pre -> next -> val >= cur -> next -> val;
+2.在pre指针找到当前无序元素正确插入位置时，就可以执行链表节点的插入操作，如图所示：
+![](https://coding.net/u/jxie0001/p/config/git/blob/master/InsertionSort.png)
+
+参考资料：
+http://blog.csdn.net/feixiaoxing/article/details/6905260/
+http://www.cnblogs.com/TenosDoIt/p/3666585.html
+
+```cpp
+//代码来自: LC的用户jianchao.li.fighter 
+class Solution { 
+public:
+    ListNode* insertionSortList(ListNode* head) {
+        ListNode* new_head = new ListNode(0);
+        new_head -> next = head;
+        ListNode* pre = new_head;
+        ListNode* cur = head;
+        while (cur) {
+            if (cur -> next && cur -> next -> val < cur -> val) {
+                while (pre -> next && pre -> next -> val < cur -> next -> val)
+                    pre = pre -> next;
+                /* Insert cur -> next after pre.*/
+                ListNode* temp = pre -> next;
+                pre -> next = cur -> next;
+                cur -> next = cur -> next -> next;
+                pre -> next -> next = temp;
+                /* Move pre back to new_head. */
+                pre = new_head;
+            }
+            else cur = cur -> next;
+        }
+        ListNode* res = new_head -> next;
+        delete new_head;
+        return res;
+    }
+};
+```

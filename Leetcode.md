@@ -192,7 +192,7 @@ Sort a linked list using insertion sort.
 初始化时指向链表表头节点new_head，其作用是：每次需要将右侧无序元素插入到左侧在子链表时，都使用pre指针从new_head位置开始遍历有序子链表
 直至找到合适的插入位置，此时pre -> next -> val >= cur -> next -> val;
 2.在pre指针找到当前无序元素正确插入位置时，就可以执行链表节点的插入操作，如图所示：
-![](https://coding.net/u/jxie0001/p/config/git/blob/master/InsertionSort.png)
+![](https://coding.net/u/jxie0001/p/config/git/raw/master/InsertionSort.png)
 
 参考资料：
 http://blog.csdn.net/feixiaoxing/article/details/6905260/

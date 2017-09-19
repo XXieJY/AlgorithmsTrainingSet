@@ -247,8 +247,11 @@ Note: The result may be very large, so you need to return a string instead of an
 2. 把nums数组中所有正整数转化成字符串然后存到临时vector<string> tmp中。 将上述规则写成自定义函数，然后对tmp按规则排序.  
 3. 排序后会得到这么一个vector<string> tmp，即: 对于tmp中的任两个元素 str1 和 str2 (str1位于str2之前), 都有 str1+str2 > str2+str1; 此时tmp组成的字符串满足nums的Largest formed number要求.  
 比如： [3, 30, 34, 5, 9] --排序后--> [9,5,34,3,30]; 此时 "95 > 59", "934 > 349", "93 > 39", "930 > 309"，说明9排在第一个位置时，数组组成的字符串才有可能是Largest formed number.  
+
+ps:本题还用到了c++11的两个新特性: (1) 新的for循环功能: for(auto i:nums); (2)lambda函数 [捕获数据方式](参数列表){函数体}
 	
 ```cpp
+//代码来自: LC的用户isaac7
 class Solution {
 public:
     string largestNumber(vector<int>& nums) {

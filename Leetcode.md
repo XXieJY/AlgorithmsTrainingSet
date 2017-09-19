@@ -227,3 +227,42 @@ public:
     }
 };
 ```
+###179. Largest Number
+Given a list of non negative integers, arrange them such that they form the largest number.  
+For example, given [3, 30, 34, 5, 9], the largest formed number is 9534330.  
+Note: The result may be very large, so you need to return a string instead of an integer.   
+
+解题思路:  
+
+**一道字符串排序题目。因为，对于任意给定正整数的数组，Largest Number是唯一的，只有当每个元素都处在数组所有元素中的一个特定相对位置时才能得到那个Largest Number。所以，本题‘找到数组的Largest formed number’问题转化成‘按特定排序规则对数组正整数进行排序，得到Largest formed number’ 是合理的思路**
+
+**在处理本题时所犯的错误：  
+1.拿到题目没有从抽象和整体的程度分析问题(没想到Largest formed Number抽象上对应的是数组各个元素具有特定相对位置)。  
+2.反而陷入具体的细节，比如：为什么34 要 排在 30前面，那么如果是340和30该怎么排，我该怎么穷举出所有的排序规则 然后解题。  
+所以，以后解题时：  
+牢记从整体和抽象的层次分析，不要轻易尝试穷举规则和规律，避免陷入细节（这也是我主要犯的问题）。**
+
+解题步骤:
+1. 将题目求Largest formed number 看成对数组元素按特定排序规则排序的题目，特定规则为: 如果 字符串组合 str1+str2 < str2+str1，此时应该将str2排在str1前面（可以看作是：str2 < str1）.  
+2. 把nums数组中所有正整数转化成字符串然后存到临时vector<string> tmp中。 将上述规则写成自定义函数，然后对tmp按规则排序.  
+3. 排序后会得到这么一个vector<string> tmp，即: 对于tmp中的任两个元素 str1 和 str2 (str1位于str2之前), 都有 str1+str2 > str2+str1; 此时tmp组成的字符串满足nums的Largest formed number要求.  
+比如： [3, 30, 34, 5, 9] --排序后--> [9,5,34,3,30]; 此时 "95 > 59", "934 > 349", "93 > 39", "930 > 309"，说明9排在第一个位置时，数组组成的字符串才有可能是Largest formed number.  
+	
+```cpp
+class Solution {
+public:
+    string largestNumber(vector<int>& nums) {
+        vector<string> tmp;
+        for(auto i:nums) {
+            tmp.push_back(to_string(i));
+        }
+        sort(begin(tmp), end(tmp), [](string& s1, string& s2){ return s1 + s2 > s2 + s1;});
+        string result;
+        for(auto s:tmp)
+            result+=s;
+        while(result[0]=='0' && result.length()>1)
+            result.erase(0,1);
+        return result;
+    }
+};
+```

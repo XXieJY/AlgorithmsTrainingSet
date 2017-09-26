@@ -280,7 +280,78 @@ Note:
 You may assume all input has valid answer.  
 
 Follow Up:  
-Can you do it in O(n) time and/or in-place with O(1) extra space?   
+Can you do it in O(n) time and/or in-place with O(1) extra space?    
 
 解题思路:  
+
+给定一个整数序列，需要得到一个wiggle sort序列，其中：任意奇数位置的元素都大于其左右相邻偶数位置的元素。  
+
+可以先:  
+1. 对整组序列按递减排序，然后找到序列的中间数m，那么位于中间数之前的元素就都大于位于中间数之后的元素。
+2. 使用插空法的方式，将中间数之后的元素插到到中间数之前的序列的奇数位置上。
+
+如: 
+origin: [1,5,1,1,6,4]  
+reverse sort: [6,5,4,1,1,1], median is [4], the larger part is [6,5], the smaller part is [1,1,1]  
+insertion operation: [1,6,1,5,1,4]
+
+``` cpp
+class Solution {
+private:
+	int partition(vector<int>& nums, int l, int h) {
+		int pivot = nums[h], m = l - 1;
+		for (int i = l; i < h; i++) {
+			if (nums[i] > pivot) {
+				int tmp = nums[i];
+				nums[i] = nums[++m];
+				nums[m] = tmp;
+			}
+			else {
+				//do nothing
+			}
+		}
+		int tmp = nums[h];
+		nums[h] = nums[++m];
+		nums[m] = tmp;
+		return m;
+	}
+	void quickSort(vector<int>& nums, int l, int h) {
+		int p;
+		if (l < h) {
+			p = partition(nums, l, h);
+			quickSort(nums, l, p - 1);
+			quickSort(nums, p + 1, h);
+		}
+	}
+public:
+
+	void wiggleSort(vector<int>& nums) {
+		int s = nums.size();
+		if (s == 0) return;
+		if (s == 1) return;
+		quickSort(nums, 0, s - 1);
+		vector<int> tmp = nums;
+		//这里应该取中间数的前一位，而不是就取中间数的位置。
+		//如果直接取中间数的位置，在当中间数大于2个的时候，得到的结果会有两个中间数连在一起
+		int median = nums.size() / 2 - 1, i = 0, j = median + 1; 
+		vector<int>::iterator iter = nums.begin();
+		while (i <= median && j < s) {
+			*iter = tmp[j];
+			*(++iter) = tmp[i];
+			++j;
+			++i;
+			++iter;
+		}
+        if (j < s) {
+			*iter = tmp[j];
+		}
+		if (i <= median) {
+			*iter = tmp[i];
+		}
+
+
+	}
+
+};
+```
 

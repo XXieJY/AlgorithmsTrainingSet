@@ -69,3 +69,83 @@ public:
 		return head;
 	}
 };
+-=-=-=-=-=-=-=-=-=-=-=9/27
+
+
+#include "stdafx.h"
+#include <iostream>  
+#include <vector>
+#include <assert.h>
+#include <algorithm>
+
+using namespace std;
+
+struct TreeNode {
+	int val;
+	TreeNode* left;
+	TreeNode* right;
+	TreeNode(int x) : val(x), left(NULL), right(NULL) {};
+};
+
+class Solution {
+public:
+    TreeNode* deleteNode(TreeNode* root, int key) {
+		if (nullptr == root) return root;
+		TreeNode* p = root, *pre = p;
+		do {
+			if (key < p->val) {
+				p = p->left;
+			}
+			else if (key > p->val) {
+				p = p->right;
+			}
+			else break;
+			pre = p;
+		} while (nullptr != p);
+		if (nullptr == p) {
+			//key is not in BST
+			return root;
+		}
+		else {
+			if (nullptr == p->left && nullptr == p->right) (pre->left == p) ? pre->left = nullptr : pre->right = nullptr;
+			else pre = nullptr;
+			//key is in BST
+			TreeNode* t = p;
+			while (true)
+			{
+				t = (nullptr != t->right) ? t->right : t->left;
+				if (nullptr == t) {
+					//if t is leaf throw it directly
+					(p->left == t) ? p->left = nullptr : p->right = nullptr;
+					break;
+				}
+				else {
+					//if not, move p to t
+					*p = t->val;
+					p = t;
+				}
+			}
+			return root;
+		}
+    }
+};
+
+
+
+int main()
+{
+	TreeNode a(5);
+	TreeNode b(3);
+	TreeNode c(6);
+	TreeNode d(2);
+	TreeNode e(4);
+	TreeNode f(7);
+	a.left = &b;
+	a.right = &c;
+	b.left = &d;
+	b.right = &e;
+	c.right = &f;
+	Solution s;
+	s.deleteNode(&a, 3);
+	return 0;
+}

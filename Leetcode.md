@@ -402,7 +402,10 @@ public:
 		else return false;
 	}
 	string findLongestWord(string s, vector<string>& d) {
-		sort(begin(d), end(d), [](string& s1, string& s2) {return s1.length() < s2.length() ? 1 : s1.length() != s2.length() ?  0 : s1 < s2 ? 0 : 1; });
+		sort(begin(d), end(d)
+		, [](string& s1, string& s2) {return s1.length() < s2.length() ? 1 
+		: s1.length() != s2.length() ?  0 
+		: s1 < s2 ? 0 : 1; });
 		string result("");
 		for (vector<string>::reverse_iterator rb = d.rbegin(), re = d.rend(); rb != re; ++rb) {
 			if (okDelete(s, *rb)) {

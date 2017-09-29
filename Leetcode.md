@@ -354,4 +354,66 @@ public:
 
 };
 ```
+###524. Longest Word in Dictionary through Deleting
+Given a string and a string dictionary, find the longest string in the dictionary that can be formed by deleting some characters of the given string. If there are more than one possible results, return the longest word with the smallest lexicographical order. If there is no possible result, return the empty string.  
 
+Example 1:  
+Input:  
+s = "abpcplea", d = ["ale","apple","monkey","plea"]  
+
+Output:  
+"apple"  
+Example 2:  
+Input:  
+s = "abpcplea", d = ["a","b","c"]  
+
+Output:   
+"a"  
+Note:  
+All the strings in the input will only contain lower-case letters.  
+The size of the dictionary won't exceed 1,000.  
+The length of all the strings in the input won't exceed 1,000.  
+
+解题思路:  
+
+这题目前只想到了一种算得上是“优化过了的暴力解法”。 除此之外，想不到另外的方法能够不通过逐个比对的方式得到结果(比如索引的方式？或者用树形结构或者其它数据结构？)
+
+具体解题步骤如下:
+
+根据题目要求，我们可以知道 vector<string>里至少有一个及以上的string能够按字符串s的deleting匹配的方式得到自身.  
+但我们需要的结果是Longest word并且，如果有多个等长的Longest word则需要的是字典序最小的.  
+
+所以我们可以:
+	1. 按照word长度升序和字典降序的方式对d进行排序，比如: d=["ale","aae","atee","acee","abcdef"]
+	2. 然后从d的最后一个word开始匹配，匹配到的第一个word就是结果
+
+代码如下：（值得注意的就是使用c++11的lambda函数简洁地自定义sort函数）
+
+```cpp
+class Solution {
+public:
+	bool okDelete(const string s,const string t) {
+		int ss = s.length(), ts = t.length(), si = 0, st = 0;
+		while (si < ss && st < ts) {
+			if (s[si] == t[st]) ++st;
+			++si;
+		}
+		if (st == ts) return true;
+		else return false;
+	}
+	string findLongestWord(string s, vector<string>& d) {
+		sort(begin(d), end(d), [](string& s1, string& s2) {return s1.length() < s2.length() ? 1 : s1.length() != s2.length() ?  0 : s1 < s2 ? 0 : 1; });
+		string result("");
+		for (vector<string>::reverse_iterator rb = d.rbegin(), re = d.rend(); rb != re; ++rb) {
+			if (okDelete(s, *rb)) {
+				result = *rb;
+				return result;
+			}
+			else {
+				//do nothing
+			}
+		}
+        return result;
+	}
+};
+```

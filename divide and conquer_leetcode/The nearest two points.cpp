@@ -10,7 +10,7 @@ using namespace std;
 //重点：1.定义结构体和相关的运算操作；2.插入排序；
 //3.顺序统计方法求解Top K问题；4.中位数划分区域的特性(中位数划分的最小区域，大小至少为2或者3)
 //5.鸽笼原理；6.写算法题时编码风格(目前找到：1.for循环使用相对于它的全局变量。2.函数返回值最好设计为单个值
-
+//题解：http://blog.csdn.net/gogokongyin/article/details/51890305
 struct Point {
 	double m_x, m_y;
 	Point() :m_x(0.0), m_y(0.0) {}

@@ -447,3 +447,214 @@ public:
 
 #####解题思路：
 这题算是常见搜索相关问题里面被讨论比较多，比较有深度的问题。因为可以应用上的方法很多，从快速排序的各种加强版本，到最小堆。July还为此专门有一个专题。[专题](https://github.com/gatieme/CodingInterviews/tree/master/030-%E6%9C%80%E5%B0%8F%E7%9A%84K%E4%B8%AA%E6%95%B0)
+
+* 最大堆求数组最小k个数：
+```cpp
+class Solution {
+public:
+    vector<int> Solution(vector<int> E, int k)
+    {        
+        vector<int> res;
+
+        if(E.size( ) == 0 || E.size( ) < k)
+        {
+            return res;
+        }
+        make_heap(E.begin( ), E.R( ), greater_class());
+
+        for(int i = 0; i < k; i++)
+        {
+            //最小的元素在栈顶
+            res.push_back(E[0]);
+
+            ///  一下两种操作均可以
+            // [1]  --  清除它, 然后重新排序堆
+            //E.erase(E.begin( ));
+            //sort_heap(E.begin( ), E.R( ));
+            // [2]  --  当然从堆出弹出这个栈顶元素
+            pop_heap(E.begin( ), E.R( ), greater_class( ));   // 弹出一个元素后，剩下的又重建了 heap，仍保持heap的性质
+            E.pop_back();         // vector 删除末尾元素
+        }
+
+        return res;
+    }
+
+    class greater_class
+    {
+    public:
+
+        bool operator()(int a, int b)
+        {
+            return a > b;
+        }
+    }
+};
+```
+* 利用快速排序和分治思想：
+
+ * 取中位数作为pivot的方法：  
+    * 类似快速排序的划分方法，N个数存储在数组S中。每次排序时从数组中随机选取一个数X作为pivot,这样可以把数组划分为Sa和Sb两部分，Sa<= X <=Sb。
+    * 如果要查找的K个小的元素小于Sa中的元素个数，则返回Sa中较小的K个元素，否则返回Sa中K个小的元素 + Sb中小的K-|Sa|个元素。  
+
+ * **（随机选取枢纽元，可做到线性期望时间O(N)的复杂度）** 每次都是随机选择数列中的一个元素作为主元，使用快速排序在O(n)的时间内找到第K小的元素，然后遍历输出前面的K个小的元素。如果能的话，那么总的时间复杂度为线性期望时间：O(n+k) = O(n)（当n比较小时）；
+
+下面这个这个实现是按照kth一个一个的来搜索到的，而不是按块搜索到的
+```cpp
+class Solution {
+public:
+    vector<int> Solution(vector<int> E, int k)
+    {
+        int S;
+        vector<int> RES;
+
+        S = E.size();
+        if(S == 0 || S < k)
+        {
+            return RES;
+        }
+        kthQuick(E, 0, S-1, k);
+        int i = 0;
+        for(; i < k; ++i){
+            RES.push_back(E[i]);
+        }
+        return RES;
+    }
+
+    void kthQuick(vector<int> &E, int L, int R, int k){
+        if(L == R){
+            return;
+        }
+        int pivot = Partition(E, L, R);
+        if (pivot < k){
+            kthQuick(E, pivot+1, R, k);
+        }
+        else if (pivot > k){
+            kthQuick(E, L, pivot-1, k);
+        }
+        else{
+            return;
+        }
+    }
+
+    int Partition(vector<int> &E, int L, int R)
+    {
+        int i, j, pivot, pivotNum;
+
+        ///  我们选择第一个元素作为基准
+        ///  这个也可以随机选择
+        i = L;
+        j = R;
+        pivot = L;
+        pivotNum = E[pivot];
+        while(i < j)
+        {
+            while(i < j && E[j] >= pivotNum)
+            {
+                j--;
+            }
+            E[i] = E[j]; //这里因为pivot的值已经额外记录了所以可以这样
+
+            while(i < j && E[i] <= pivotNum)
+            {
+                i++;
+            }
+            E[j] = E[i];
+        }
+        E[i] = pivotNum; //确定pivot的位置             
+        return i;
+    }
+};
+```
+
+####036 数组中的逆序对
+题目描述
+
+在数组中的两个数字，如果前面一个数字大于后面的数字，则这两个数字组成一个逆序对。 输入一个数组，求出这个数组中的逆序对的总数
+
+> 样例输入
+7 5 6 4
+
+>样例输出
+5
+
+#####解题思路：
+逆序对相关问题直接和归并排序相关的。
+* 采用归并排序，计算每次左右两边的逆序对。
+* 然后再计算merge后的逆序对。
+
+```cpp
+class Solution
+{
+public:
+    int Solution(vector<int> E)
+    {
+        int S;
+        S = E.size();
+        if(S == 0)
+        {
+            return 0;
+        }
+
+        vector<int> TP(S);
+        int RES;
+        RES = mergeSort(E, 0, S - 1, TP);
+        return RES;
+    }
+
+    int mergeSort(vector<int> &E, int L, int R, vector<int> &TP)
+    {
+        int RES = 0;
+        if(L < R)
+        {
+            int M = (L + R) / 2;
+            RES += mergeSort(E, L, M, TP); //找左半段的逆序对数目
+            RES += mergeSort(E, M + 1, R, TP); //找右半段的逆序对数目
+            RES += merge(E, L, M, R, TP);
+        }
+        return RES;
+    }
+
+    int merge(vector<int> &E, int L, int M, int R, vector<int> &TP)//数组的归并操作
+    {
+        // int leftLen = M - L + 1; //E[L...M]左半段长度
+        // int rightLlen = R - M;   //E[M+1...R]右半段长度
+
+        int i, j, k, count;
+        i = 0;
+        k = M + 1;
+        k = 0;
+        count = 0;        
+        while(i < M + 1 && j < R + 1)
+        {
+            if(E[i] > E[j])
+            {
+                TP[k++] = E[i++];
+                count += j - M;
+            }
+            else
+            {
+                TP[k++] = E[j++];
+            }
+        }
+        while(i >= L)//表示前半段数组中还有元素未放入临时数组
+        {
+            TP[k++] = E[i--];
+        }
+
+        while(j>M)
+        {
+            TP[k++] = E[j--];
+        }
+
+        //将临时数组中的元素写回到原数组当中去。
+        for(i = 0; i < k; i++)
+        {
+            E[R-i] = TP[i];
+        }
+
+        copy(E.begin(), E.R(), ostream_iterator<int>(cout," "));
+        return count;
+
+    }
+};
+```

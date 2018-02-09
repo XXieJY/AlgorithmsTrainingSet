@@ -70,7 +70,7 @@ using namespace std;
 
 class Solution{
 public:
-  void replaceSpace(char \*str,int length)
+  void replaceSpace(char *str,int length)
   {
       int i, j;
       int count = 0;

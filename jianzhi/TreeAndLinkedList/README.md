@@ -8,7 +8,7 @@
   * 017--合并两个排序的链表
   * 016--反转链表
   * 015--链表中倒数第k个结点
-  * 006--重建二叉树
+
 
 #### 005 从尾到头打印链表
 题目描述
@@ -43,7 +43,133 @@ class Solution {
 使用头插法逆序单向链表：  
 
 
+#### 006 重建二叉树
+题目描述
+输入某二叉树的前序遍历和中序遍历的结果，请重建出该二叉树。  
+假设输入的前序遍历和中序遍历的结果中都不含重复的数字。
 
+> 输入
+前序遍历序列{1,2,4,7,3,5,6,8}  
+中序遍历序列{4,7,2,1,5,3,8,6}
+
+则重建二叉树并返回。
+
+#####解题思路：
+首先树的重建也可以算作遍历树的相关问题，然后遍历树的问题都要和递归有关系。
+
+首先要明确前序遍历和中序遍历之间的关系：
+  * 前序遍历的顺序为：根左右  
+  * 中序遍历的顺序为：左根右  
+
+因此可以根据这个关系指定重建树的递归规则：
+  1. 我们先根据前序遍历序列的第一个确定根，然后在中序遍历的序列中找到根的位置，根左边的就是其左子树，右边就是其右子树
+  2. 构建根和左右子树
+  3. 递归的进行1和2
+
+```cpp
+static void PreOrder(TreeNode *root)
+ {
+     if(root == NULL)
+     {
+         return;
+     }
+     cout <<root->val;
+     PreOrder(root->left);
+     PreOrder(root->right);
+ }
+
+ static void InOrder(TreeNode *root)
+ {
+     if(root == NULL)
+     {
+         return;
+     }
+     InOrder(root->left);
+     cout <<root->val;
+     InOrder(root->right);
+ }
+
+
+
+class Solution
+{
+public:
+ struct TreeNode* reConstructBinaryTree(vector<int> pre,vector<int> in)
+ {
+     //  前序遍历的长度跟中序遍历的长度应该相同
+     if(pre.size( ) != in.size( ))
+     {
+         return NULL;
+     }
+
+     // 长度不能为0
+     int size = pre.size( );
+     if(size == 0)
+     {
+         return NULL;
+     }
+
+     int length = pre.size( );
+     int value = pre[0];      //  前序遍历的第一个结点是根节点
+     TreeNode *root = new TreeNode(value);
+
+     //  在中序遍历中查找到根的位置
+     int rootIndex = 0;
+     for(rootIndex = 0; rootIndex < length; rootIndex++)
+     {
+         if(in[rootIndex] == value)
+         {
+             break;
+         }
+     }
+     if(rootIndex >= length)
+     {
+         return NULL;
+     }
+
+     ///  区分左子树和右子树
+     ///  中序遍历中, 根左边的就是左子数, 右边的就是右子树
+     ///  前序遍历中, 根后面是先遍历左子树, 然后是右子树
+
+     ///  首先确定左右子树的长度, 从中序遍历in中确定
+     int leftLength = rootIndex;
+     int rightLength = length - 1 - rootIndex;
+     vector<int> preLeft(leftLength), inLeft(leftLength);
+     vector<int> preRight(rightLength), inRight(rightLength);
+     for(int i = 0; i < length; i++)
+     {
+         if(i < rootIndex)
+         {
+             //  前序遍历的第一个是根节点, 根后面的(leftLegnth = rootIndex) - 1个节点是左子树, 因此是i+1
+             preLeft[i] = pre[i + 1];
+             //  中序遍历前(leftLength = rootIndex) - 1个节点是左子树, 第rootIndex个节点是根
+             inLeft[i] = in[i];
+
+         }
+         else if(i > rootIndex)
+         {
+             //  前序遍历的第一个是根节点, 根后面的(leftLegnth = rootIndex) - 1个节点是左子树, 后面是右子树
+             preRight[i - rootIndex - 1] = pre[i];
+             //  中序遍历前(leftLength = rootIndex) - 1个节点是左子树, 第rootIndex个节点是根, 然后是右子树
+             inRight[i - rootIndex - 1] = in[i];
+
+         }
+     }
+     for(int i = 0; i < leftLength; i++)
+     {
+     }
+     for(int i = 0; i < rightLength; i++)
+     {
+     }
+
+     root->left = reConstructBinaryTree(preLeft, inLeft);
+     root->right = reConstructBinaryTree(preRight, inRight);
+
+     return root;
+ }
+
+};
+```
 
 
 #### 027 二叉搜索树与双向链表

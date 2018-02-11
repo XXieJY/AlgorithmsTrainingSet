@@ -1,11 +1,3 @@
-树和链表：
-  * 026--复杂链表的复制
-  * 025--二叉树中和为某一值的路径
-  * 024--二叉搜索树的后序遍历序列
-  * 023--从上往下打印二叉树
-
-
-
 #### 005 从尾到头打印链表
 题目描述
 输入一个链表，从尾到头打印链表每个节点的值。
@@ -556,7 +548,7 @@ public:
         }
     }
 
-    //第二个事实上是一个BFS算法，宽度优先遍历/层序遍历树
+    //第二个事实上是一个BFS算法，宽度优先遍历/**层序遍历树**
     void MirrorPreBFS(TreeNode *root)
     {
         if(root == NULL)
@@ -642,18 +634,167 @@ public:
 };
 ```
 
+#### 024 二叉搜索树的后序遍历序列
+题目描述
 
-2. 非递归解法：
+输入一个整数数组，判断该数组是不是某二叉搜索树的后序遍历的结果。如果是则输出Yes,否则输出No。假设输入的数组的任意两个数字都互不相同。
+
+#####解题思路：
+要判定一个序列是否是BST的后序遍历，则必须先熟悉BST的性质：  
+  * 二叉排序树或者是一棵空树，或者是具有下列性质的二叉树：
+
+    * 若左子树不空，则左子树上所有结点的值均小于它的根结点的值；
+
+    * 若右子树不空，则右子树上所有结点的值均大于或等于它的根结点的值；
+
+    * 左、右子树也分别为二叉排序树；
+
+    * 没有键值相等的节点。
+
+    * 对一棵二叉搜索树进行中序遍历（左根右）可得到一个关键字递增有序序列。
+
+* 然而，BST的后序序列的合法序列是：  
+    * 对于一个序列S，最后一个元素是x （也就是根）  
 
 
+* 如果去掉最后一个元素的序列为T，那么T满足：
 
+    * T可以分成两段，前一段（左子树）小于x，后一段（右子树）大于x，
 
+    * 且这两段（子树）都是合法的后序序列。
 
+    * 完美的递归定义  
 
+比如二叉排序树的后序遍历是：
+> 后序序列 2, 9, 5, 16, 17, 15, 19, 18, 12  
+
+1. 当前树的根是12，12可以把后序序列分成两段：[2,9,5] 和 [16,17,15,19,18]
+2. 然后左子树[2,9,5]被子树树根5分割成[2],[9]，右子树是[16,17]，[19,18]
+3. 然后继续递归地套用这个关系就可以循环检验出是否是二叉搜索树的后序遍历了
+
+```cpp
+class Solution {
+public:
+	/*
+	step1：最后一个为根节点；
+	step2：从根节点的左边开始往前遍历，找到第一个比它大的节点作为右子树，记为right
+	step3：从右子树的左边开始往前遍历，找到第一个比它小的节点作为左子树，记为left
+	step4：判断( left, right )中的值是否都比根节点大，如果有比根节点小的则返回false
+	step5: 判断( 0, left )中的值是否都比根节点小，如果有比根节点大的则返回false
+	step6: 返回true
+
+	时间复杂度：O(n), 空间复杂度: O(1)
+	没有证明过，但是代码通过了，求反例，心里没底
+	*/
+	bool VerifySquenceOfBST(vector<int> sequence) {
+		if (sequence.empty()) return true;
+		int len = sequence.size();
+
+		int left = -1, right = -1;
+		for (int i = len - 2; i >= 0; --i)
+		{
+			if (right == -1 && sequence[i] > sequence[len - 1])
+                right = i;
+			if (left == -1 && sequence[i] < sequence[len - 1])
+                left = i;
+		}
+        cout <<"left = " <<left <<", right = " <<right <<endl;
+		for (int i = right - 1; i > left; --i)
+        {
+            if (sequence[i] < sequence[len - 1])
+            {
+                return false;
+            }
+        }
+		for (int i = left - 1; i > 0; --i)
+		{
+			if (sequence[i] > sequence[len - 1])
+            {
+
+                return false;
+            }
+
+        }
+		return true;
+	}
+};
+```
+
+#### 025 二叉树中和为某一值的路径
+
+题目描述
+输入一颗二叉树和一个整数，打印出二叉树中结点值的和为输入整数的所有路径。路径定义为从树的根结点开始往下一直到叶结点所经过的结点形成一条路径
+
+#####解题思路：
+思路还是比较好想的，用个递归来实现，先序遍历，
+
+* 每次访问一个节点，那么就将当前权值求和
+* 如果当前权值和与期待的和一致，那么说明我们找到了一个路径，保存或者输出
+* 否则的话就递归其左右孩子节点 这里需要注意一个问题，就是递归退出的时候。  
+**权值和的信息是保存在递归栈中的会恢复，但是我们保存的路径是无法恢复的，那么我们就需要在递归返回时将数据弹出**
+
+**针对递归问题，传参数优于使用static共享变量，因为共享变量会导致多线程问题以及资源竞争**
+```cpp
+class Solution
+{
+public:
+    vector< vector<int> > m_res;
+
+    vector< vector<int> > FindPath(TreeNode* root, int expectNumber)
+    {
+        if(root == NULL)
+        {
+            return m_res;
+        }
+        vector<int> path;
+        FindPath(root, expectNumber, path, 0);
+
+        return m_res;
+    }
+
+    void FindPath(TreeNode* root, int expectNumber, vector<int> path, int currentSum)
+    {
+        currentSum += root->val;
+        path.push_back(root->val);
+
+        ///
+        if(currentSum == expectNumber
+        && ((root->left == NULL && root->right == NULL)))
+        {
+            debug <<"find a path" <<endl;
+            for(int i = 0; i < path.size( ); i++)
+            {
+                debug <<path[i] <<" ";
+            }
+            debug <<endl;
+
+            m_res.push_back(path);
+        }
+
+        if(root->left != NULL)
+        {
+            FindPath(root->left, expectNumber, path, currentSum);
+        }
+        if(root->right != NULL)
+        {
+            FindPath(root->right, expectNumber, path, currentSum);
+        }
+
+        //  此处不需要恢复currentSum和path的值:                                  
+        //  因为currentSum作为参数在函数递归调用返回时会自动恢复                 
+        //  而如果作为静态局部变量存储则需要进行恢复                             
+        //currentSum -= root->val;                                               
+       //path.pop_back( );      
+    }
+
+};
+```
+
+#### 026 复杂链表的复制
 
 
 #### 027 二叉搜索树与双向链表
-题目描述
+**题目描述**
 
 输入一棵二叉搜索树，将该二叉搜索树转换成一个排序的双向链表。
 要求不能创建任何新的结点，只能调整树中结点指针的指向。

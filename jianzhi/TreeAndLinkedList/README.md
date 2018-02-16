@@ -1,14 +1,9 @@
-
-
-* 057-删除链表中重复的结点
 * 058-二叉树的下一个结点
 * 059-对称的二叉树
 * 060-把二叉树打印成多行
 * 061-按之字形顺序打印二叉树
 * 062-序列化二叉树
 * 063-二叉搜索树的第K个结点
-
-
 #### 005 从尾到头打印链表
 题目描述
 输入一个链表，从尾到头打印链表每个节点的值。
@@ -1086,3 +1081,158 @@ public:
 
  * 第三步, 快慢指针求环的入口结点：
     * 因为环的长度已知，所以使用快慢指针让快指针先走k步后会发现快慢指针最终将会在环的入口结点交汇。
+
+```cpp
+#define SLOW_STEP   1
+#define FAST_STEP   2
+
+class Solution
+{
+public:
+
+    /*
+        如果链表中有环, 则返回环中的任意一个节点
+        否则返回NULL
+     */
+    ListNode* HasCycle(ListNode *pHead)
+    {
+        if(pHead == NULL)
+        {
+            return NULL;
+        }
+
+        ListNode *pSlow = pHead->next;
+        ListNode *pFast = pSlow->next;
+        while(pSlow != NULL && pFast != NULL)
+        {
+            if(pFast == pSlow)
+            {
+                return pSlow;
+            }
+            pSlow = NextNode(pSlow, 1);
+            pFast = NextNode(pFast, 2);
+        }
+
+        return NULL;
+    }
+
+    //  获取到node节点后stpe的节点
+    ListNode* NextNode(ListNode *node, int step)
+    {
+        for(int i = 0; i < step && node != NULL; i++)
+        {
+            node = node->next;
+        }
+
+        return node;
+    }
+
+    //  获取到链表中环的长度
+    //  node是一个链表环内节点的指针
+    int GetCycleLength(ListNode *node)
+    {
+        int length = 0;
+        if(node == NULL)
+        {
+            return length;
+        }
+
+        //  考虑一下环内, 从任何一个节点出现再回到这个节点的距离就是环的长度
+        ListNode *currNode = node;
+        ListNode *stepNode = node->next;
+        for(length = 1; ; length++)
+        {
+            if(stepNode == currNode)
+            {
+                return length;
+            }
+            stepNode = stepNode->next;
+        }
+        return 0;
+    }
+
+
+    ListNode* EntryNodeOfLoop(ListNode* pHead)
+    {
+        //  先找到链表环中的某一个节点
+        ListNode* meetingNode = HasCycle(pHead);
+        if(meetingNode == NULL)
+        {
+            return NULL;
+        }
+        debug <<"a node in cycle " <<meetingNode->val <<endl;
+        //  获取到链表中环路的长度
+        int cycleLength = GetCycleLength(meetingNode);
+        debug <<"cycle length = " <<cycleLength <<endl;
+
+        //  找到链表的中环的入口
+        ListNode *leftNode = pHead;
+        ListNode *rightNode = pHead;
+
+        //  右指针先往前走n步
+        rightNode = NextNode(rightNode, cycleLength);
+        while(leftNode != rightNode)
+        {
+            leftNode = leftNode->next;
+            rightNode = rightNode->next;
+        }
+
+        return leftNode;
+
+    }
+};
+```
+
+#### 057 删除链表中重复的结点
+**题目描述**
+
+在一个排序的链表中，存在重复的结点，请删除该链表中重复的结点，重复的结点不保留，返回链表头指针。  
+> 例如，链表1->2->3->3->4->4->5  
+处理后为 1->2->5
+
+* 从头到尾判定每个结点是否是重复结点
+    * 如果不是重复结点则尾部指针向后移动到这个结点，然后继续判定下一个结点的重复性。
+    * 如果是重复结点，那么修改当前尾部指针指向结点的next值，时尾部结点的next指针指向下一个非重复结点上。
+
+```cpp
+class Solution
+{
+public:
+    ListNode* deleteDuplication(ListNode* pHead)
+    {
+        //设置一个trick, 作为头指针, 这样我们无需单独考虑第一个元素
+        ListNode *first = new ListNode(-1);
+        first->next = pHead;
+
+        ListNode *p = pHead;
+        ListNode *last = first;
+
+        while (p != NULL && p->next != NULL)
+        {
+            //  如果有元素重复
+            if (p->val == p->next->val)
+            {
+                //  就跳过所有重复的数字
+                int val = p->val;
+                while (p != NULL && p->val == val)
+                {
+                    p = p->next;
+                }
+
+                //  此时p指向了非重复的第一个元素
+                //  我们设置last->next = p
+                //  但是此时p-val也可能是重复的,
+                //  因此我们不可以设置last = p
+                //  而是重新进入循环
+                last->next = p;
+            }
+            else
+            {
+                last = p;
+                p = p->next;
+            }
+        }
+        return first->next;
+    }
+};
+```

@@ -1,8 +1,3 @@
-* 058-二叉树的下一个结点
-* 059-对称的二叉树
-* 060-把二叉树打印成多行
-* 061-按之字形顺序打印二叉树
-* 062-序列化二叉树
 * 063-二叉搜索树的第K个结点
 #### 005 从尾到头打印链表
 题目描述
@@ -1236,3 +1231,115 @@ public:
     }
 };
 ```
+#### 058 二叉树的下一个结点
+**题目描述**  
+给定一个二叉树和其中的一个结点，请找出中序遍历顺序的下一个结点并且返回。注意，树中的结点不仅包含左右子结点，同时包含指向父结点的指针。
+
+**解题思路**：  
+中序遍历时，当前结点与下一个被遍历到的结点间的关系是：
+  * 如果当前结点有右子树, 那么其中序遍历的下一个结点就是其右子树的最左结点；
+
+  * 如果当前结点没有右子树, 而它是其父结点的左子结点那么其中序遍历的下一个结点就是他的父亲结点；
+
+  * 如果当前结点没有右子树，而它还是其父结点的右子结点，这种情况下其下一个结点应该是当前结点所在的左子树的根, 因此我们可以顺着其父节点一直向上遍历, 直到找到一个是它父结点的左子结点的结点。
+
+  ```cpp
+  class Solution {
+  public:
+      TreeLinkNode* GetNext(TreeLinkNode* pNode)
+      {
+          if(pNode == NULL)
+          {
+              return NULL;
+          }
+
+          TreeLinkNode *pNext = NULL;
+
+          //  如果当前结点有右子树, 那么其中序遍历的下一个结点就是其右子树的最左结点
+          if(pNode->right != NULL)
+          {
+              //  找到右子树的最左孩子
+              pNext = pNode->right;
+              while(pNext->left != NULL)
+              {
+                  pNext = pNext->left;
+              }
+          }
+          else if(pNode->right == NULL && pNode->next != NULL)
+          {
+              TreeLinkNode *pCurrent = pNode;
+              TreeLinkNode *pParent = pNode->next;
+              //  如果当前结点是其父结点的左子结点那么其中序遍历的
+              //  下一个结点就是他的父亲结点
+
+              //  如果当前结点是其父结点的右子结点，
+              //  这种情况下其下一个结点应该是当前结点所在的左子树的根
+              //  因此我们可以顺着其父节点一直向上遍历,
+              //  直到找到一个是它父结点的左子结点的结点
+              while(pParent != NULL && pCurrent == pParent->right)
+              {
+                  pCurrent = pParent;
+                  pParent = pParent->next;
+              }
+              pNext = pParent;
+          }
+
+          return pNext;
+      }
+  };
+  ```
+
+#### 059 对称的二叉树
+**题目描述**：  
+请实现一个函数，用来判断一颗二叉树是不是对称的。
+注意，如果一个二叉树同此二叉树的镜像是同样的，定义其为对称的
+
+
+#####题目分析：  
+判断二叉树是否对称和二叉树镜像是一类题目。
+  * 制造二叉树镜像时就是层序遍历然后交换左右子树；
+  * 所以判断二叉树镜像时可以层序遍历然后判断当前结点的左右子结点是否相等。
+
+```cpp
+class Solution
+{
+public:
+    bool isSymmetrical(TreeNode* pRoot)
+    {
+        if(pRoot == NULL)
+        {
+            return true;   
+        }
+        return isSymmetricalRecursion(pRoot->left, pRoot->right);
+    }
+
+    bool isSymmetricalRecursion(TreeNode *pLeft, TreeNode *pRight)
+    {
+        //层序遍历：先判断左右子节点是否相等。
+        if(pLeft->val != pRight->val)
+        {
+            return false;
+        }
+
+        //然后继续左右子树的判断
+        //首先判断左右子节点是否同时为空
+        if(pLeft == NULL && pRight == NULL)
+        {
+            return true;
+        }
+        if((pLeft == NULL && pRight != NULL) ||
+              (pLeft != NULL && pRight == NULL))
+        {
+            return false;
+        }
+
+        //  左子树的左与右子树的右对称
+        //  左子树的右与右子树的左对称
+        return isSymmetricalRecursion(pLeft->left, pRight->right)
+            && isSymmetricalRecursion(pLeft->right, pRight->left);
+    }
+};
+```
+
+
+#### 062 序列化二叉树

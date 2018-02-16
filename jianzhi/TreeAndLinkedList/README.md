@@ -1,7 +1,5 @@
-* 037-两个链表的第一个公共结点
-* 039-二叉树的深度
-* 039-平衡二叉树
-* 056-链表中环的入口结点
+
+
 * 057-删除链表中重复的结点
 * 058-二叉树的下一个结点
 * 059-对称的二叉树
@@ -9,6 +7,7 @@
 * 061-按之字形顺序打印二叉树
 * 062-序列化二叉树
 * 063-二叉搜索树的第K个结点
+
 
 #### 005 从尾到头打印链表
 题目描述
@@ -888,3 +887,202 @@ public:
     }
 };
 ```
+
+#### 037 两个链表的第一个公共结点
+**题目描述**  
+输入两个链表，找出它们的第一个公共结点。
+
+解题思路：  
+这一题主要是两种方式：
+ * 利用栈从后往前比较找到第一个不相同的点，这个点就是第一个公共节点的前一个节点。
+ * 利用快慢指针的方式，链表长的先走，链表短的后走。然后这里计算快慢指针的k步有一种比较geek的方法把：
+    * 先同时遍历两个链表，如果长度不一致则比然有一个链表先到头，此时没到头的链表的剩余节点数就是快慢指针需要的差距，这时候再交换链表指向，将原本指向短链表的指针指向长链表，再继续同时遍历，最后就能够取得快慢指针的效果。
+
+解法一利用栈的先入后出逆转链表：
+```cpp
+class Solution
+{
+public:
+    ListNode* FindFirstCommonNode(ListNode *leftHead, ListNode *rightHead)
+    {
+        ListNode *left = leftHead;
+        ListNode *right = rightHead;
+
+        stack<ListNode *> leftStack;
+        stack<ListNode *> rightStack;
+
+        /// 结点依次入栈
+        while(left != NULL)
+        {
+            leftStack.push(left);
+            left = left->next;
+        }
+
+        while(right != NULL)
+        {
+            rightStack.push(right);
+            right = right->next;
+        }
+
+        ///  开始同步弹出元素
+        while(leftStack.empty( ) != true
+           && rightStack.empty( ) != true)
+        {
+            left = leftStack.top( );
+            right = rightStack.top( );
+
+            ///  不相同的元素就是合并的前一个结点
+            if(left != right)
+            {
+                break;
+            }
+            leftStack.pop( );
+            rightStack.pop( );
+        }
+
+        ///  不相同元素的下一个结点就是共同结点
+        if(left != right)
+        {
+            return left->next;
+        }
+        else
+        {
+            return NULL;
+        }
+    }
+};
+```
+
+
+
+解法二利用快慢指针：
+```cpp
+class Solution {
+public:
+    ListNode* FindFirstCommonNode(ListNode *pHead1, ListNode *pHead2) {
+        ListNode *p1 = pHead1;
+        ListNode *p2 = pHead2;
+        while(p1!=p2){
+            p1 = (p1==NULL ? pHead2 : p1->next);
+            p2 = (p2==NULL ? pHead1 : p2->next);
+        }
+        return p1;
+    }
+};
+```
+#### 039 二叉树的深度
+
+**题目描述**  
+输入一棵二叉树，求该树的深度。从根结点到叶结点依次经过的结点（含根、叶结点）形成树的一条路径，最长路径的长度为树的深度。
+
+解题思路：  
+本题是一道比较简单地题目，主要考察树的深度遍历方法。然后值得注意的就是，递归两种主要的解题&参数传递的思路，一种是自顶向下的，另一种是自底向上的。  
+相关链接： [树的遍历](http://blog.csdn.net/gatieme/article/details/51163010)
+
+* 自顶向下传递参数的递归思路：
+```cpp
+int TreeDepthRecursion(TreeNode *root, int depth)
+    {
+        if(root == NULL)
+        {
+            return depth;
+        }
+        else
+        {
+            int leftDepth = TreeDepthRecursion(root->left, depth + 1);
+            int rightDepth = TreeDepthRecursion(root->right, depth + 1);
+
+            return max(leftDepth, rightDepth);
+        }
+    }
+```
+
+* 自底向上返回参数的递归思路：
+
+```cpp
+int TreeDepthRecursion(TreeNode *root)
+    {
+        if(root == NULL)
+        {
+            return 0;
+        }
+        else
+        {
+            int leftDepth = TreeDepthRecursion(root->left);
+            int rightDepth = TreeDepthRecursion(root->right);
+
+            return max(leftDepth, rightDepth) + 1;
+        }
+    }
+```
+#### 039 平衡二叉树
+题目描述
+
+输入一棵二叉树，判断该二叉树是否是平衡二叉树。
+
+解题思路：  
+要判定是否是平衡二叉树需要知道平衡二叉树的定义：  
+  * 平衡二叉树要求对于每一个节点来说，它的左右子树的高度之差不能超过1
+
+递归解法：
+  * 递归的判断二叉树的每一个节点，判断其左右子树的高度差：
+    * 如果高度差小于1 则继续将其左右子树进行平衡二叉树的判断直到叶子节点返回true。
+    * 如果高度差大于1则返回false，判断结束。
+
+```cpp
+class Solution
+{
+public:
+    bool IsBalanced_Solution(TreeNode* root)
+    {
+        if(root == NULL)
+        {
+            return true;
+        }
+
+        int leftDepth = TreeDepth(root->left);
+        int rightDepth = TreeDepth(root->right);
+
+        if(fabs(leftDepth - rightDepth) <= 1)
+        {
+            return IsBalanced_Solution(root->left) && IsBalanced_Solution(root->right);
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    int TreeDepth(TreeNode *root)
+    {
+        if(root == NULL)
+        {
+            return 0;
+        }
+
+        int leftDepth = TreeDepth(root->left);
+        int rightDepth = TreeDepth(root->right);
+
+        //  返回左右子树中深度最深的
+        return max(leftDepth, rightDepth) + 1;
+    }
+};
+```
+
+#### 056 链表中环的入口结点
+
+题目描述
+
+一个链表中包含环，请找出该链表的环的入口结点。
+
+
+解题思路：  
+计算环形链表的路口的典型方法就是快慢指针法：  
+ * 第一步，让快慢指针在环中相遇：分别用p1，p2指向链表头部，p1每次走一步，p2每次走二步。
+    * 如果p1走完整个链表没遇到p2说明链表没有环。
+    * 如果p1==p2此时p1和p2一定是在环中相遇。
+
+ * 第二步，找环的长度。从环中的相汇点开始, p2不动, p1前移，当再次相遇时，p1刚好绕环一周, 其移动即为环的长度K
+
+ * 第三步, 快慢指针求环的入口结点：
+    * 因为环的长度已知，所以使用快慢指针让快指针先走k步后会发现快慢指针最终将会在环的入口结点交汇。

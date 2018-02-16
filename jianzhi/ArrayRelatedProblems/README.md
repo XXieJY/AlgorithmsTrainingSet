@@ -658,3 +658,338 @@ public:
     }
 };
 ```
+
+#### 038 数字在排序数组中出现的次数
+题目描述  
+统计一个数字在排序数组中出现的次数。
+
+解题思路：  
+* 暴力搜索解空间求解：  
+本题可以简单地使用顺序暴力统计的方式解题。相当于遍历解空间以求解。
+
+* 提升解空间维度+二分搜索求解：  
+但是这题也可以高效地在解空间中搜索，就是将解空间增大一个维度，以“数值+元素位置”作为解空间的两个维度，此时每个元素都是唯一的了，然后通过二分搜索找出第一个出现的数字K和最后一个出现的数字k，然后将他们的序号相减就得到数字K在数组中出现的次数。
+
+
+```cpp
+class Solution
+{
+    /*二分查找 找到第一个K 和 最后一个K 二者位置相减*/
+public:
+    int GetNumberOfK(vector<int> E ,int k)
+    {
+        if(E.empty())
+        {
+            return 0;
+        }
+
+        int RESULT, A, B, S;
+        S = E.size();
+        RESULT = 0;
+        A = GetFirstIndex(E, k, 0, S - 1);
+        B  = GetLastIndex(E, k, 0, S - 1);
+
+        if(A > -1 && B > -1)
+        {
+            RESULT = B - A + 1;
+            return RESULT;
+        }
+    }
+
+    // 查找第一个的位置
+    int GetFirstIndex(vector<int> &E, int L, int R, int k)
+    {
+        if(L > R)
+        {
+            return -1;
+        }
+
+        int mid;
+
+        mid = L + (R - L) / 2;
+
+        if(E[mid] > k)
+        {
+            R = mid - 1;
+        }
+        else if(E[mid] < k)
+        {
+            L = mid + 1;
+        }
+        else
+        {
+            if((mid > 0 && E[mid-1] != k) || mid == 0)
+            {
+                return mid;
+            }
+            else
+            {
+                R = mid - 1;
+            }
+        }
+
+        return GetFirstIndex(E, k, L, R);
+    }
+
+    int GetLastIndex(vector<int> &E, int L, int R, int k)
+    {
+        if(L > R)
+        {
+            return -1;
+        }
+
+        int mid;
+        mid = (L + R) / 2;
+
+        if(E[mid] > k)
+        {
+            R = mid - 1;
+        }
+        else if(E[mid] < k)
+        {
+            L = mid + 1;
+        }
+        else
+        {
+            if((mid>0 && E[mid+1] !=k) || mid == R)
+            {
+                return mid;
+            }
+            else
+            {
+                L = mid +1;
+            }
+        }
+
+        return GetLastIndex(E,k,low,R);
+    }
+};
+```
+
+#### 040 数组中只出现一次的数字
+题目描述
+
+一个整型数组里除了两个数字之外，其他的数字都出现了两次。请写程序找出这两个只出现一次的数字。  
+
+> 样例输入  
+2 4 3 6 3 2 5 5
+
+> 样例输出  
+4 6
+
+解题思路：  
+此题是一道搜索问题，但是此题根数字排序无关只和数字出现次数有关。并且只有两个元素只出现一次，其他元素都出现了两次。这样的出现次数应该及时联系到与“两个相同元素相抵”有关的算术运算。  
+ * 全局计数相抵：即全局遍历整个数组，相同元素则计数加1，不同则计数减1，计数为0时换成下一个元素进行计数。这种方法在问题“求出现次数超过数组一半大小的元素”中使用到。  
+
+但是本题如果使用全局计数相抵相关的方法，其时间复杂度依然是O(n^2)，因为需要对每个元素进行全局遍历，才能确定它是不是只出现一次。  
+
+* 异或相同元素结果为0：因为相同元素的异或结果为0，所以把数组中的元素一起异或得到的结果一定不为0，因为存在两个只出现一次的元素。然后根据bit位找到bit值为1的最高位元素，根据这个位置是否为1可以把数组分成两部分。然后再对这两部分分别计算异或，可想而知这两个结果就是只出现一次的两个数字。  
+ps: 找xor中最后一个1的位置的时候，可以用(XOR & (-XOR))
+
+```cpp
+class Solution
+{
+public:
+    #define INT_SIZE (sizeof(int) * 8)
+
+    #define IS_BIT(number, index) (((number) & (1 << (index))) >>index)
+
+    void FindNumsAppearOnce(vector<int> array, int *num1, int *num2)
+    {
+        *num1 = *num2 = 0;
+        if(array.size( ) < 2)
+        {
+            return ;
+        }
+        int XOR = array[0];
+        for(int i = 1; i < array.size( ); i++)
+        {
+            XOR ^= array[i];
+        }
+
+        ///  查找到1的位置
+        int flag = XOR & (-XOR);
+        *num1 = *num2 = XOR;// 也可以等于XOR
+        for(int i = 0; i < array.size( ); i++)
+        {
+            if((array[i] & flag) == flag)
+            {
+                *num1 ^= array[i];
+            }
+            else
+            {
+                *num2 ^= array[i];
+            }
+        }
+    }
+};
+```
+#### *051 数组中重复的数字
+
+**题目描述**  
+在一个长度为n的数组里的所有数字都在0到n-1的范围内。数组中某些数字是重复的，但不知道有几个数字是重复的。也不知道每个数字重复几次。请找出数组中任意一个重复的数字。例如，如果输入长度为7的数组{2,3,1,0,2,5,3}，那么对应的输出是重复的数字2或者3。  
+
+> 样例输入  
+2, 3, 1, 0, 2, 5, 3  
+2, 1, 3, 1, 4  
+
+> 样例输出  
+2  
+1
+
+
+解题思路：  
+本题最简单的解法就是为每个元素遍历整个数组也就是遍历整个解空间。  
+
+缩小解空间：如果再将元素排序后在进行搜索，，那么可以将每个元素搜索时涉及到的解空间大小缩小到其元素相邻的右边一个元素。
+
+再降低时间复杂度：因为排序最好的时间复杂度只能到O(nlogn),所以本题如果还想提高时间复杂度，那么可以往hashset辅助查找。也就是说我们可以从前到后构造一个unique set，每当有元素被添加到set时，需要查找是否已经存在此元素，若存在则说明重复。
+
+```cpp
+class Solution
+{
+public:
+    bool CheckValidity(int *numbers, int length)
+    {
+      //  输入数据不合法
+      if(numbers == NULL || length <= 0)
+      {
+        return false;
+      }
+
+      //  元素必须在[0, n-1]的范围
+      for(int i = 0; i < length; i++)
+      {
+        if(numbers[i] < 0 || numbers[i] > length - 1)
+        {
+          return false;
+        }
+      }
+
+      return true;
+    }
+    // Parameters:
+    //        numbers:     an array of integers
+    //        length:      the length of array numbers
+    //        duplication: (Output) the duplicated number in the array number
+    // Return value:       true if the input is valid, and there are some duplications in the array number
+    //                     otherwise false
+    bool duplicate(int numbers[], int length, int* duplication)
+    {
+        *duplication = -1;
+
+        if(CheckValidity(numbers, length) == false)
+        {
+            return false;
+        }
+
+        set<int> s;
+        bool isDup;
+        isDup = false;
+        for(int i = 0; i < length; i++)
+        {
+            if(s.count(numbers[i]) == 1)  // 如果当前元素已经存在set中
+            {
+                isDup = true;
+                *duplication = numbers[i];
+                break;
+            }
+            s.insert(numbers[i]);
+
+        }
+
+        return isDup;
+    }
+};
+```
+
+
+#### 052 构建乘积数组
+**题目描述**
+
+给定一个数组A[0,1,...,n-1],请构建一个数组B[0,1,...,n-1],其中B中的元素B[i]=A[0]A[1]...A[i-1]A[i+1]...A[n-1]。不能使用除法。
+> 样例输入  
+[1, 2, 3, 4, 5]
+
+>样例输出  
+[120, 60, 40, 30, 24]
+
+* 解法1：  
+这个解法就是利用解的叠加性，简化计算过程。
+
+<分析>：  
+解释下代码，设有数组大小为5。  
+对于第一个for循环  
+第一步：b[0] = 1;  
+第二步：b[1] = b[0] * a[0] = a[0]  
+第三步：b[2] = b[1] * a[1] = a[0] * a[1];  
+第四步：b[3] = b[2] * a[2] = a[0] * a[1] * a[2];  
+第五步：b[4] = b[3] * a[3] = a[0] * a[1] * a[2] * a[3];  
+然后对于第二个for循环  
+第一步  
+temp *= a[4] = a[4];  
+b[3] = b[3] * temp = a[0] * a[1] * a[2] * a[4];  
+第二步  
+temp *= a[3] = a[4] * a[3];  
+b[2] = b[2] * temp = a[0] * a[1] * a[4] * a[3];  
+第三步  
+temp *= a[2] = a[4] * a[3] * a[2];  
+b[1] = b[1] * temp = a[0] * a[4] * a[3] * a[2];  
+第四步  
+temp *= a[1] = a[4] * a[3] * a[2] * a[1];  
+b[0] = b[0] * temp = a[4] * a[3] * a[2] * a[1];  
+由此可以看出从b[4]到b[0]均已经得到正确计算。  
+
+```cpp
+class Solution {
+public:
+  vector<int> multiply(const vector<int>& E) {
+      vector<int> vec;
+      int sz=E.size();
+      if(sz==0)
+        return vec;
+      vec.push_back(1);
+      for(int i=0;i<sz-1;i++)
+        vec.push_back(vec.back()*E[i]);
+      int tmp=1;
+      for(int i=sz-1;i>=0;i--)
+      {
+        vec[i]=vec[i]*tmp;
+        tmp=tmp*E[i];
+      }
+      return vec;
+  }
+};
+```
+
+* **解法2**：
+B[i]的值可以看作下图的矩阵中每行的乘积。  
+下三角用连乘可以很容求得，上三角，从下向上也是连乘。  
+因此我们的思路就很清晰了，先算下三角中的连乘，即我们先算出B[i]中的一部分，然后倒过来按上三角中的分布规律，把另一部分也乘进去。
+
+
+```cpp
+public class Solution {
+    public int[] multiply(int[] A) {
+        int length = A.length;
+        int[] B = new int[length];
+        if(length != 0 ){
+            B[0] = 1;
+            //计算下三角连乘
+            for(int i = 1; i < length; i++){
+                B[i] = B[i-1] * A[i-1];
+            }
+            int temp = 1;
+            //计算上三角
+            for(int j = length-2; j >= 0; j--){
+                temp *= A[j+1];
+                B[j] *= temp;
+            }
+        }
+        return B;
+    }
+}
+```
+
+
+#### 065 滑动窗口的最大值

@@ -1,7 +1,4 @@
 字符串相关问题：
-
-  * 042-左旋转字符串
-  * 049-把字符串转换成整数
   * 053-正则表达式匹配
   * 054-表示数值的字符串
   * 055-字符流中第一个不重复的字符
@@ -24,63 +21,51 @@
 本题要打印1到N位的所有数，可以递归全排列数的每一位。数字大小低于N位的数字会被高位排0的排序情况表示。  
 
 ```cpp
-class Solutin
-{
-public :
-    void PrintToMaxOfNDigits(int N)
-    {
-        if(N <= 0)
-        {
-            return ;
+class Solution {
+public:
+        void PrintToMaxOfDigits(int N) {
+                if (N <= 0) {
+                        return;
+                }
+
+                char* E = new char[N + 1];
+                E[N] = '\0';
+
+                for (int i = 0; i < 10; ++i) {
+                        E[0] = i + '0';
+                        Recursion(E, N, 2);
+                }
+
+                delete[] E; //手动申请空间需要手动释放
+       }
+
+        void Recursion(char* E, int S, int P) {
+                if (P == S) {
+                        PrintNumber(E);
+                        return;
+                }
+
+                for (int i = 0; i < 10; ++i) {
+                        E[P - 1] = i + '0';
+                        Recursion(E, S, P + 1);
+                }
         }
 
-        char *number = new char[N + 1];
-        number[N] = '\0';
+        void PrintNumber(char* E) {
+                int S, i;
+                S = strlen(E);
+                i = 0;
 
-        //  最低位循环0~9
-        for(int i = 0; i < 10; i++)
-        {
-            number[0] = i + '0';  //使用int + '0'的方式转为字符
-            Recursion(number, n, 0);
+                for (; i < S; ++i) {
+                        if (E[i] != '0') {
+                                break;
+                        }
+                }
+
+                if (i != S) {
+                        cout << &E[i] << endl;
+                }
         }
-
-        delete[] number;
-    }
-
-    void Recursion(char *number, int length, int index)
-    {
-        //循环到最深层
-        if(index == length - 1)
-        {
-            PrintNumber(number);
-            return ;
-        }
-
-        //  当前位循环0~9
-        for(int i = 0; i < 10; i++)
-        {
-            number[index + 1] = i + '0';
-            Recursion(number, length , index + 1);
-        }
-    }
-
-    void PrintNumber(char *number)
-    {
-        int i = 0;
-        int length = strlen(number);
-        for(i = 0; i < length; i++)
-        {
-            if(number[i] != '0')
-            {
-                break;
-            }
-        }
-        if(i != length)         //  开始的0不应该输出
-        {
-            cout << &number[i] <<endl;  //&数组 会从数组开始输出。
-        }
-
-    }
 };
 ```
 
@@ -93,63 +78,50 @@ public :
   * 出现多次的字符就存储标识-1 因此查找数组中非-1的最小值即可。
 
 ```cpp
-class Solution
-{
+class Solution {
 public:
-    int FirstNotRepeatingChar(string str)
-    {
-        int x[26] = {0}, y[26] = {0};
+        int FirstNotRepeatingChar(string V) {
+                int E[26] = { 0 }, E2[26] = { 0 };
+                int S;
 
-        for(unsigned int i = 0; i < str.size(); ++i)
-        {
-            //  小写字母
-            if('a' <= str[i] && str[i] <= 'z')
-            {
-                if(x[str[i] - 'a'] == 0)
-                {
-                    //  首次出现保存出现位置
-                    x[str[i] - 'a'] = i + 1;
-                }
-                else
-                {
-                    //  出现多次, 就置标识-1
-                    x[str[i] - 'a'] = -1;
-                }
-            }
-            else if('A' <= str[i] && str[i] <= 'Z')      // 大写字母
-            {
-                if(y[str[i] - 'A'] == 0)
-                {
-                     //  首次出现保存出现位置
-                     y[str[i] - 'A']= i + 1;
-                }
-                else
-                {
-                    //  出现多次, 就置标识-1
-                    y[str[i] - 'A'] = -1;
+                S = V.size();
+                for (int i = 0; i < S; ++i) {
+                        if ('a' <= V[i] && V[i] <= 'z') {
+                                int j = V[i] - 'a';
+                                if (E[j] == 0) {
+                                        E[j] = i + 1;
+                                }
+                                else {
+                                        E[j] = -1;
+                                }
+                        }
+                        else if ('A' <= V[i] && V[i] <= 'Z') {
+                                int j = V[i] - 'A';
+                                if (E2[j] == 0) {
+                                        E2[j] = i + 1;
+                                }
+                                else {
+                                        E2[j] = -1;
+                                }
+                        }
                 }
 
-            }
+                int res = INT_MAX;
+                for (int i = 0; i < 26; ++i)
+                {
+                        if (E[i] != 0 && E[i] != -1)
+                        {
+                                res = min(res, E[i]);
+                        }
+                        if (E2[i] != 0 && E2[i] != -1)
+                        {
+                                res = min(res, E2[i]);
+                        }
+                }
+                return res > V.size() ? -1 : res - 1;
         }
 
-        //  由于标识数组中
-        //  只出现一次的字符会存储出现的位置
-        //  出现多次的字符就存储标识-1
-        //  因此查找数组中非-1的最小值即可
-        int res = INT_MAX;
-        for(int i = 0; i < 26; ++i)
-        {
-            if(x[i] != 0 && x[i] != -1)
-            {
-                res = min(res, x[i]);
-            }
-            if(y[i] != 0 && y[i] != -1)
-            {
-                res = min(res, y[i]);
-            }
-        }
-        return res > str.size() ? -1 : res - 1;
-    }
+
 };
 ```
 
@@ -208,6 +180,117 @@ public:
             stk2.pop();
         }
         return result;
+    }
+};
+```
+
+#### 049 把字符串转换成整数
+
+题目描述
+
+写一个函数，求两个整数之和，要求在函数体内不得使用四则运算符号。
+
+> 样例输入  
+1a33  
+-2147483648
+
+> 样例输出  
+0  
+-2147483648
+
+##### 解题思路：  
+这题主要要注意string To vector时的边界条件，是一道不错的面试题。  
+
+字符串转化为数字时需要注意：
+* 排除字符串前面的空白字符
+* 判断字符串的符号位
+* 判断是否溢出，使用INT_MAX和INT_MIN关键字
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Solution
+{
+public:
+    int StrToInt(string V)
+    {
+        //string使用迭代器遍历
+        string::iterator P;
+        bool F;
+        long long int RES; //保存int大小的数值，需要用到至少long int的变量
+
+        P = V.begin( );
+        while (*P == ' ')
+        {
+            P++;
+        }
+
+        F= false;
+        //  判断符号位
+        if (*P == '+')
+        {
+            P++;
+        }
+        else if (*P == '-')
+        {
+            P++;
+            F = true;
+        }
+
+        RES = 0;
+        for (; P != V.end( ); P++)
+        {
+            if ('0' <= *P && *P <= '9')
+            {
+                RES *= 10;
+                RES += *P - '0';
+            }
+            else
+            {
+                break;
+            }
+
+            //  解决OVER_FLOW的问题
+            //  INT_MAX     2147483647
+            //  INT_MIN     -2147483648  F = true
+            //  负数绝对值最大为INT_MAX + 1
+            //  正数最大值为INT_MAX
+            if((F == true  && RES > (unsigned long)(INT_MAX) + 1)     
+              || (F == false && RES > INT_MAX))                         
+            {
+                break;
+            }
+
+        }
+
+        //如果P没遍历到字符串尾部说明字符串转整数失败
+        //要么是字符串中有非0-9的数值
+        //要么字符串代表的数值溢出了
+        if(P != V.end( ))
+        {
+            return 0;
+        }
+        else
+        {
+
+            if (F == true)
+            {
+                RES = -RES;
+            }
+
+            if (RES >= INT_MAX)
+            {
+                RES = INT_MAX;
+            }
+            else if (RES <= INT_MIN)
+            {
+                RES = INT_MIN;
+            }
+
+            return (int)RES;
+
+        }
     }
 };
 ```

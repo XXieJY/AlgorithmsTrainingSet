@@ -1,7 +1,9 @@
-http://www.hawstein.com/posts/dp-novice-to-advanced.html
-https://www.zhihu.com/question/39948290
-https://www.zhihu.com/question/23995189
-http://blog.csdn.net/baidu_28312631/article/details/47418773
+[ref1](http://www.hawstein.com/posts/dp-novice-to-advanced.html)
+[ref2](https://www.zhihu.com/question/39948290)
+[ref3](https://www.zhihu.com/question/23995189)
+
+
+
 http://blog.csdn.net/ii1245712564/article/details/45040037
 http://www.cnblogs.com/steven_oyj/archive/2010/05/22/1741374.html
 http://blog.csdn.net/zccz14/article/details/51288079
@@ -17,9 +19,8 @@ https://www.zhihu.com/question/23995189/answer/35429905
 
 
 
-#### DP概述  
+## DP概述  
 DP(Dynamic Programming)是算法设计中解决最优化问题(eg: 最长公共子序列)的重要思想。
-
 
 > 动态规划的本质，是对问题状态的定义和状态转移方程的定义。  
 ——什么是动态规划？动态规划的意义是什么？(徐凯强 Andy的回答)
@@ -41,9 +42,12 @@ DP(Dynamic Programming)是算法设计中解决最优化问题(eg: 最长公共�
 * 每个阶段的最优状态是由之前所有阶段的状态的组合得到的->搜索；
 * 每个阶段的最优状态可以从之前某个阶段的某个或某些状态直接得到而不管之前这个状态是如何得到的->动态规划。
 
-#### 动态规划的求解步骤
-一句话理解动态规是：
-* 先枚举所有状态
+---
+
+## 动态规划的求解
+#### 动态规划整个过程是：
+* 先枚举所有状态。  
+ * (所有“状态”的集合，构成问题的“状态空间”。“状态空间”的大小，与用动态规划解决问题的时间复杂度直接相关)
 * 然后剪枝
 * 再寻找最优状态，
   * 同时将每一次求解子问题的结果保存在一张“表格”中；
@@ -54,7 +58,9 @@ DP(Dynamic Programming)是算法设计中解决最优化问题(eg: 最长公共�
 关于“缓存”，“重叠子问题”，“记忆化”。  
 这三个名词，都是在阐述递推式求解的技巧。以Fibonacci数列为例，计算第100项的时候，需要计算第99项和98项；在计算第101项的时候，需要第100项和第99项，这时候你还需要重新计算第99项吗？不需要，你只需要在第一次计算的时候把它记下来就可以了。上述的需要再次计算的“第99项”，就叫“重叠子问题”。如果没有计算过，就按照递推式计算，如果计算过，直接使用，就像“缓存”一样，这种方法，叫做“记忆化”，这是递推式求解的技巧。这种技巧，通俗的说叫“花费空间来节省时间”。都不是动态规划的本质，不是动态规划的核心。
 
+---
 
+## 对动态规划更深入地理解
 #### “递归”  "无后效性" “最优子结构”
 ##### 递归：
 * 递归是递推式求解的基本方法。  

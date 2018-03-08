@@ -1,24 +1,3 @@
-[ref1](http://www.hawstein.com/posts/dp-novice-to-advanced.html)
-[ref2](https://www.zhihu.com/question/39948290)
-[ref3](https://www.zhihu.com/question/23995189)
-[ref4](http://blog.csdn.net/baidu_28312631/article/details/47418773)
-
-
-http://blog.csdn.net/ii1245712564/article/details/45040037
-http://www.cnblogs.com/steven_oyj/archive/2010/05/22/1741374.html
-http://blog.csdn.net/zccz14/article/details/51288079
-https://www.zhihu.com/question/23995189/answer/35429905
-
-
-参考资料：  
-背包九讲
-
----  
-
-
-
-
-
 ## DP概述  
 DP(Dynamic Programming)是算法设计中解决最优化问题(eg: 最长公共子序列)的重要思想。
 
@@ -136,3 +115,16 @@ DP(Dynamic Programming)是算法设计中解决最优化问题(eg: 最长公共�
 * 我们可以很机智地选择从F(5) = {1,2,3}走最优解到F(6)={1,2,3,4}。
 * 但我们也可以任性地选择F(5)={1,2}到F(6)={1,2,4}，或者F(5)={1,2,3},F(6)={1,2,3}..以及其他多种可能性)。
 * 此时我们可以在子问题之间以不同的状态(如F(5)={1,2,3} 或者F(5)={1,2})进行转移(比如从F(5)={1,2,3}到F(6)={1,2,3,4})，因此把子问题叫做“状态”，把子问题间的转移叫做“状态转移”是很形象的说辞。
+
+---
+
+参考资料：  
+背包九讲  
+[ref1](http://www.hawstein.com/posts/dp-novice-to-advanced.html)  
+[ref2](https://www.zhihu.com/question/39948290)  
+[ref3](https://www.zhihu.com/question/23995189)  
+[ref4](http://blog.csdn.net/baidu_28312631/article/details/47418773)  
+[ref5](http://blog.csdn.net/ii1245712564/article/details/45040037)  
+[ref6](http://www.cnblogs.com/steven_oyj/archive/2010/05/22/1741374.html)  
+[ref7](http://blog.csdn.net/zccz14/article/details/51288079)  
+[ref8](https://www.zhihu.com/question/23995189/answer/35429905)  

@@ -14,6 +14,80 @@ Return true because "leetcode" can be segmented as "leet code".
 [ref](http://www.cnblogs.com/grandyang/p/4257740.html)
 
 题目分析：
+这道题仍然是动态规划的题目，我们总结一下动态规划题目的基本思路。首先我们要决定要存储什么历史信息以及用什么数据结构来存储信息。然后是最重要的递推式，就是如从存储的历史信息中得到当前步的结果。最后我们需要考虑的就是起始条件的值。
+接下来我们套用上面的思路来解这道题。首先我们要存储的历史信息res[i]是表示到字符串s的第i个元素为止能不能用字典中的词来表示，我们需要一个长度为n的布尔数组来存储信息。然后假设我们现在拥有res[0,...,i-1]的结果，我们来获得res[i]的表达式。思路是对于每个以i为结尾的子串，看看他是不是在字典里面以及他之前的元素对应的res[j]是不是true，如果都成立，那么res[i]为true，写成式子是
+![image](http://img.blog.csdn.net/20140328035736484?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGluaHVhbm1hcnM=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast)
+
+```cpp
+class Solution {
+public:
+    bool wordBreak(string s, unordered_set<string> &dict) {
+        int len = s.size();
+        vector<bool> res(len + 1, false);
+        res[0] = true;
+        for (int i = 0; i < len + 1; ++i) {
+            for (int j = 0; j < i; ++j) {
+                if (res[j] && dict.find(s.substr(j, i-j)) != dict.end()) {
+                    res[i] = true;
+                    break;
+                }
+            }
+        }
+        return res[len];
+    }
+};
+```
+
+#### word breakII !!!3/8
+Given a string s and a dictionary of words dict, add spaces in s to construct a sentence where each word is a valid dictionary word.
+
+Return all such possible sentences.
+
+For example, given
+s = "catsanddog",
+dict = ["cat", "cats", "and", "sand", "dog"].
+
+A solution is ["cats and dog", "cat sand dog"].
+
+[ref](https://www.cnblogs.com/yuzhangcmu/p/4037299.html)
+[ref2](https://www.cnblogs.com/yuzhangcmu/p/4037299.html)
+
+题目分析：  
+* 本题考察DFS + 剪枝优化  
+
+* DP与DFS的区别：DP是Bottom-up 而DFS是TOP-DOWN.
+
+* 剪枝方法：定义一个一位数组possible，其中possible[i] = true表示在[i, n]区间上有解，n为s的长度，如果某个区间之前被判定了无解，下次循环时就会跳过这个区间，从而大大减少了运行时间。
+
+DFS+剪枝：
+```cpp
+class Solution {
+public:
+    vector<string> wordBreak(string s, unordered_set<string>& wordDict) {
+        vector<string> res;
+        string out;
+        vector<bool> possible(s.size() + 1, true); //剪枝部分
+        wordBreakDFS(s, wordDict, 0, possible, out, res);
+        return res;
+    }
+    void wordBreakDFS(string &s, unordered_set<string> &wordDict, int start, vector<bool> &possible, string &out, vector<string> &res) {
+        if (start == s.size()) {
+            res.push_back(out.substr(0, out.size() - 1));
+            return;
+        }
+        for (int i = start; i < s.size(); ++i) {
+            string word = s.substr(start, i - start + 1);
+            if (wordDict.find(word) != wordDict.end() && possible[i + 1]) {  //剪枝部分
+                out.append(word).append(" ");
+                int oldSize = res.size();   //剪枝部分
+                wordBreakDFS(s, wordDict, i + 1, possible, out, res);
+                if (res.size() == oldSize) possible[i + 1] = false;  //剪枝部分
+                out.resize(out.size() - word.size() - 1);
+            }
+        }
+    }
+};
+```
 
 
 ---

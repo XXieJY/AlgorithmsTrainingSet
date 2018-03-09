@@ -38,7 +38,7 @@ public:
 };
 ```
 
-## DFS
+## DFS和剪枝
 #### word breakII !!!3/8
 Given a string s and a dictionary of words dict, add spaces in s to construct a sentence where each word is a valid dictionary word.
 
@@ -90,7 +90,7 @@ public:
 };
 ```
 
-#### Palindrome Partitioning
+#### Palindrome Partitioning !!!3/8
 Given a string s, partition s such that every substring of the partition is a palindrome.
 
 Return all possible palindrome partitioning of s.
@@ -104,8 +104,6 @@ Return
   ]
 
 解题思路：
-
-
 
 * 这又是一道需要用DFS来解的题目，既然题目要求找到所有可能拆分成回文数的情况，那么肯定是所有的情况都要遍历到。对于每一个子字符串都要分别判断一次是不是回文数，那么肯定有一个判断回文数的子函数，还需要一个DFS函数用来递归，再加上原本的这个函数，总共需要三个函数来求解。
 

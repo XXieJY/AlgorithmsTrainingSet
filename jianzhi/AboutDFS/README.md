@@ -357,3 +357,64 @@ public:
 
 };
 ```
+
+#### 526. Beautiful Arrangement**
+Suppose you have N integers from 1 to N. We define a beautiful arrangement as an array that is constructed by these N numbers successfully if one of the following is true for the ith position (1 ≤ i ≤ N) in this array:
+
+* The number at the ith position is divisible by i.
+* or i is divisible by the number at the ith position.
+
+Now given N, how many beautiful arrangements can you construct?
+
+>Example 1:  
+Input: 2   
+Output: 2  
+Explanation:  
+* The first beautiful arrangement is [1, 2]:  
+Number at the 1st position (i=1) is 1, and 1 is divisible by i (i=1).  
+Number at the 2nd position (i=2) is 2, and 2 is divisible by i (i=2).  
+* The second beautiful arrangement is [2, 1]:  
+Number at the 1st position (i=1) is 2, and 2 is divisible by i (i=1).  
+Number at the 2nd position (i=2) is 1, and i (i=2) is divisible by 1.  
+Note:  
+N is a positive integer and will not exceed 15.
+
+解题思路：  
+* 确定使用递归DFS解题：对于满足某种条件的解的求所有情况，这种问题通常要用递归来做。而递归方法等难点在于写递归函数，如何确定终止条件，还有for循环中变量的起始位置如何确定。
+* 有去重要求，要使用visited标记：那么这里我们需要一个visited数组来记录数字是否已经访问过，因为优美排列中不能有重复数字。
+* 我们用变量pos来标记已经生成的数字的个数，如果大于N了，说明已经找到了一组排列，结果res自增1。
+* 在for循环中，i应该从1开始，因为我们遍历1到N中的所有数字，如果该数字未被使用过，且满足和坐标之间的整除关系，那么我们标记该数字已被访问过，再调用下一个位置的递归函数，之后不要忘记了恢复初始状态，参见代码如下：
+
+```cpp
+class Solution {
+public:
+    int countArrangement(int N) {
+        //初始化递归需要的辅助变量
+        int res = 0;
+        vector<int> visited(N + 1, 0);
+        //进入递归
+        dfs(N, visited, 1, res);
+        return res;
+    }
+    void dfs(int N, vector<int>& visited, int pos, int& res) {
+        //递归的出口
+        if (pos > N)
+        {
+            ++res;
+            return;
+        }
+        //拆解递归的过程
+        //每层递归都从visited[1:N]中选取还未visited的数字，根据beautiful原则进行判断
+        //
+        for (int i = 1; i <= N; ++i)
+        {
+            if (visited[i] == 0 && (i % pos == 0 || pos % i == 0))
+            {
+                visited[i] = 1;
+                dfs(N, visited, pos + 1, res);
+                visited[i] = 0;
+            }
+        }
+    }
+};
+```

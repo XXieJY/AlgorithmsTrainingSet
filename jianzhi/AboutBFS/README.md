@@ -1,6 +1,6 @@
 
 ### BFS面试常见种类：
-BFS:-
+
 * 二叉树上的宽搜
 * 图上的宽搜:
 * 拓扑排序
@@ -8,20 +8,182 @@ BFS:-
 
 
 ### 常见使用BFS的题型：
-1. 问题是关于图的层级遍历：
-  * Level Order Traversal: 有先碰到后碰到的问题, 分距离远近；
-  * Connected Component: 联通问题。 比如Smallest Rectangle，Enclosing Black Pixels；
-  * 拓扑排序 Topological Sorting: 有向图
-2. 问题是关于图的最短路径 Shortest Path in Simple Graph：
-  * 仅限简单图求最短路径(图中每条边长度都是1,且没有方向)
-  * **ps: 如果问最长的路径呢? 用DP或者dfs所有路径找一遍**
+
+* BFS解迷宫问题：
+**提示：迷宫问题要是思路不清晰，可以画出搜索树**  
+迷宫问题的求解可以抽象为连通图的遍历，因此主要有两种方法:
+
+* 第一种方法是：深度优先搜索（DFS）加回溯。**（迷宫问题使用DFS，在编码上会复杂）**  
+其优点：无需像广度优先搜索那样（BFS）记录前驱结点。   
+其缺点：找到的第一条可行路径不一定是最短路径，如果需要找到最短路径，那么需要找出所有可行路径后，再逐一比较，求出最短路径。
+
+* 第二种方法是：广度优先搜索（BFS）。   
+其优点：找出的第一条路径就是最短路径。    
+其缺点：需要记录结点的前驱结点，来形成路径。  
+
+广度优先搜索的优点是找出的第一条路径就是最短路径，所以经常用来搜索最短路径，思路和图的广度优先遍历一样，需要借助于队列。
+
+具体步骤：   
+（1）从入口元素开始，判断它上下左右的邻边元素是否满足条件，如果满足条件就入队列；   
+（2）取队首元素并出队列。寻找其相邻未被访问的元素，**将其入队列并标记元素的前驱节点为队首元素。**   
+（3）重复步骤（2），直到队列为空（没有找到可行路径）或者找到了终点。**最后从终点开始，根据节点的前驱节点找出一条最短的可行路径。**
+
+```cpp
+//代码的几点说明：
+//（1）BFS求迷宫最短路径，记录每个节点的前驱节点使用了mark标记。可见，三种方法中mark标记可以根据实际需求灵活为其赋予意义。
+//（2）特殊的，起始节点的前驱设置为其本身。
+#include <iostream>
+#include <queue>
+using namespace std;
+
+struct Point{  
+    //行与列
+    int X;  
+    int Y;  
+
+    //默认构造函数
+    Point(){
+        X=Y=-1;
+    }
+
+    Point(int x,int y){
+        this->X=x;
+        this->Y=y;
+    }
+
+    bool operator==(const Point& V) const{
+        if(this->X==V.X&&this->Y==V.Y)
+            return true;
+        return false;
+    }
+};
+
+int maze[5][5]={
+    {0,0,0,0,0},
+    {0,1,0,1,0},
+    {0,1,1,1,0},
+    {0,1,0,0,1},
+    {0,0,0,0,0}
+};
+
+//四方向坐标矩阵
+//上下左右对应[0][0],[0][1],[1][0],[1][1]
+int dir[][2] = {  
+    {-1, 0}, {1, 0},  
+    {0, -1}, {0, 1}  
+};
+
+void mazePath(void* maze,int m,int n, Point& A, Point B,vector<Point>& RES){
+    int** maze2d=new int*[m];
+    for(int i=0;i<m;++i){
+        maze2d[i]=(int*)maze+i*n;
+    }
+
+    if(maze2d[A.X][A.Y]==1||maze2d[A.X][A.Y]==1) return ; //输入错误
+
+    if(A==B){ //起点即终点
+        RES.push_back(A);
+        return;
+    }
+
+    //mark标记每一个节点的前驱节点，如果没有则为（-1，-1），如果有，则表示已经被访问
+    //先初始化mark的二维数组
+    Point** mark=new Point*[m];
+    for(int i=0;i<m;++i){
+        mark[i]=new Point[n];
+    }
+
+    queue<Point> Q;
+    Q.push(A);
+    //将起点的前驱节点设置为自己
+    mark[A.X][A.Y]=A;
+
+    while(Q.empty()!=true){
+        Point cur=Q.front();
+        Q.pop();
+
+        if(cur.X-1>=0 && maze2d[cur.X-1][cur.Y]==0){//上节点连通
+            if(mark[cur.X-1][cur.Y]==Point()){//上节点未被访问，满足条件，如队列
+                mark[cur.X-1][cur.Y]=cur;
+                Q.push(Point(cur.X-1,cur.Y)); //入栈
+                if(Point(cur.X-1,cur.Y)==B){ //找到终点
+                    break;
+                }
+            }
+        }
+
+        if(cur.Y+1<n && maze2d[cur.X][cur.Y+1]==0){//右节点连通
+            if(mark[cur.X][cur.Y+1]==Point()){//右节点未被访问，满足条件，如队列
+                mark[cur.X][cur.Y+1]=cur;
+                Q.push(Point(cur.X,cur.Y+1));    //入栈
+                if(Point(cur.X,cur.Y+1)==B){ //找到终点
+                    break;
+                }
+            }
+        }
+
+        if(cur.X+1<m && maze2d[cur.X+1][cur.Y]==0){//下节点连通
+            if(mark[cur.X+1][cur.Y]==Point()){//下节点未被访问，满足条件，如队列
+                mark[cur.X+1][cur.Y]=cur;
+                Q.push(Point(cur.X+1,cur.Y));    //入栈
+                if(Point(cur.X+1,cur.Y)==B){ //找到终点
+                    break;
+                }
+            }
+        }
+
+        if(cur.Y-1>=0 && maze2d[cur.X][cur.Y-1]==0){//左节点连通
+            if(mark[cur.X][cur.Y-1]==Point()){//上节点未被访问，满足条件，如队列
+                mark[cur.X][cur.Y-1]=cur;
+                Q.push(Point(cur.X,cur.Y-1));    //入栈
+                if(Point(cur.X,cur.Y-1)==B){ //找到终点
+                    break;
+                }
+            }
+        }
+    }
+    if(Q.empty()==false){
+        int X=B.X;
+        int Y=B.Y;
+        RES.push_back(B);
+        while(!(mark[X][Y]==A)){
+            RES.push_back(mark[X][Y]);
+            X=mark[X][Y].X;
+            Y=mark[X][Y].Y;
+        }
+        RES.push_back(A);
+    }
+}
+
+int main(){
+    Point A(0,0);
+    Point B(4,4);
+    vector<Point> vecPath;
+    mazePath(maze,5,5,A,B,vecPath);
+
+    if(vecPath.empty()==true)
+        cout<<"no right path"<<endl;
+    else{
+        cout<<"shortest path:";
+        for(auto i=vecPath.rbegin();i!=vecPath.rend();++i)
+            printf("(%d,%d) ",i->X,i->Y);
+    }
+
+    getchar();
+}
+```
+
+
+[参考资料](http://blog.csdn.net/k346k346/article/details/51289478)
+[参考资料1](http://blog.csdn.net/raphealguo/article/details/7523411)
+[参考资料2](http://blog.csdn.net/k346k346/article/details/51289478)
 
 ---
 
 
 
 [参考资料](https://zhuanlan.zhihu.com/p/26487841)
-[参考资料2](http://blog.csdn.net/raphealguo/article/details/7523411)
+
 
 ---
 
@@ -203,7 +365,105 @@ public:
 };
 ```
 
+#### 103. Binary Tree Zigzag Level Order Traversal**
+Given a binary tree, return the zigzag level order traversal of its nodes' values. (ie, from left to right, then right to left for the next level and alternate between).
 
+解题思路：  
+* 二叉树的之字形层序遍历是二叉树层序遍历的变形，不同之处在于一行是从左到右遍历，下一行是从右往左遍历，交叉往返的之字形的层序遍历。
+* 根据其特点我们用到栈的后进先出的特点，这道题我们维护两个栈，相邻两行分别存到两个栈中。
+  * 进栈的顺序也不相同，一个栈是先进左子结点然后右子节点。
+  * 另一个栈是先进右子节点然后左子结点，这样出栈的顺序就是我们想要的之字形了，代码如下：
+```cpp
+class Solution {
+public:
+    vector<vector<int> > zigzagLevelOrder(TreeNode *root) {
+        vector<vector<int> >res;
+        stack<TreeNode*> RtoL;
+        stack<TreeNode*> LtoR;
+        vector<int> out;
+
+        if (!root) {
+          return res;
+        }
+
+        RtoL.push(root);
+        while (!RtoL.empty() || !LtoR.empty()) {
+            //根据题意，先右左，再左右
+            //要栈按右左顺序输出，则应该按左右顺序入栈
+            while (!RtoL.empty()) {
+                TreeNode *cur = RtoL.top();
+                RtoL.pop();
+                out.push_back(cur->val);
+                if (cur->left) LtoR.push(cur->left);
+                if (cur->right) LtoR.push(cur->right);
+            }
+            //每个RtoL或LtoR循环都记录一整层的节点
+            if (!out.empty()) res.push_back(out);
+            out.clear();
+            while (!LtoR.empty()) {
+                TreeNode *cur = LtoR.top();
+                LtoR.pop();
+                out.push_back(cur->val);
+                if (cur->right) RtoL.push(cur->right);
+                if (cur->left) RtoL.push(cur->left);
+            }
+            if (!out.empty()) res.push_back(out);
+            out.clear();
+        }
+        return res;
+    }
+};
+```
+
+#### 207. Course Schedule**  
+There are a total of n courses you have to take, labeled from 0 to n - 1.
+
+Some courses may have prerequisites, for example to take course 0 you have to first take course 1, which is expressed as a pair: [0,1]
+
+Given the total number of courses and a list of prerequisite pairs, is it possible for you to finish all courses?
+
+解题思路：  
+此题需要使用BFS判定一个有向图中是否有环存在：
+* BFS的解法，我们定义二维数组graph来表示这个有向图，一维数组in来表示每个顶点的入度。
+* 开始先建立这个有向图，并将入度数组也初始化好。
+* 然后我们定义一个queue变量，将所有入度为0的点放入队列中，然后开始遍历队列，从graph里遍历其连接的点，每到达一个新节点，将其入度减一，如果此时该点入度为0，则放入队列末尾。
+* 直到遍历完队列中所有的值，若此时还有节点的入度不为0，则说明环存在，返回false，反之则返回true。代码如下：
+
+```cpp
+class Solution {
+public:
+    bool canFinish(int numCourses, vector<vector<int>>& prerequisites) {
+        //构造有向图，创建入度数组
+        vector<vector<int> > graph(numCourses, vector<int>(0));
+        vector<int> in(numCourses, 0);
+        for (auto a : prerequisites) {
+            graph[a[1]].push_back(a[0]);
+            ++in[a[0]];
+        }
+        //将初始化入度为0的节点插入队列
+        queue<int> q;
+        for (int i = 0; i < numCourses; ++i) {
+            if (in[i] == 0) q.push(i);
+        }
+        //队列循环出队，然后削减连通节点的入度
+        //当入度为0时，将此节点插入队列
+        while (!q.empty()) {
+            int t = q.front();
+            q.pop();
+            for (auto a : graph[t]) {
+                --in[a];
+                if (in[a] == 0) q.push(a);
+            }
+        }
+        //判定，当队列空时，依然存在入度大于0的节点
+        //则当前图有环路。
+        for (int i = 0; i < numCourses; ++i) {
+            if (in[i] != 0) return false;
+        }
+        return true;
+    }
+};
+```
 
 
 

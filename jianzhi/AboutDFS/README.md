@@ -1,3 +1,65 @@
+## 排列组合的DFS
+### 概念
+* 排列和组合的区分：
+  * 看问题是否和顺序有关。有关就是排列，无关就是组合。
+  * 90%DFS的题, 要么是排列, 要么是组合。
+
+### 例题
+
+#### 39. Combination Sum（理解递归和DFS的优秀题目）
+Given a set of candidate numbers (C) (without duplicates) and a target number (T), find all unique combinations in C where the candidate numbers sums to T.
+
+The same repeated number may be chosen from C unlimited number of times.
+
+解题思路：  
+**像这种结果要求返回所有符合要求解的题十有八九都是要利用到递归，而且解题的思路都大同小异。**
+* 都是需要另写一个递归函数，这里我们新加入三个变量，start记录当前的递归到的下标，out为一个解，res保存所有已经得到的解，每次调用新的递归函数时，此时的target要减去当前数组的的数。
+* **递归函数注意：递归接口的定义、出口的定义、递归拆解方式的思考。**  
+具体看代码如下：
+
+```cpp
+class Solution {
+public:
+    vector<vector<int> > combinationSum(vector<int> &candidates, int target)
+    {
+        //递归相关辅助变量的声明
+        vector<vector<int> > res;
+        vector<int> out;
+
+        //进入递归
+        sort(candidates.begin(), candidates.end());
+        dfs(candidates, target, 0, out, res);
+        return res;
+    }
+
+    //递归的定义：
+    //在candidates[start:end]中选择和为target的所有组合
+    //添加到out后，在递归出口处推入res中
+    void dfs(vector<int> &candidates, int target, int start,
+      vector<int> &out, vector<vector<int> > &res)
+      {
+        //出口1
+        if (target < 0) return;
+        //出口2
+        else if (target == 0) res.push_back(out);
+        else
+        {   
+        //递归拆解过程
+        //for循环和传递进dfs的start参数，一起定义了每趟递归可选择的数据集的范围
+        //也就是每次搜索树分叉时可做的选择种类
+            for (int i = start; i < candidates.size(); ++i)
+            {
+                out.push_back(candidates[i]);
+                dfs(candidates, target - candidates[i], i, out, res);
+                out.pop_back();
+            }
+        }
+    }
+};
+```
+---
+
+## 图的DFS
 #### 200. Number of Islands**
 Given a 2d grid map of '1's (land) and '0's (water), count the number of islands. An island is surrounded by water and is formed by connecting adjacent lands horizontally or vertically. You may assume all four edges of the grid are all surrounded by water.
 

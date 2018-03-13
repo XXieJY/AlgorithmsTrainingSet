@@ -1,12 +1,3 @@
-
-### BFS面试常见种类：
-
-* 二叉树上的宽搜
-* 图上的宽搜:
-* 拓扑排序
-* 棋盘上的宽搜
-
-
 ### 常见使用BFS的题型：
 
 * BFS解迷宫问题：
@@ -465,7 +456,77 @@ public:
 };
 ```
 
+#### 	261.Graph Valid Tree
 
+解题思路：  
+给了我们一个无向图，让我们来判断其是否为一棵树，我们知道如果是树的话，所有的节点必须是连接的，也就是说必须是连通图，而且不能有环。
+* **因此，判断无向图是否为一棵树等价于验证无向图否是连通图和是否含有环。**
+* 首先用DFS来做：
+  * 1.建立图的结构：根据pair来建立一个图的结构，用邻接链表来表示，还需要一个一位数组v来记录某个节点是否被访问过。
+  * 2.开始遍历：从节点0开始进行DFS，遍历的思想是：
+    * 当DFS到某个节点，先看当前节点是否被访问过，如果已经被访问过，说明环存在，直接返回false。
+    * 如果未被访问过：
+      * 1.先将其状态标记为已访问过。
+      * 2.然后需要一个变量pre来记录上一个节点，以免回到上一个节点。
+      * 3.然后我们到邻接链表里去找跟其相邻的节点继续递归遍历。
+      * 这样遍历结束后，查找有向图里面是否还有没被访问过的节点，如果有，则说明图不是完全连通的，返回false，反之返回true，参见代码如下：
+
+```cpp
+class Solution {
+public:
+    bool validTree(int n, vector<pair<int, int>>& edges) {
+        //建立图的临接表
+        //还有visited数组
+        vector<vector<int>> g(n, vector<int>());
+        vector<bool> visited(n, false);
+        for (auto a : edges)
+        {
+            g[a.first].push_back(a.second);
+            g[a.second].push_back(a.first);
+        }
+        //进入递归，dfs遍历当前图
+        if (!dfs(g, visited, 0, -1))
+        {
+          return false;
+        }
+        //查看是否还有节点没有遍历到
+        //如果有，那就是非完全连通图
+        for (auto a : visited)
+        {
+            if (!a)
+            {
+              return false;
+            }
+        }
+        return true;
+    }
+
+    bool dfs(vector<vector<int>> &g, vector<bool> &visited,
+            int cur, int pre)
+    {
+        //如果递归到了一个已经visited的节点，说明图有环路
+        if (visited[cur])
+        {
+          return false;
+        }
+        //如果当前节点没有visited过，那么设置为true
+        //然后遍历当前节点邻接表中其他非pre的节点
+        visited[cur] = true;
+        for (auto a : g[cur])
+        {
+            if (a != pre)
+            {
+                if (!dfs(g, visited, a, cur))
+                {
+                    return false;
+                }
+
+            }
+        }
+        return true; //bottom up
+    }
+};
+```
 
 
 

@@ -373,11 +373,130 @@ public:
 };
 ```
 
+#### 494. Target Sum
+You are given a list of non-negative integers, a1, a2, ..., an, and a target, S. Now you have 2 symbols + and -. For each integer, you should choose one from + and - as its new symbol.
+
+Find out how many ways to assign symbols to make sum of integers equal to target S.
+
+解题思路：  
+* 对于这种求多种情况的问题，首先要想到使用递归来做。
+* 我们从第一个数字，调用递归函数，在递归函数中，分别对目标值进行加上当前数字调用递归，和减去当前数字调用递归，这样会涵盖所有情况，并且当所有数字遍历完成后，我们看若目标值为0了，则结果res自增1，参见代码如下：
+
+```cpp
+class Solution {
+public:
+    int findTargetSumWays(vector<int>& nums, int S) {
+        //声明递归辅助数组
+        int res = 0;
+        helper(nums, S, 0, res);
+        return res;
+    }
+    void helper(vector<int>& nums, int S, int start, int& res) {
+        //递归出口
+        if (start >= nums.size()) {
+            if (S == 0) ++res;
+            return;
+        }
+        //当前递归开始分叉
+        helper(nums, S - nums[start], start + 1, res);
+        helper(nums, S + nums[start], start + 1, res);
+    }
+};
+```
 
 
 ---
 
 ## 树和图的DFS
+
+#### 98. Validate Binary Search Tree
+
+解题思路：  
+* 验证二叉搜索树有两种方式：
+    * 可以利用它本身的性质来做，即左<根<右。
+    * 也可以通过利用中序遍历结果为有序数列来做。
+* 如果利用其本身性质来做，则使用递归访问每一个结点。左子节点需要大于LONG_MIN且小于root的值，右子节点
+需要大于root的值且小于LONG_MAX。
+* 注意测试数据中有可能节点值会是INT_MIN或者INT_MAX，所以这里需要用LONG_MIN,LONG_MAX来cover边界条件，代码如下：
+```cpp
+// Recursion without inorder traversal
+class Solution {
+public:
+    bool isValidBST(TreeNode *root) {
+        return isValidBST(root, LONG_MIN, LONG_MAX);
+    }
+    bool isValidBST(TreeNode *root, long mn, long mx) {
+        if (!root) return true;
+        if (root->val <= mn || root->val >= mx) return false;
+        return isValidBST(root->left, mn, root->val) && isValidBST(root->right, root->val, mx);
+    }
+};
+```
+
+
+#### 100. Same Tree
+Given two binary trees, write a function to check if they are the same or not.
+
+Two binary trees are considered the same if they are structurally identical and the nodes have the same value.
+
+解题思路：  
+判断两棵树是否相同和之前的判断两棵树是否对称都是一样的原理，利用深度优先搜索DFS来递归。
+
+```cpp
+class Solution {
+public:
+    bool isSameTree(TreeNode *p, TreeNode *q)
+    {
+        if (!p && !q)
+        {
+            return true;
+        }
+        if ((p && !q) || (!p && q) || (p->val != q->val))
+        {
+            return false;
+        }
+        return isSameTree(p->left, q->left) && isSameTree(p->right, q->right);
+    }
+};
+```
+#### 113. Path Sum II
+Given a binary tree and a sum, find all root-to-leaf paths where each path's sum equals the given sum.
+
+解题思路：
+* 用深度优先搜索DFS，然后使用二维的vector，每当DFS搜索到新节点时，都要保存该节点。而且每当找出一条路径之后，都将这个保存为一维vector的路径保存到最终结果二位vector中。并且，每当DFS搜索到子节点，发现不是路径和时，需要回溯把该节点从一维vector中移除。代码如下：
+
+```cpp
+class Solution {
+public:
+    vector<vector<int> > pathSum(TreeNode *root, int sum)
+    {
+        //声明递归的辅助变量：res保存结果，out保存当前正在检查的路径
+        vector<vector<int>> res;
+        vector<int> out;
+        helper(root, sum, out, res);
+        return res;
+    }
+    void helper(TreeNode* node, int sum,
+                vector<int>& out, vector<vector<int>>& res)
+    {
+        //递归出口1：处理树为空的情况
+        if (!node)
+        {
+            return;
+        }
+        out.push_back(node->val);
+        //递归出口2
+        if (sum == node->val && !node->left && !node->right)
+        {
+            res.push_back(out);
+        }
+        helper(node->left, sum - node->val, out, res);
+        helper(node->right, sum - node->val, out, res);
+        out.pop_back();
+    }
+};
+```
+
 
 #### 111. Minimum Depth of Binary Tree
 

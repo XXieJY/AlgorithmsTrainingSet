@@ -1,6 +1,116 @@
 # Leetcode
 
-## DP
+DP的六种主流问题：
+1. 坐标型15%  
+Minimum Path Sum  
+Climbing Stairs  
+Jump Game  
+Longest Increasing Subsequence  
+2. 序列型30%  
+Word Break  
+f[i]代表前i个元素总和，i=0表示不取任何元素
+3. 双序列型30%  
+Longest Common Subsequence  
+4. 划分型10%
+5. 背包型10%  
+BackPackI  
+BackPackII  
+K SUM  
+Minimum Adjustment Cost  
+5. 区间型5%
+Stone Game  
+Burst Ballons  
+Scramble String  
+
+匹配型：
+Longest Common Subsequence  
+Edit Distance  
+K Edit Distance  
+Distinct Subquence  
+Interleaving String  
+
+Unique Paths， Minimum Path Sum，LISLongest Increasing Subsequence
+
+---
+
+## 坐标和路径DP
+#### 64. Minimum Path Sum
+Given a m x n grid filled with non-negative numbers, find a path from top left to bottom right which minimizes the sum of all numbers along its path.
+
+Note: You can only move either down or right at any point in time.
+
+>Example 1:  
+[[1,3,1],  
+ [1,5,1],  
+ [4,2,1]]  
+Given the above grid map, return 7. Because the path 1→3→1→1→1 minimizes the sum.
+
+解题思路：  
+* 比较直接的路径DP，使用Top Down+Momoization即可。
+* 关于记忆过往答案：维护一个二维的dp数组，其中dp[i][j]表示当前位置的最小路径和。
+* 关于状态转移方程：根据题意可以得到****dp[i][j] = grid[i][j] + min(dp[i - 1][j], dp[i][j - 1])****，代码如下：
+
+```cpp
+class Solution {
+public:
+    int minPathSum(vector<vector<int> > &grid) {
+        int m = grid.size(), n = grid[0].size();
+        int dp[m][n];
+        dp[0][0] = grid[0][0];
+        for (int i = 1; i < m; ++i) dp[i][0] = grid[i][0] + dp[i - 1][0];
+        for (int i = 1; i < n; ++i) dp[0][i] = grid[0][i] + dp[0][i - 1];
+        for (int i = 1; i < m; ++i) {
+            for (int j = 1; j < n; ++j) {
+                dp[i][j] = grid[i][j] + min(dp[i - 1][j], dp[i][j - 1]);
+            }
+        }
+        return dp[m - 1][n - 1];
+    }
+};
+```
+
+
+#### 120. Triangle
+Given a triangle, find the minimum path sum from top to bottom. Each step you may move to adjacent numbers on the row below.
+
+For example, given the following triangle  
+[  
+     [2],  
+    [3,4],  
+   [6,5,7],  
+  [4,1,8,3]  
+]  
+The minimum path sum from top to bottom is 11 (i.e., 2 + 3 + 5 + 1 = 11).
+
+解题思路：  
+* 此题使用bottom-up的dp方式
+* 因为bottom-up减少了需要记忆memoization，当前节点经过计算的值就是从三角形最后一行bottom up上来的最小值。因此，只需要复制了三角形最后一行，作为用来更新的一位数组(bottom up的过程中，数组中有些节点会慢慢被弃用，但这是可允许的行为)。
+* 根据这个思想，设定bottom up的状态转移方程，之后逐个遍历这个DP数组，对于每个数字，和它之后的元素比较选择较小的再加上上面一行相邻位置的元素做为新的元素，然后一层一层的向上扫描，整个过程和冒泡排序的原理差不多，最后最小的元素都冒到前面，第一个元素即为所求。代码如下：
+
+```cpp
+class Solution {
+public:
+    int minimumTotal(vector<vector<int> > &triangle) {
+        int n = triangle.size();
+        vector<int> dp(triangle.back()); //辅助数组
+        for (int i = n - 2; i >= 0; --i) { //bottom up的循环
+            for (int j = 0; j <= i; ++j) {
+                dp[j] = min(dp[j], dp[j + 1]) + triangle[i][j]; //本题的状态转移方程
+            }
+        }
+        return dp[0];
+    }
+};
+```
+
+---
+
+## 序列型DP
+
+
+
+---
+
 #### 139. Word Break
 
 Given a non-empty string s and a dictionary wordDict containing a list of non-empty words, determine if s can be segmented into a space-separated sequence of one or more dictionary words. You may assume the dictionary does not contain duplicate words.

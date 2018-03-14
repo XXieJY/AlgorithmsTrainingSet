@@ -22,6 +22,17 @@ DP(Dynamic Programming)是算法设计中解决最优化问题(eg: 最长公共�
 * 每个阶段的最优状态是由之前所有阶段的状态的组合得到的->搜索；
 * 每个阶段的最优状态可以从之前某个阶段的某个或某些状态直接得到而不管之前这个状态是如何得到的->动态规划。
 
+### 常见的动态规划题型
+1. 最优化问题： 求最大最小的问题
+
+2. 可行性问题：判断可不可行,存不存在
+
+3. 统计方案个数
+
+### 常见使用DFS而不可用DP的题型：
+1. 求所有的具体的方案而不是方案个数,要用DFS而不是DP
+2. 输入数据是一个集合而非序列(70~80%不用DP)，除了背包问题。
+
 ---
 
 ## 动态规划的求解
@@ -128,3 +139,4 @@ DP(Dynamic Programming)是算法设计中解决最优化问题(eg: 最长公共�
 [ref6](http://www.cnblogs.com/steven_oyj/archive/2010/05/22/1741374.html)  
 [ref7](http://blog.csdn.net/zccz14/article/details/51288079)  
 [ref8](https://www.zhihu.com/question/23995189/answer/35429905)  
+[ref9](https://stomachache007.wordpress.com/2017/04/09/%E4%B9%9D%E7%AB%A0%E7%AE%97%E6%B3%95%E7%AC%94%E8%AE%B0-9-%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92-dynamic-programming/)

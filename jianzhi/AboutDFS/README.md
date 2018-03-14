@@ -405,7 +405,7 @@ public:
         }
         //拆解递归的过程
         //每层递归都从visited[1:N]中选取还未visited的数字，根据beautiful原则进行判断
-        //
+        //记得回溯时将当前选中数字i的visited重置。
         for (int i = 1; i <= N; ++i)
         {
             if (visited[i] == 0 && (i % pos == 0 || pos % i == 0))
@@ -414,6 +414,44 @@ public:
                 dfs(N, visited, pos + 1, res);
                 visited[i] = 0;
             }
+        }
+    }
+};
+```
+
+#### 22. Generate Parentheses
+Given n pairs of parentheses, write a function to generate all combinations of well-formed parentheses.
+
+>For example, given n = 3, a solution set is:  
+[  
+  "((()))",  
+  "(()())",  
+  "(())()",  
+  "()(())",  
+  "()()()"  
+]
+
+解题思路：  
+* 输出括号的有效全排列，需要用到DFS递归。
+* 定义递归出口：
+  * 如果在某次递归时，左括号的个数大于右括号的个数，说明此时生成的字符串中右括号的个数大于左括号的个数，即会出现')('这样的非法串，所以这种情况直接返回，不继续处理。
+  * 如果left和right都为0，则说明此时生成的字符串已有3个左括号和3个右括号，且字符串合法，则存入结果中后返回。
+* 如果以上两种情况都不满足，若此时left大于0，则调用递归函数，注意参数的更新，若right大于0，则调用递归函数，同样要更新参数。代码如下：
+
+```cpp
+class Solution {
+public:
+    vector<string> generateParenthesis(int n) {
+        vector<string> res;
+        dfs(n, n, "", res);
+        return res;
+    }
+    void dfs(int left, int right, string out, vector<string> &res) {
+        if (left > right) return;
+        if (left == 0 && right == 0) res.push_back(out);
+        else {
+            if (left > 0)  dfs(left - 1, right, out + '(', res);
+            if (right > 0) dfs(left, right - 1, out + ')', res);
         }
     }
 };

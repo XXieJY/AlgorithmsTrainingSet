@@ -274,90 +274,6 @@ public:
     }
 };
 ```
----
-
-## 图的DFS
-#### 200. Number of Islands**
-Given a 2d grid map of '1's (land) and '0's (water), count the number of islands. An island is surrounded by water and is formed by connecting adjacent lands horizontally or vertically. You may assume all four edges of the grid are all surrounded by water.
-
-解题思路：  
-* 这道求岛屿数量的题的本质是**求矩阵中连续区域的个数。**  
-* 求矩阵连续区域个数需要想到用深度优先搜索DFS来解：
-  * 先建立一个visited数组用来记录某个位置是否被访问过。
-  * 然后开始DFS二维数组：
-    * 对于一个为‘1’且未被访问过的位置X，我们递归进入其上下左右位置上为‘1’的数。
-    * 然后将X的visited对应值赋为true，继续进入其所有相连的邻位置，这样可以将这个连通区域所有的数找出来
-    * 找完本次区域后，我们将结果res自增1，然后我们在继续找下一个为‘1’且未被访问过的位置，以此类推直至遍历完整个原数组即可得到最终结果，代码如下：
-
-```cpp
-class Solution {
-public:
-    int numIslands(vector<vector<char> > &grid) {
-        if (grid.empty() || grid[0].empty()){
-          return 0;
-        }
-
-        int m, n, res;
-        m = grid.size();
-        n = grid[0].size();
-        res = 0;
-        vector<vector<bool> > visited(m, vector<bool>(n, false));
-
-        for (int i = 0; i < m; ++i) {
-            for (int j = 0; j < n; ++j) {
-                if (grid[i][j] == '1' && !visited[i][j]) {
-                    DFS(grid, visited, i, j);
-                    ++res;
-                }
-            }
-        }
-        return res;
-    }
-
-    void DFS(vector<vector<char> > &grid,
-      vector<vector<bool> > &visited, int x, int y) {
-
-        //先检测越界，再检测是否已经访问过
-        if (x < 0 || x >= grid.size() || y < 0 ||
-          y >= grid[0].size() || grid[x][y] != '1' || visited[x][y]) {
-              return;
-          }
-
-        //对于未访问过的节点，将其标记为已访问
-        //然后BFS地访问其四方向相邻节点
-        visited[x][y] = true;
-        DFS(grid, visited, x - 1, y);
-        DFS(grid, visited, x + 1, y);
-        DFS(grid, visited, x, y - 1);
-        DFS(grid, visited, x, y + 1);
-    }
-};
-```
-
-#### 111. Minimum Depth of Binary Tree
-
-解题思路：  
-二叉树的经典问题之最小深度问题就是就最短路径的节点个数，还是用深度优先搜索DFS来完成。
-
-```cpp
-class Solution {
-public:
-    int minDepth(TreeNode *root) {
-        //判断根节点是否为空，如果为空直接返回0
-        if (root == NULL) return 0;
-        //判断当前节点是否是叶子节点，如果是则当前路径到尽头了，返回1让路径长度增加1；
-        if (root->left == NULL && root->right == NULL) return 1;
-
-        //当前节点有至少一个子节点时，当前节点就不是叶子节点
-        //此时递归判断左右子节点之后的路径
-        if (root->left == NULL) return minDepth(root->right) + 1;
-        else if (root->right == NULL) return minDepth(root->left) + 1;
-        else return 1 + min(minDepth(root->left), minDepth(root->right));
-    }
-
-};
-```
-
 #### 526. Beautiful Arrangement**
 Suppose you have N integers from 1 to N. We define a beautiful arrangement as an array that is constructed by these N numbers successfully if one of the following is true for the ith position (1 ≤ i ≤ N) in this array:
 
@@ -456,3 +372,204 @@ public:
     }
 };
 ```
+
+
+
+---
+
+## 树和图的DFS
+
+#### 111. Minimum Depth of Binary Tree
+
+解题思路：  
+二叉树的经典问题之最小深度问题就是就最短路径的节点个数，还是用深度优先搜索DFS来完成。
+
+```cpp
+class Solution {
+public:
+    int minDepth(TreeNode *root) {
+        //判断根节点是否为空，如果为空直接返回0
+        if (root == NULL) return 0;
+        //判断当前节点是否是叶子节点，如果是则当前路径到尽头了，返回1让路径长度增加1；
+        if (root->left == NULL && root->right == NULL) return 1;
+
+        //当前节点有至少一个子节点时，当前节点就不是叶子节点
+        //此时递归判断左右子节点之后的路径
+        if (root->left == NULL) return minDepth(root->right) + 1;
+        else if (root->right == NULL) return minDepth(root->left) + 1;
+        else return 1 + min(minDepth(root->left), minDepth(root->right));
+    }
+
+};
+```
+如果要将先判定叶子结点改为后判定叶子结点来做minimun depth问题，应该这么写：
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    int minDepth(TreeNode* root) {
+        if (!root)
+        {
+            return 0;
+        }
+        int L, R;
+        L = minDepth(root->left);
+        R = minDepth(root->right);
+        if((L==0&&R==0) || (L!=0&&R!=0))
+        {
+            return 1+min(L,R);
+        }
+        else if (L!=0)
+        {
+
+            return 1+L;
+        }
+        else
+        {
+            return 1+R;
+        }
+    }
+};
+```
+
+#### 104. Maximum Depth of Binary Tree
+最深路径可以不考虑判定参与比较的路径是否有效（即路径是否深入到叶子结点），但是最浅路径就必须
+先判断是路径是否合法。否则直接用min判断会得到不合法的路径值。
+
+```cpp
+class Solution {
+public:
+    int maxDepth(TreeNode* root) {
+        //定义辅助变量
+        int L, R;
+
+        //定义向下访问到叶子结点是为递归的出口
+        if (!root)
+        {
+            return 0;
+        }
+
+        //递归调用
+        L = maxDepth(root->left);
+        R = maxDepth(root->right);
+        return 1 + max(L, R);
+    }
+};
+```
+
+
+
+
+#### 200. Number of Islands**
+Given a 2d grid map of '1's (land) and '0's (water), count the number of islands. An island is surrounded by water and is formed by connecting adjacent lands horizontally or vertically. You may assume all four edges of the grid are all surrounded by water.
+
+解题思路：  
+* 这道求岛屿数量的题的本质是**求矩阵中连续区域的个数。**  
+* 求矩阵连续区域个数需要想到用深度优先搜索DFS来解：
+  * 先建立一个visited数组用来记录某个位置是否被访问过。
+  * 然后开始DFS二维数组：
+    * 对于一个为‘1’且未被访问过的位置X，我们递归进入其上下左右位置上为‘1’的数。
+    * 然后将X的visited对应值赋为true，继续进入其所有相连的邻位置，这样可以将这个连通区域所有的数找出来
+    * 找完本次区域后，我们将结果res自增1，然后我们在继续找下一个为‘1’且未被访问过的位置，以此类推直至遍历完整个原数组即可得到最终结果，代码如下：
+
+```cpp
+class Solution {
+public:
+    int numIslands(vector<vector<char> > &grid) {
+        if (grid.empty() || grid[0].empty()){
+          return 0;
+        }
+
+        int m, n, res;
+        m = grid.size();
+        n = grid[0].size();
+        res = 0;
+        vector<vector<bool> > visited(m, vector<bool>(n, false));
+
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (grid[i][j] == '1' && !visited[i][j]) {
+                    DFS(grid, visited, i, j);
+                    ++res;
+                }
+            }
+        }
+        return res;
+    }
+
+    void DFS(vector<vector<char> > &grid,
+      vector<vector<bool> > &visited, int x, int y) {
+
+        //先检测越界，再检测是否已经访问过
+        if (x < 0 || x >= grid.size() || y < 0 ||
+          y >= grid[0].size() || grid[x][y] != '1' || visited[x][y]) {
+              return;
+          }
+
+        //对于未访问过的节点，将其标记为已访问
+        //然后BFS地访问其四方向相邻节点
+        visited[x][y] = true;
+        DFS(grid, visited, x - 1, y);
+        DFS(grid, visited, x + 1, y);
+        DFS(grid, visited, x, y - 1);
+        DFS(grid, visited, x, y + 1);
+    }
+};
+```
+#### 695. Max Area of Island
+
+解题思路：  
+* 需要统计出每个岛的大小，再来更新结果res。
+* 先遍历grid，当遇到为1且未访问过的的点则进入递归函数。
+  * 在递归函数中，我们首先判断i和j是否越界，还有grid[i][j]是否为1，我们没有用visited数组，而是直接修改了grid数组，遍历过的标记为-1。
+  * 如果合法，那么cnt自增1，并且更新结果res，然后对其周围四个相邻位置分别调用递归函数即可，参见代码如下：
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> dirs{{-1,0},{1,0},{0,-1},{0,1}};
+
+    int maxAreaOfIsland(vector<vector<int>>& grid) {
+        int m = grid.size(), n = grid[0].size(), res = 0;
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (grid[i][j] != 1) continue;
+                int cnt = 0;
+                helper(grid, i, j, cnt, res);
+            }
+        }
+        return res;
+    }
+
+    void helper(vector<vector<int>>& grid, int i, int j, int& cnt, int& res) {
+        //越界检查
+        int m = grid.size(), n = grid[0].size();
+        if (i < 0 || i >= m ||
+            j < 0 || j >= n ||
+            grid[i][j] <= 0)
+        {
+            return;
+        }
+        //表示结点为已访问
+        grid[i][j] *= -1;
+
+        //最大连通区域面积累计
+        res = max(res, ++cnt);
+
+        for (auto dir : dirs)
+        {
+            helper(grid, i + dir[0], j + dir[1], cnt, res);
+        }
+    }
+};
+```
+
+---

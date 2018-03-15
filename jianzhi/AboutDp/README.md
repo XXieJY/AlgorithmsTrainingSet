@@ -115,18 +115,44 @@ The total number of unique paths is 2.
 
 ```cpp
 //在参考Unique Paths的题目的同时，因为可能有障碍物所以不能一次性将左边界和上边界初始化为1
+//本题使用二维数组来保存dp的结果，可以对比着和上一题一起看。
+//一个是使用一维数组来做二维路径dp，另一个是使用二维数组来做二维路径dp
 class Solution {
 public:
     int uniquePathsWithObstacles(vector<vector<int>>& obstacleGrid) {
-        if (obstacleGrid.empty() || obstacleGrid[0].empty() || obstacleGrid[0][0] == 1) return 0;
+        //边界情况检测：1.如果地图是空的则返回0；2.如果[0][0]处直接就是一个障碍物则也返回0
+        if (obstacleGrid.empty() || obstacleGrid[0].empty() || obstacleGrid[0][0] == 1)
+        {
+            return 0;
+        }
+        //初始化辅助变量，二维数组dp[i][j]
         vector<vector<int> > dp(obstacleGrid.size(), vector<int>(obstacleGrid[0].size(), 0));
-        for (int i = 0; i < obstacleGrid.size(); ++i) {
-            for (int j = 0; j < obstacleGrid[i].size(); ++j) {
-                if (obstacleGrid[i][j] == 1) dp[i][j] = 0;
-                else if (i == 0 && j == 0) dp[i][j] = 1;
-                else if (i == 0 && j > 0) dp[i][j] = dp[i][j - 1];
-                else if (i > 0 && j == 0) dp[i][j] = dp[i - 1][j];
-                else dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+        for (int i = 0; i < obstacleGrid.size(); ++i)
+        {
+            for (int j = 0; j < obstacleGrid[i].size(); ++j)
+            {
+                if (obstacleGrid[i][j] == 1)
+                {
+                    dp[i][j] = 0;
+                }
+                else if(i==0 && j ==0)
+                {
+                    dp[i][j] = 1;
+                }
+                //上边界
+                else if (i == 0 && j > 0)
+                {
+                    dp[i][j] = dp[i][j - 1];
+                }
+                //左边界
+                else if (i > 0 && j == 0)
+                {
+                    dp[i][j] = dp[i - 1][j];
+                }
+                else
+                {
+                    dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+                }
             }
         }
         return dp.back().back();

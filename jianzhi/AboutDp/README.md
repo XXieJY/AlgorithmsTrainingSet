@@ -8,17 +8,6 @@ DP的六种主流问题：
 5. 背包型10%  
 6. 区间型5%
 
-
-
-匹配型：
-Longest Common Subsequence  
-Edit Distance  
-K Edit Distance  
-Distinct Subquence  
-Interleaving String  
-
-
-
 ---
 
 ## 坐标和路径DP
@@ -283,6 +272,110 @@ public:
 ```
 
 ---
+## 字符串的匹配DP
+**只要是遇到字符串的子序列或是匹配问题直接就上动态规划Dynamic Programming，其他的都不要考虑，什么递归呀的都是浮云，千辛万苦的写了递归结果拿到OJ上妥妥Time Limit Exceeded，能把人气昏了，所以还是直接就考虑DP解法省事些。一般来说字符串匹配问题都是更新一个二维dp数组，核心就在于通过更新二维数组的规律找出状态转移公式。**
+
+
+#### 97. Interleaving String
+
+&nbsp; 0 d b b c a  
+0 T F F F F F  
+a T F F F F F  
+a T T T T T F  
+b F T T F T F  
+c F F T T T T  
+c F F F T F T  
+
+解题思路：  
+* 首先，这道题的大前提是字符串s1和s2的长度和必须等于s3的长度，如果不等于，肯定返回false。那么当s1和s2是空串的时候，s3必然是空串，则返回true。所以直接给dp[0][0]赋值true，然后若s1和s2其中的一个为空串的话，那么另一个肯定和s3的长度相等，则按位比较，若相同且上一个位置为True，赋True，其余情况都赋False，这样的二维数组dp的边缘就初始化好了。
+* 下面只需要找出递推公式来更新整个数组即可，我们发现，在任意非边缘位置dp[i][j]时，它的左边或上边有可能为True或是False，两边都可以更新过来，只要有一条路通着，那么这个点就可以为True。
+  * 那么我们得分别来看，如果左边的为True，那么我们去除当前对应的s2中的字符串s2[j - 1] 和 s3中对应的位置的字符相比（计算对应位置时还要考虑已匹配的s1中的字符），为s3[j - 1 + i], 如果相等，则赋True，反之赋False。 而上边为True的情况也类似。
+* 所以可以求出递推公式为：**dp[i][j] = (dp[i - 1][j] && s1[i - 1] == s3[i - 1 + j]) || (dp[i][j - 1] && s2[j - 1] == s3[j - 1 + i]);**
+* 其中dp[i][j] 表示的是 s2 的前 i 个字符和 s1 的前 j 个字符是否匹配 s3 的前 i+j 个字符，根据以上分析，可写出代码如下：
+
+```cpp
+class Solution {
+public:
+    bool isInterleave(string s1, string s2, string s3) {
+        if (s1.size() + s2.size() != s3.size())
+        {
+            return false;
+        }
+
+        int n1 = s1.size();
+        int n2 = s2.size();
+        vector<vector<bool> > dp(n1 + 1, vector<bool> (n2 + 1, false));
+
+        dp[0][0] = true;
+        //初始化左边界
+        for (int i = 1; i <= n1; ++i)
+        {
+            dp[i][0] = dp[i - 1][0] && (s1[i - 1] == s3[i - 1]);
+        }
+        //初始化上边界
+        for (int i = 1; i <= n2; ++i)
+        {
+            dp[0][i] = dp[0][i - 1] && (s2[i - 1] == s3[i - 1]);
+        }
+        //开始dp推导
+        for (int i = 1; i <= n1; ++i)
+        {
+            for (int j = 1; j <= n2; ++j)
+            {
+                dp[i][j] = (dp[i - 1][j] && s1[i - 1] == s3[i - 1 + j]) ||
+                    (dp[i][j - 1] && s2[j - 1] == s3[j - 1 + i]);
+            }
+        }
+        return dp[n1][n2];
+    }
+};
+```
+
+#### 72. Edit Distance
+
+
+解题思路：  
+* 首先维护一个二维的数组dp，其中dp[i][j]表示从word1的前i个字符转换到word2的前j个字符所需要的步骤。那我们可以先给这个二维数组dp的第一行第一列赋值，这个很简单，因为第一行和第一列对应的总有一个字符串是空串，于是转换步骤完全是另一个字符串的长度。
+* 最短编辑距离可以看作路径DP的变化形式。主要是理解将编辑距离问题转化成二维DP问题后与原问题的对应关系。
+  * 当word1[i] == word2[j]时，dp[i][j] = dp[i - 1][j - 1]。
+  * 其他情况时，dp[i][j]是其左，左上，上的三个值中的最小值加1。
+
+```cpp
+class Solution {
+public:
+    int minDistance(string word1, string word2) {
+        int n1 = word1.size(), n2 = word2.size();
+        int dp[n1 + 1][n2 + 1];
+        //初始化边界条件
+        for (int i = 0; i <= n1; ++i)
+        {
+            dp[i][0] = i;
+        }
+        for (int i = 0; i <= n2; ++i)
+        {
+            dp[0][i] = i;
+        }
+        //根据状态转移方程进行dp
+        for (int i = 1; i <= n1; ++i)
+        {
+            for (int j = 1; j <= n2; ++j)
+            {
+                if (word1[i - 1] == word2[j - 1])
+                {
+                    dp[i][j] = dp[i - 1][j - 1];
+                }
+                else
+                {
+                    dp[i][j] = min(dp[i - 1][j - 1], min(dp[i - 1][j], dp[i][j - 1])) + 1;
+                }
+            }
+        }
+        return dp[n1][n2];
+    }
+};
+```
+
+---
 
 ## 序列型DP
 
@@ -326,6 +419,9 @@ public:
 };
 ```
 
+---
+
+## 划分型DP
 
 #### 139. Word Break
 

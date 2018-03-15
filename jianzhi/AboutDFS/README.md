@@ -407,6 +407,115 @@ public:
 
 ---
 
+
+## DFS和剪枝
+#### word breakII !!!3/8
+Given a string s and a dictionary of words dict, add spaces in s to construct a sentence where each word is a valid dictionary word.
+
+Return all such possible sentences.
+
+For example, given
+s = "catsanddog",
+dict = ["cat", "cats", "and", "sand", "dog"].
+
+A solution is ["cats and dog", "cat sand dog"].
+
+[ref](https://www.cnblogs.com/yuzhangcmu/p/4037299.html)
+[ref2](https://www.cnblogs.com/yuzhangcmu/p/4037299.html)
+
+题目分析：  
+* 本题考察DFS + 剪枝优化  
+
+* DP与DFS的区别：DP是Bottom-up 而DFS是TOP-DOWN.
+
+* 剪枝方法：定义一个一位数组possible，其中possible[i] = true表示在[i, n]区间上有解，n为s的长度，如果某个区间之前被判定了无解，下次循环时就会跳过这个区间，从而大大减少了运行时间。
+
+DFS+剪枝：
+```cpp
+class Solution {
+public:
+    vector<string> wordBreak(string s, unordered_set<string>& wordDict) {
+        vector<string> res;
+        string out;
+        vector<bool> possible(s.size() + 1, true); //剪枝部分
+        wordBreakDFS(s, wordDict, 0, possible, out, res);
+        return res;
+    }
+    void wordBreakDFS(string &s, unordered_set<string> &wordDict, int start, vector<bool> &possible, string &out, vector<string> &res) {
+        if (start == s.size()) {
+            res.push_back(out.substr(0, out.size() - 1));
+            return;
+        }
+        for (int i = start; i < s.size(); ++i) {
+            string word = s.substr(start, i - start + 1);
+            if (wordDict.find(word) != wordDict.end() && possible[i + 1]) {  //剪枝部分
+                out.append(word).append(" ");
+                int oldSize = res.size();   //剪枝部分
+                wordBreakDFS(s, wordDict, i + 1, possible, out, res);
+                if (res.size() == oldSize) possible[i + 1] = false;  //剪枝部分
+                out.resize(out.size() - word.size() - 1);
+            }
+        }
+    }
+};
+```
+
+#### Palindrome Partitioning !!!3/8
+Given a string s, partition s such that every substring of the partition is a palindrome.
+
+Return all possible palindrome partitioning of s.
+
+For example, given s = "aab",
+Return
+
+  [
+    ["aa","b"],
+    ["a","a","b"]
+  ]
+
+解题思路：
+
+* 这又是一道需要用DFS来解的题目，既然题目要求找到所有可能拆分成回文数的情况，那么肯定是所有的情况都要遍历到。对于每一个子字符串都要分别判断一次是不是回文数，那么肯定有一个判断回文数的子函数，还需要一个DFS函数用来递归，再加上原本的这个函数，总共需要三个函数来求解。
+
+* 那么，对原字符串的所有子字符串的访问顺序是什么呢，如果原字符串是 abcd, 那么访问顺序为: a -> b -> c -> d -> cd -> bc -> bcd-> ab -> abc -> abcd, 这是对于没有两个或两个以上子回文串的情况。那么假如原字符串是 aabc，那么访问顺序为：a -> a -> b -> c -> bc -> ab -> abc -> aa -> b -> c -> bc -> aab -> aabc，中间当检测到aa时候，发现是回文串，那么对于剩下的bc当做一个新串来检测，于是有 b -> c -> bc，这样扫描了所有情况，即可得出最终答案。  
+
+代码如下：
+```cpp
+class Solution {
+public:
+    vector<vector<string>> partition(string s) {
+        vector<vector<string>> res;
+        vector<string> out;
+        partitionDFS(s, 0, out, res);
+        return res;
+    }
+    void partitionDFS(string s, int start, vector<string> &out, vector<vector<string>> &res) {
+        if (start == s.size()) {
+            res.push_back(out);
+            return;
+        }
+        for (int i = start; i < s.size(); ++i) {
+            if (isPalindrome(s, start, i)) {
+                out.push_back(s.substr(start, i - start + 1));
+                partitionDFS(s, i + 1, out, res);
+                out.pop_back();
+            }
+        }
+    }
+    bool isPalindrome(string s, int start, int end) {
+        while (start < end) {
+            if (s[start] != s[end]) return false;
+            ++start;
+            --end;
+        }
+        return true;
+    }
+};
+```
+
+
+---
+
 ## 树和图的DFS
 
 #### 98. Validate Binary Search Tree

@@ -1,26 +1,14 @@
 # Leetcode
 
 DP的六种主流问题：
-1. 坐标型15%  
-Minimum Path Sum  
-Climbing Stairs  
-Jump Game  
-Longest Increasing Subsequence  
+1. 坐标型15%    
 2. 序列型30%  
-Word Break  
-f[i]代表前i个元素总和，i=0表示不取任何元素
 3. 双序列型30%  
-Longest Common Subsequence  
 4. 划分型10%
 5. 背包型10%  
-BackPackI  
-BackPackII  
-K SUM  
-Minimum Adjustment Cost  
-5. 区间型5%
-Stone Game  
-Burst Ballons  
-Scramble String  
+6. 区间型5%
+
+
 
 匹配型：
 Longest Common Subsequence  
@@ -29,11 +17,124 @@ K Edit Distance
 Distinct Subquence  
 Interleaving String  
 
-Unique Paths， Minimum Path Sum，LISLongest Increasing Subsequence
+
 
 ---
 
 ## 坐标和路径DP
+
+#### 55. Jump Game
+Given an array of non-negative integers, you are initially positioned at the first index of the array.
+
+Each element in the array represents your maximum jump length at that position.
+
+Determine if you are able to reach the last index.
+
+For example:  
+A = [2,3,1,1,4], return true.  
+
+A = [3,2,1,0,4], return false.  
+
+解题思路：  
+这里有几个思维转弯的地方：怎么将“能否走到终点的定义具体化” --> 取最大的步数是否大于等于0作为判断条件，因为如果取最小剩余步数或者一般剩余步数时并不能完全断定是否能走到该点，抽象地说，这里的最大剩余步数可以cover住其他情况，也就是说当最大剩余步数>=0时我们可以说至少有一种方式可以走到终点，至于一般步数或者最小步数也能不能到达终点那就是possible fine,（动态规划中取最大最小的思想）-->根据取最大步数定义动态转移方程，到达当前节点的最大剩余步数等于dp[i-1]和A[i-1]之中的最大值减一；
+* 具体化问题：如何才算能走到终点？**即走到最终点时剩余步数>=0，因此只要找到走到dp[n]时的最大步数(极端情况)，如果最大步数>=0则该
+问题至少有一个解了。**
+* 压缩问题规模，尝试剥离子问题：将抽象的判断问题具体化以后，尝试缩小问题规模，dp[1]的步数剩余应该是dp[1]=2，递推公式为：dp[i] = max(dp[i - 1], A[i - 1]) - 1，如果当某一个时刻dp数组的值为负了，说明无法抵达当前位置，则直接返回false。
+* 维护一个一位数组dp，其中dp[i]表示走道i位置时剩余的最大步数。
+* 最后我们判断dp数组最后一位是否为非负数即可知道是否能抵达该位置，代码如下：
+
+```cpp
+class Solution {
+public:
+    bool canJump(int A[], int n) {
+        vector<int> dp(n, 0);
+        for (int i = 1; i < n; ++i) {
+            dp[i] = max(dp[i - 1], A[i - 1]) - 1;
+            if (dp[i] < 0) return false;
+        }
+        return dp[n - 1] >= 0;
+    }
+};
+```
+
+#### 62. Unique Paths
+A robot is located at the top-left corner of a m x n grid (marked 'Start' in the diagram below).
+
+The robot can only move either down or right at any point in time. The robot is trying to reach the bottom-right corner of the grid (marked 'Finish' in the diagram below).
+
+How many possible unique paths are there?
+
+解题思路：  
+* 本题为求次数的问题，因此可以使用DP而不是使用DFS。
+* 这跟爬梯子问题很类似，那道题是说可以每次能爬一格或两格，问到达顶部的所有不同爬法的总数。而这道题是每次可以向下走或者向右走，求到达最右下角的所有不同走法的个数。
+* 具体化问题：**维护一个二维数组dp，其中dp[i][j]表示到当前位置不同的走法的个数**
+* 求得子问题得出递推式：然后可以得到递推式为: **dp[i][j] = dp[i - 1][j] + dp[i][j - 1]**
+* 减少空间消耗：这里为了节省空间，我们使用一维数组dp，一行一行的刷新也可以，代码如下：
+
+```cpp
+//这种限定往右或者下走格子的问题，其左侧边和上册边的dp值必须先进行初始化。
+//这里左侧边和上侧边的dp值皆为1。
+class Solution {
+public:
+    int uniquePaths(int m, int n)
+    {
+        vector<int> dp(n, 1);
+        for (int i = 1; i < m; ++i) //一行一行地算，从第一行开始。为第0行是边界
+        {
+            for (int j = 1; j < n; ++j) //每行从第一列开始。第零列是边界。
+            {
+                dp[j] += dp[j - 1];
+            }
+        }
+        return dp[n - 1];
+    }
+};
+```
+
+
+#### 63. Unique Paths II
+
+Follow up for "Unique Paths":
+
+Now consider if some obstacles are added to the grids. How many unique paths would there be?
+
+An obstacle and empty space is marked as 1 and 0 respectively in the grid.
+
+> For example,  
+There is one obstacle in the middle of a 3x3 grid as illustrated below.  
+[  
+  [0,0,0],  
+  [0,1,0],  
+  [0,0,0]  
+]  
+The total number of unique paths is 2.
+
+解题思路：  
+这道题是之前那道 Unique Paths 不同的路径 的延伸，在路径中加了一些障碍物，还是用动态规划Dynamic Programming来解。
+* 不同的是当遇到为1的点，将该位置的dp数组中的值清零，其余和之前那道题并没有什么区别，代码如下：
+
+```cpp
+//在参考Unique Paths的题目的同时，因为可能有障碍物所以不能一次性将左边界和上边界初始化为1
+class Solution {
+public:
+    int uniquePathsWithObstacles(vector<vector<int>>& obstacleGrid) {
+        if (obstacleGrid.empty() || obstacleGrid[0].empty() || obstacleGrid[0][0] == 1) return 0;
+        vector<vector<int> > dp(obstacleGrid.size(), vector<int>(obstacleGrid[0].size(), 0));
+        for (int i = 0; i < obstacleGrid.size(); ++i) {
+            for (int j = 0; j < obstacleGrid[i].size(); ++j) {
+                if (obstacleGrid[i][j] == 1) dp[i][j] = 0;
+                else if (i == 0 && j == 0) dp[i][j] = 1;
+                else if (i == 0 && j > 0) dp[i][j] = dp[i][j - 1];
+                else if (i > 0 && j == 0) dp[i][j] = dp[i - 1][j];
+                else dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+            }
+        }
+        return dp.back().back();
+    }
+};
+```
+
+
 #### 64. Minimum Path Sum
 Given a m x n grid filled with non-negative numbers, find a path from top left to bottom right which minimizes the sum of all numbers along its path.
 
@@ -54,13 +155,31 @@ Given the above grid map, return 7. Because the path 1→3→1→1→1 minimizes
 class Solution {
 public:
     int minPathSum(vector<vector<int> > &grid) {
-        int m = grid.size(), n = grid[0].size();
+        //声明Dp使用的辅助数组
+        int m, n;
+        m = grid.size();
+        n = grid[0].size();
         int dp[m][n];
+
+        //初始化DP的边界
         dp[0][0] = grid[0][0];
-        for (int i = 1; i < m; ++i) dp[i][0] = grid[i][0] + dp[i - 1][0];
-        for (int i = 1; i < n; ++i) dp[0][i] = grid[0][i] + dp[0][i - 1];
-        for (int i = 1; i < m; ++i) {
-            for (int j = 1; j < n; ++j) {
+        //因为要找路径最小和，所以每一步加法操作肯定只要考虑向下加或者向右加
+        //此时可以直接将左右边界直接计算出来，因为左边界dp[i][0]只有向下走才能走全
+        //上边界只有向右走才能走全
+        for (int i = 1; i < m; ++i)
+        {
+            dp[i][0] = grid[i][0] + dp[i - 1][0];
+        }
+        for (int i = 1; i < n; ++i)
+        {
+            dp[0][i] = grid[0][i] + dp[0][i - 1];
+        }
+
+        //向右下角出口进行DP
+        for (int i = 1; i < m; ++i)
+        {
+            for (int j = 1; j < n; ++j)
+            {
                 dp[i][j] = grid[i][j] + min(dp[i - 1][j], dp[i][j - 1]);
             }
         }
@@ -69,6 +188,40 @@ public:
 };
 ```
 
+
+
+
+
+
+#### 70. Climbing Stairs
+You are climbing a stair case. It takes n steps to reach to the top.
+
+Each time you can either climb 1 or 2 steps. In how many distinct ways can you climb to the top?
+
+Note: Given n will be a positive integer.
+
+解题思路：  
+* 本题要求找出有多少种爬到梯子最高点的方法，这里是求所有可能性的个数，所以是使用DP而不是DFS。
+* 首先分析边界点，那么就是梯子为0阶时，返回0；梯子为1阶时返回1；梯子为2阶时返回2；因此dp[1]=1, dp[2]=2;
+* 再来是状态转移公式：dp[i] = dp[i - 1] + dp[i - 2];  (3<= i <= n)
+
+```cpp
+class Solution {
+public:
+    int climbStairs(int n) {
+        if (n == 0) return 0;
+        if (n == 1) return 1;
+        int dp[n+1];
+        dp[1] = 1;
+        dp[2] = 2;
+
+        for (int i = 3; i <= n; ++i) {
+            dp[i] = dp[i - 1] + dp[i - 2];
+        }
+        return dp[n];
+    }
+};
+```
 
 #### 120. Triangle
 Given a triangle, find the minimum path sum from top to bottom. Each step you may move to adjacent numbers on the row below.
@@ -107,9 +260,46 @@ public:
 
 ## 序列型DP
 
+#### 300. Longest Increasing Subsequence
+Given an unsorted array of integers, find the length of longest increasing subsequence.
+
+For example,
+Given [10, 9, 2, 5, 3, 7, 101, 18],
+The longest increasing subsequence is [2, 3, 7, 101], therefore the length is 4. Note that there may be more than one LIS combination, it is only necessary for you to return the length.
+
+Your algorithm should run in O(n2) complexity.
+
+Follow up: Could you improve it to O(n log n) time complexity?
+
+解题思路：
+* 无后效性与状态转移公式：因为DP问题会有无后效性，所以在坐标/序列型DP题里的状态转移公式大都只和前一个
+节点有关。LIS问题中也是：dp[i]只和dp[j]有关联，然后通过遍历nums[0:i-1]与dp[i]的关系，找到最大的dp[j]+1的值（最开始所有dp[i]都等于1）。
+* 找到当前dp[i]的最大值后，将其保存到res中，这样免去了再次遍历整个dp[i]寻找最大值的麻烦（在for循环中同时解dp问题和记录最大dp[i]的值）。
 
 
----
+```cpp
+class Solution {
+public:
+    int lengthOfLIS(vector<int>& nums)
+    {
+        vector<int> dp(nums.size(), 1);
+        int res = 0;
+        for (int i = 0; i < nums.size(); ++i)
+        {
+            for (int j = 0; j < i; ++j)
+            {
+                if (nums[i] > nums[j])
+                {
+                    dp[i] = max(dp[i], dp[j] + 1);
+                }
+            }
+            res = max(res, dp[i]);
+        }
+        return res;
+    }
+};
+```
+
 
 #### 139. Word Break
 
@@ -124,9 +314,14 @@ Return true because "leetcode" can be segmented as "leet code".
 [ref](http://www.cnblogs.com/grandyang/p/4257740.html)
 
 题目分析：
-这道题仍然是动态规划的题目，我们总结一下动态规划题目的基本思路。首先我们要决定要存储什么历史信息以及用什么数据结构来存储信息。然后是最重要的递推式，就是如从存储的历史信息中得到当前步的结果。最后我们需要考虑的就是起始条件的值。
-接下来我们套用上面的思路来解这道题。首先我们要存储的历史信息res[i]是表示到字符串s的第i个元素为止能不能用字典中的词来表示，我们需要一个长度为n的布尔数组来存储信息。然后假设我们现在拥有res[0,...,i-1]的结果，我们来获得res[i]的表达式。思路是对于每个以i为结尾的子串，看看他是不是在字典里面以及他之前的元素对应的res[j]是不是true，如果都成立，那么res[i]为true，写成式子是
-![image](http://img.blog.csdn.net/20140328035736484?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGluaHVhbm1hcnM=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast)
+* 这道题仍然是动态规划的题目，我们总结一下动态规划题目的基本思路。
+  * 将抽象问题具体化：首先我们要决定要存储什么历史信息以及用什么数据结构来存储信息。
+  * 剥离子问题取得状态转移方程：然后是最重要的递推式，就是如从存储的历史信息中得到当前步的结果。
+  * 设置合理的起始边界值：最后我们需要考虑的就是起始条件的值。
+* 接下来我们套用上面的思路来解这道题。
+  * 首先我们要存储的历史信息res[i]是表示到字符串s的第i个元素为止能不能用字典中的词来表示，我们需要一个长度为n的布尔数组来存储信息。
+  * 根据无后效性原理：res[i]只和**res[j]**以及**前一位元素E[j]**和**自身res[j+1:i]**三个变量有关系**。
+  * 然后假设我们现在拥有res[0,...,i-1]的结果，我们来获得res[i]的表达式。思路是对于每个以i为结尾的子串，看看他是不是在字典里面以及他之前的元素对应的res[j]是不是true，如果都成立，那么res[i]为true，写成式子是
 
 ```cpp
 class Solution {
@@ -137,6 +332,7 @@ public:
         res[0] = true;
         for (int i = 0; i < len + 1; ++i) {
             for (int j = 0; j < i; ++j) {
+                //substr(j,i-j);是从j+1开始往后取i-j个数，也就是取[j+1:i]
                 if (res[j] && dict.find(s.substr(j, i-j)) != dict.end()) {
                     res[i] = true;
                     break;
@@ -148,142 +344,6 @@ public:
 };
 ```
 
-## DFS和剪枝
-#### word breakII !!!3/8
-Given a string s and a dictionary of words dict, add spaces in s to construct a sentence where each word is a valid dictionary word.
-
-Return all such possible sentences.
-
-For example, given
-s = "catsanddog",
-dict = ["cat", "cats", "and", "sand", "dog"].
-
-A solution is ["cats and dog", "cat sand dog"].
-
-[ref](https://www.cnblogs.com/yuzhangcmu/p/4037299.html)
-[ref2](https://www.cnblogs.com/yuzhangcmu/p/4037299.html)
-
-题目分析：  
-* 本题考察DFS + 剪枝优化  
-
-* DP与DFS的区别：DP是Bottom-up 而DFS是TOP-DOWN.
-
-* 剪枝方法：定义一个一位数组possible，其中possible[i] = true表示在[i, n]区间上有解，n为s的长度，如果某个区间之前被判定了无解，下次循环时就会跳过这个区间，从而大大减少了运行时间。
-
-DFS+剪枝：
-```cpp
-class Solution {
-public:
-    vector<string> wordBreak(string s, unordered_set<string>& wordDict) {
-        vector<string> res;
-        string out;
-        vector<bool> possible(s.size() + 1, true); //剪枝部分
-        wordBreakDFS(s, wordDict, 0, possible, out, res);
-        return res;
-    }
-    void wordBreakDFS(string &s, unordered_set<string> &wordDict, int start, vector<bool> &possible, string &out, vector<string> &res) {
-        if (start == s.size()) {
-            res.push_back(out.substr(0, out.size() - 1));
-            return;
-        }
-        for (int i = start; i < s.size(); ++i) {
-            string word = s.substr(start, i - start + 1);
-            if (wordDict.find(word) != wordDict.end() && possible[i + 1]) {  //剪枝部分
-                out.append(word).append(" ");
-                int oldSize = res.size();   //剪枝部分
-                wordBreakDFS(s, wordDict, i + 1, possible, out, res);
-                if (res.size() == oldSize) possible[i + 1] = false;  //剪枝部分
-                out.resize(out.size() - word.size() - 1);
-            }
-        }
-    }
-};
-```
-
-#### Palindrome Partitioning !!!3/8
-Given a string s, partition s such that every substring of the partition is a palindrome.
-
-Return all possible palindrome partitioning of s.
-
-For example, given s = "aab",
-Return
-
-  [
-    ["aa","b"],
-    ["a","a","b"]
-  ]
-
-解题思路：
-
-* 这又是一道需要用DFS来解的题目，既然题目要求找到所有可能拆分成回文数的情况，那么肯定是所有的情况都要遍历到。对于每一个子字符串都要分别判断一次是不是回文数，那么肯定有一个判断回文数的子函数，还需要一个DFS函数用来递归，再加上原本的这个函数，总共需要三个函数来求解。
-
-* 那么，对原字符串的所有子字符串的访问顺序是什么呢，如果原字符串是 abcd, 那么访问顺序为: a -> b -> c -> d -> cd -> bc -> bcd-> ab -> abc -> abcd, 这是对于没有两个或两个以上子回文串的情况。那么假如原字符串是 aabc，那么访问顺序为：a -> a -> b -> c -> bc -> ab -> abc -> aa -> b -> c -> bc -> aab -> aabc，中间当检测到aa时候，发现是回文串，那么对于剩下的bc当做一个新串来检测，于是有 b -> c -> bc，这样扫描了所有情况，即可得出最终答案。  
-
-代码如下：
-```cpp
-class Solution {
-public:
-    vector<vector<string>> partition(string s) {
-        vector<vector<string>> res;
-        vector<string> out;
-        partitionDFS(s, 0, out, res);
-        return res;
-    }
-    void partitionDFS(string s, int start, vector<string> &out, vector<vector<string>> &res) {
-        if (start == s.size()) {
-            res.push_back(out);
-            return;
-        }
-        for (int i = start; i < s.size(); ++i) {
-            if (isPalindrome(s, start, i)) {
-                out.push_back(s.substr(start, i - start + 1));
-                partitionDFS(s, i + 1, out, res);
-                out.pop_back();
-            }
-        }
-    }
-    bool isPalindrome(string s, int start, int end) {
-        while (start < end) {
-            if (s[start] != s[end]) return false;
-            ++start;
-            --end;
-        }
-        return true;
-    }
-};
-```
-
-#### 279. Perfect Squares
-Given a positive integer n, find the least number of perfect square numbers (for example, 1, 4, 9, 16, ...) which sum to n.  
-
-For example, given n = 12, return 3 because 12 = 4 + 4 + 4; given n = 13, return 2 because 13 = 4 + 9.  
-
-**解题思路**：  
-##### 使用四平方和定理：  
-* 这道题是考察四平方和定理。题中说是给我们一个正整数，求它最少能由几个完全平方数组成。
-* 根据四平方和定理，**任意一个正整数均可表示为4个整数的平方和，其实是可以表示为4个以内的平方数之和，那么就是说返回结果只有1,2,3或4其中的一个。** 首先我们将数字化简一下，由于一个数如果含有因子4，那么我们可以把4都去掉，并不影响结果，比如2和8,3和12等等，返回的结果都相同
-* 下面我们就来尝试的将其拆为两个平方数之和，如果拆成功了那么就会返回1或2，因为其中一个平方数可能为0. (注：由于输入的n是正整数，所以不存在两个平方数均为0的情况)。
-* 注意下面的!!a + !!b这个表达式，**用两个感叹号!!的作用就是看a和b是否为正整数，都为正整数的话返回2，只有一个是正整数的话返回1**。  
-参见代码如下：
-
-```cpp
-class Solution {
-public:
-    int numSquares(int n) {
-        while (n % 4 == 0) n /= 4;
-        if (n % 8 == 7) return 4;
-        for (int a = 0; a * a <= n; ++a) {
-            int b = sqrt(n - a * a);
-            if (a * a + b * b == n) {
-                return !!a + !!b;
-            }
-        }
-        return 3;
-    }
-};
-```
-
-#####
 
 ---
 

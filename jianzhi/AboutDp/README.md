@@ -6,7 +6,11 @@ DP的六种主流问题：
 3. 双序列型30%  
 4. 划分型10%
 5. 背包型10%  
-6. 区间型5%
+6. 区间型5%  
+
+Palindromic Substrings  
+Arithmetic Slices  
+
 
 ---
 
@@ -275,6 +279,49 @@ public:
 ## 字符串的匹配DP
 **只要是遇到字符串的子序列或是匹配问题直接就上动态规划Dynamic Programming，其他的都不要考虑，什么递归呀的都是浮云，千辛万苦的写了递归结果拿到OJ上妥妥Time Limit Exceeded，能把人气昏了，所以还是直接就考虑DP解法省事些。一般来说字符串匹配问题都是更新一个二维dp数组，核心就在于通过更新二维数组的规律找出状态转移公式。**
 
+#### 72. Edit Distance
+
+
+解题思路：  
+* 首先维护一个二维的数组dp，其中dp[i][j]表示从word1的前i个字符转换到word2的前j个字符所需要的步骤。那我们可以先给这个二维数组dp的第一行第一列赋值，这个很简单，因为第一行和第一列对应的总有一个字符串是空串，于是转换步骤完全是另一个字符串的长度。
+* 最短编辑距离可以看作路径DP的变化形式。主要是理解将编辑距离问题转化成二维DP问题后与原问题的对应关系。
+  * 当word1[i] == word2[j]时，dp[i][j] = dp[i - 1][j - 1]。
+  * 其他情况时，dp[i][j]是其左，左上，上的三个值中的最小值加1。
+
+```cpp
+class Solution {
+public:
+    int minDistance(string word1, string word2) {
+        int n1 = word1.size(), n2 = word2.size();
+        int dp[n1 + 1][n2 + 1];
+        //初始化边界条件
+        for (int i = 0; i <= n1; ++i)
+        {
+            dp[i][0] = i;
+        }
+        for (int i = 0; i <= n2; ++i)
+        {
+            dp[0][i] = i;
+        }
+        //根据状态转移方程进行dp
+        for (int i = 1; i <= n1; ++i)
+        {
+            for (int j = 1; j <= n2; ++j)
+            {
+                if (word1[i - 1] == word2[j - 1])
+                {
+                    dp[i][j] = dp[i - 1][j - 1];
+                }
+                else
+                {
+                    dp[i][j] = min(dp[i - 1][j - 1], min(dp[i - 1][j], dp[i][j - 1])) + 1;
+                }
+            }
+        }
+        return dp[n1][n2];
+    }
+};
+```
 
 #### 97. Interleaving String
 
@@ -324,50 +371,6 @@ public:
             {
                 dp[i][j] = (dp[i - 1][j] && s1[i - 1] == s3[i - 1 + j]) ||
                     (dp[i][j - 1] && s2[j - 1] == s3[j - 1 + i]);
-            }
-        }
-        return dp[n1][n2];
-    }
-};
-```
-
-#### 72. Edit Distance
-
-
-解题思路：  
-* 首先维护一个二维的数组dp，其中dp[i][j]表示从word1的前i个字符转换到word2的前j个字符所需要的步骤。那我们可以先给这个二维数组dp的第一行第一列赋值，这个很简单，因为第一行和第一列对应的总有一个字符串是空串，于是转换步骤完全是另一个字符串的长度。
-* 最短编辑距离可以看作路径DP的变化形式。主要是理解将编辑距离问题转化成二维DP问题后与原问题的对应关系。
-  * 当word1[i] == word2[j]时，dp[i][j] = dp[i - 1][j - 1]。
-  * 其他情况时，dp[i][j]是其左，左上，上的三个值中的最小值加1。
-
-```cpp
-class Solution {
-public:
-    int minDistance(string word1, string word2) {
-        int n1 = word1.size(), n2 = word2.size();
-        int dp[n1 + 1][n2 + 1];
-        //初始化边界条件
-        for (int i = 0; i <= n1; ++i)
-        {
-            dp[i][0] = i;
-        }
-        for (int i = 0; i <= n2; ++i)
-        {
-            dp[0][i] = i;
-        }
-        //根据状态转移方程进行dp
-        for (int i = 1; i <= n1; ++i)
-        {
-            for (int j = 1; j <= n2; ++j)
-            {
-                if (word1[i - 1] == word2[j - 1])
-                {
-                    dp[i][j] = dp[i - 1][j - 1];
-                }
-                else
-                {
-                    dp[i][j] = min(dp[i - 1][j - 1], min(dp[i - 1][j], dp[i][j - 1])) + 1;
-                }
             }
         }
         return dp[n1][n2];

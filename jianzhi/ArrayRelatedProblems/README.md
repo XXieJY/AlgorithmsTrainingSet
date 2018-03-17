@@ -11,45 +11,31 @@
   * ---->我们假设当前在判断数组中E[i][j]与target的大小。
   * 二维数组从左到右递增， 从上到下递增。 此时查找一个数值，应该中右上角或者左下角开始使用分治法查找；
 ```cpp
-#include "stdafx.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <iostream>
-#include <vector>
-#include <deque>
-#include <algorithm>
-#include <string>
-#include <numeric>
-
-using namespace std;
-
 class Solution {
 public:
-        bool result = false;
-        int R, C, SR;
-        bool Find(int T, vector<vector<int> > E) {
-                if (E.empty()) return false;
-                else {
-                        R = 0;
-                        SR = E.size();
-                        C = E[0].size() - 1;
-                        for (; (R < SR) && (C >= 0);) {
-                                if (T == E[R][C]) {
-                                        result = true;
-                                        break;
-                                }
-                                else if (T < E[R][C]) {
-                                        //T maybe in left
-                                        --C;
-                                }
-                                else {
-                                        //T maybe in below
-                                        ++R;
-                                }
-                        }
-                        return result;
-                }
+    bool Find(int T, vector<vector<int> > E) {
+        if(E.size() == 0 || E[0].size() == 0)
+        {
+            return false;
         }
+        int x = 0, y = E[0].size()-1, rows = E.size();
+        while(x < rows && y >= 0)
+        {
+            if(T == E[x][y])
+            {
+                return true;
+            }
+            else if(T < E[x][y])
+            {
+                --y;
+            }
+            else 
+            {
+                ++x;
+            }
+        }
+        return false;
+    }
 };
 ```
 

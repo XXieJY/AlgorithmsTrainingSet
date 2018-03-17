@@ -185,36 +185,29 @@ public:
   * 相反如果A[pivot]小于A[high]则说明A[pivot]属于后面的子序列则最大值在A[pivot]之前。
 
 ```cpp
-#include <iostream>
-#include <vector>
-using namespace std;
-
 class Solution {
 public:
-    int LT, MD, RT, S;
-        int  minNumberInRotateArray(vector<int> E) {
-        		S = E.size();
-                if (S == 0) return -1;
-
-                LT = 0;
-                MD = 0;
-                RT = S - 1;
-
-                if (E[LT] < E[RT]) return -1;
-
-                while (true) {
-                        if ((RT - LT) == 1) {
-                                MD = RT;
-                                break;
-                        }
-
-                        MD = (RT - LT) / 2 + LT;
-                        if (E[MD] >= E[LT]) LT = MD;
-                        else RT = MD;
-                }
-                return E[MD];
-
-       }
+    int minNumberInRotateArray(vector<int> E) {
+        int S;
+        if((S = E.size()) == 0)
+        {
+            return 0;
+        }
+        int L = 0, R = S - 1, pivot;
+        while (R - L > 1)
+        {
+            pivot = L + (R - L)/2;
+            if (E[pivot] >= E[L])
+            {
+                L = pivot;
+            }
+            else 
+            {
+                R = pivot;
+            }
+        }
+        return E[R];
+    }
 };
 ```
 #### 014 调整数组顺序使得奇数位于偶数前面并保持奇数之间和偶数之间的相对位置

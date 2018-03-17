@@ -534,79 +534,52 @@ public:
 * 然后再计算merge后的逆序对。
 
 ```cpp
-class Solution
-{
+class Solution {
 public:
-    int Solution(vector<int> E)
-    {
-        int S;
-        S = E.size();
-        if(S == 0)
-        {
-            return 0;
-        }
-
-        vector<int> TP(S);
-        int RES;
-        RES = mergeSort(E, 0, S - 1, TP);
-        return RES;
-    }
-
-    int mergeSort(vector<int> &E, int L, int R, vector<int> &TP)
-    {
-        int RES = 0;
-        if(L < R)
-        {
-            int M = (L + R) / 2;
-            RES += mergeSort(E, L, M, TP); //找左半段的逆序对数目
-            RES += mergeSort(E, M + 1, R, TP); //找右半段的逆序对数目
-            RES += merge(E, L, M, R, TP);
-        }
-        return RES;
-    }
-
-    int merge(vector<int> &E, int L, int M, int R, vector<int> &TP)//数组的归并操作
-    {
-        // int leftLen = M - L + 1; //E[L...M]左半段长度
-        // int rightLlen = R - M;   //E[M+1...R]右半段长度
-
-        int i, j, k, count;
-        i = 0;
-        k = M + 1;
-        k = 0;
-        count = 0;        
-        while(i < M + 1 && j < R + 1)
-        {
-            if(E[i] > E[j])
-            {
-                TP[k++] = E[i++];
-                count += j - M;
-            }
-            else
-            {
-                TP[k++] = E[j++];
-            }
-        }
-        while(i >= L)//表示前半段数组中还有元素未放入临时数组
-        {
-            TP[k++] = E[i--];
-        }
-
-        while(j>M)
-        {
-            TP[k++] = E[j--];
-        }
-
-        //将临时数组中的元素写回到原数组当中去。
-        for(i = 0; i < k; i++)
-        {
-            E[R-i] = TP[i];
-        }
-
-        copy(E.begin(), E.R(), ostream_iterator<int>(cout," "));
-        return count;
-
-    }
+    int InversePairs(vector<int> E) {
+       int S = E.size();
+       if(S <= 0)
+       {
+           return 0;
+       }
+       vector<int> copy(E.begin(),E.end());
+       return InversePairsCore(E, copy, 0, S-1) % 1000000007;
+    }
+    long long InversePairsCore(vector<int> &E, vector<int> &copy, int L, int R)
+    {
+       if(L == R)
+          {
+            copy[L] = E[L];
+            return 0;
+          }
+       int M = L + (R - L) / 2;
+       long long res1 = InversePairsCore(E, copy, L, M);
+       long long res2 = InversePairsCore(E, copy, M + 1, R); 
+       
+       int i = M;
+       int j = R;
+       int indexcopy = R;
+       long long count = 0;
+       while(i >= L && j > M)
+          {
+             if(E[i] > E[j])
+                {
+                  copy[indexcopy--] = E[i--];
+                  count += j - M;
+                }
+             else
+                {
+                  copy[indexcopy--] = E[j--];
+                }          
+          }
+       for(; i >= L; --i)
+           copy[indexcopy--] = E[i];
+       for(; j > M; --j)
+           copy[indexcopy--] = E[j];
+       for (int i = L; i <= R; ++i)
+           E[i] = copy[i];
+       return res1 + res2 + count;
+    }
 };
 ```
 

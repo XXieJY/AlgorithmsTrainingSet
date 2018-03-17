@@ -354,56 +354,41 @@ public:
 
 
 ```cpp
-#include "stdafx.h"
-#include <iostream>
-#include <vector>
-
-using namespace std;
-
 class Solution {
-
 public:
-	int solution(vector<int> E) {
-		int TMP, N, s;
-
-		if ((s = E.size()) == 0) {
-			return 0;
-		}
-		else if (s == 1) {
-			return E[0];
-		}
-
-		int i = 1;
-		TMP = E[0];
-		N = 1;
-		for (; i < s; ++i) {
-			if (TMP == E[i]) {
-				++N;
-			}
-			else {
-				--N;
-				if (N == 0) {
-					TMP = E[i];
-					N = 1;
-				}
-			}
-		}
-
-		N = 0;
-		i = 0;
-		for (; i < s; ++i) {
-			if (E[i] == TMP) {
-				++N;
-			}
-		}
-		if (N * 2 <= s) {
-			return 0;
-		}
-		else {
-			return TMP;
-		}
-
-	}
+    int MoreThanHalfNum_Solution(vector<int> E) {
+        int S;
+        if ((S = E.size()) == 0)
+        {
+            return 0;
+        }
+        else if (S == 1)
+        {
+            return E[0];
+        }
+        else
+        {
+            int count = 1, res = E[0];
+            for(int i = 1; i < S; ++i)
+            {
+                count += E[i] == res ? 1 : -1;
+                if (count == 0)
+                {
+                    res = E[i];
+                    count = 1;
+                }
+            }
+            int recount = 0;
+            for (int i = 0; i < S; ++i)
+            {
+                if (E[i] == res)
+                {
+                    ++recount;
+                }
+            }
+            return 2*recount > S ? res : 0;
+        }
+    }
 };
 ```
 

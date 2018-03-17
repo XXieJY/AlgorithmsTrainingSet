@@ -135,45 +135,33 @@ private:
 
 ```cpp
 class Solution {
-        int n, m;
-        //表示当前位置是否转向的二维数组
-        vector<vector<bool> > B;
-
-        //判定当前位置是否越界，以及当前要输出的点B[i][j]是否访问过了。
-        bool judge(int i, int j) {
-                return 0 <= i && i < n &&
-                        0 <= j && j < m &&
-                        !B[i][j];
-        }
 public:
-        int i=0, j=0, d=0, c=0;
-        //代表四种方向的前进方式,抽象出了顺时针时数组标识的变化方式
-        //{0,1}:  从左往右走
-        //{1,0}:  从上往下走
-        //{0,-1}: 从右往左走
-        //{-1,0}: 从下网上走
-        const int D[4][2] = { {0,1},{1,0},{0,-1},{-1,0} };
-        vector<int> solution(vector<vector<int> > E) {
-                vector<int> RESULT{};
-                //取容器大小和判断容器大小可以按下面这种语法写在一起
-                if ((n = E.size()) == 0 || (m = E[0].size()) == 0)
-                        return RESULT;
-                //使用匿名对象为全局变量进行赋值
-                B = vector<vector<bool> >(n, vector<bool>(m, false));
-                c = m * n;
-                while (c--) {
-                        RESULT.push_back(E[i][j]);
-                        B[i][j] = true;
-                        //当当前方向的下一个位置超出数组边界，或者已访问过
-                        //此时进行转向。
-                        //d==0时表示从左往右走，d==1时表示从上往下走...
-                        if (!judge(i + D[d][0], j + D[d][1]))
-                                (++d) %= 4;
-                        i += D[d][0];
-                        j += D[d][1];
-                }
-                return RESULT;
-        }     
+    vector<int> printMatrix(vector<vector<int> > E) {
+        int m, n;
+        vector<int> res;
+        if ((m = E.size()) == 0 || (n = E[0].size()) == 0)
+        {
+            return res;
+        }
+        int c = m*n, i = 0, j = 0 ,d = 0;
+        vector<vector<bool> > visited = vector<vector<bool> >(m, vector<bool>(n, false));
+        const int D[4][2] = {{0,1},{1,0},{0,-1},{-1,0}};
+        while(c--)
+        {
+            res.push_back(E[i][j]);
+            visited[i][j] = true;
+            int ti = i+D[d][0], tj = j + D[d][1];
+            if(ti < 0 || ti >= m ||
+                tj < 0 || tj >= n ||
+                visited[ti][tj])
+            {
+                d = (d + 1) % 4;
+            }
+            i += D[d][0];
+            j += D[d][1];
+        }
+        return res;
+    }
 };
 
 ```

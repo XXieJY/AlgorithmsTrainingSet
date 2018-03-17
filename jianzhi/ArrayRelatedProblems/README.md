@@ -143,10 +143,9 @@ public:
         {
             return res;
         }
-        int c = m*n, i = 0, j = 0 ,d = 0;
         vector<vector<bool> > visited = vector<vector<bool> >(m, vector<bool>(n, false));
         const int D[4][2] = {{0,1},{1,0},{0,-1},{-1,0}};
-        while(c--)
+        for(int c = m * n, i = 0, j = 0, d = 0; c >= 0; --c)
         {
             res.push_back(E[i][j]);
             visited[i][j] = true;

@@ -1,11 +1,14 @@
 ## 链表
 
 ### 常见考点
-* 逆向查找/打印相关： 使用栈、快慢指针、头插法；
+**（其中双指针分为先后指针和快慢指针两种，先后指针主要解决倒数第k个节点相关问题，快慢指针主要解决环的问题）**
+* 逆向查找/打印相关： 使用栈、先后指针、头插法；
 
 * 链表变形相关：使用指针遍历；经常用到头结点统一遍历操作；（合并两个链表；链表去重；）
 
 * 链表环相关：快慢指针找入口节点；
+
+* 链表和树的转化相关：合理地使用递归在链表和树之间相互转化
 
 
 ### 逆向查找/打印
@@ -259,6 +262,8 @@ public:
     }
 };
 ```
+
+---
 
 ### 链表变形相关
 
@@ -581,7 +586,37 @@ public:
 
 
 
+
+---
+
 ### 链表环相关
+
+
+
+#### 141. Linked List Cycle 判断链表是否有环
+
+解题思路：
+这道题是快慢指针的经典应用。只需要设两个指针，一个每次走一步的慢指针和一个每次走两步的快指针，如果链表里有环的话，两个指针最终肯定会相遇。代码如下：
+
+```cpp
+class Solution {
+public:
+    bool hasCycle(ListNode *head) {
+        ListNode *slow = head, *fast = head;
+        //注意快慢指针循环的判断条件是：
+        //快指针本身非空且快指针的下一个节点也非空
+        while (fast && fast->next) {
+            slow = slow->next;
+            fast = fast->next->next;
+            if (slow == fast) return true;
+        }
+        return false;
+    }
+};
+```
+
+
+
 
 #### 056 链表中环的入口结点
 
@@ -591,118 +626,61 @@ public:
 
 
 解题思路：  
-计算环形链表的路口的典型方法就是快慢指针法：  
- * 第一步，让快慢指针在环中相遇：分别用p1，p2指向链表头部，p1每次走一步，p2每次走二步。
-    * 如果p1走完整个链表没遇到p2说明链表没有环。
-    * 如果p1==p2此时p1和p2一定是在环中相遇。
-
- * 第二步，找环的长度。从环中的相汇点开始, p2不动, p1前移，当再次相遇时，p1刚好绕环一周, 其移动即为环的长度K
-
- * 第三步, 快慢指针求环的入口结点：
-    * 因为环的长度已知，所以使用快慢指针让快指针先走k步后会发现快慢指针最终将会在环的入口结点交汇。
+设快慢指针，不过这次要记录两个指针相遇的位置，当两个指针相遇了后，让其一指针从链表头开始，此时再相遇的位置就是链表中环的起始位置。代码如下
 
 ```cpp
-#define SLOW_STEP   1
-#define FAST_STEP   2
-
-class Solution
-{
+class Solution {
 public:
-
-    /*
-        如果链表中有环, 则返回环中的任意一个节点
-        否则返回NULL
-     */
-    ListNode* HasCycle(ListNode *pHead)
-    {
-        if(pHead == NULL)
-        {
-            return NULL;
+    ListNode *detectCycle(ListNode *head) {
+        ListNode *slow = head, *fast = head;
+        while (fast && fast->next) {
+            slow = slow->next;
+            fast = fast->next->next;
+            if (slow == fast) break;
         }
-
-        ListNode *pSlow = pHead->next;
-        ListNode *pFast = pSlow->next;
-        while(pSlow != NULL && pFast != NULL)
-        {
-            if(pFast == pSlow)
-            {
-                return pSlow;
-            }
-            pSlow = NextNode(pSlow, 1);
-            pFast = NextNode(pFast, 2);
+        if (!fast || !fast->next) return NULL;
+        slow = head;
+        while (slow != fast) {
+            slow = slow->next;
+            fast = fast->next;
         }
-
-        return NULL;
-    }
-
-    //  获取到node节点后stpe的节点
-    ListNode* NextNode(ListNode *node, int step)
-    {
-        for(int i = 0; i < step && node != NULL; i++)
-        {
-            node = node->next;
-        }
-
-        return node;
-    }
-
-    //  获取到链表中环的长度
-    //  node是一个链表环内节点的指针
-    int GetCycleLength(ListNode *node)
-    {
-        int length = 0;
-        if(node == NULL)
-        {
-            return length;
-        }
-
-        //  考虑一下环内, 从任何一个节点出现再回到这个节点的距离就是环的长度
-        ListNode *currNode = node;
-        ListNode *stepNode = node->next;
-        for(length = 1; ; length++)
-        {
-            if(stepNode == currNode)
-            {
-                return length;
-            }
-            stepNode = stepNode->next;
-        }
-        return 0;
-    }
-
-
-    ListNode* EntryNodeOfLoop(ListNode* pHead)
-    {
-        //  先找到链表环中的某一个节点
-        ListNode* meetingNode = HasCycle(pHead);
-        if(meetingNode == NULL)
-        {
-            return NULL;
-        }
-        debug <<"a node in cycle " <<meetingNode->val <<endl;
-        //  获取到链表中环路的长度
-        int cycleLength = GetCycleLength(meetingNode);
-        debug <<"cycle length = " <<cycleLength <<endl;
-
-        //  找到链表的中环的入口
-        ListNode *leftNode = pHead;
-        ListNode *rightNode = pHead;
-
-        //  右指针先往前走n步
-        rightNode = NextNode(rightNode, cycleLength);
-        while(leftNode != rightNode)
-        {
-            leftNode = leftNode->next;
-            rightNode = rightNode->next;
-        }
-
-        return leftNode;
-
+        return fast;
     }
 };
 ```
 
+### 链表和树的转化相关***
 
+这类题型包括：链表转为树，树转为链表；主要就是考察在链式结构中对递归的应用。
+
+#### 109. Convert Sorted List to Binary Search Tree
+* 这道题是要求把有序链表转为二叉搜索树。
+* 数组方便就方便在可以通过index直接访问任意一个元素，而链表不行。**由于二分查找法每次需要找到中点，而链表的查找中间点可以通过快慢指针来操作。**
+* 找到中点后，要以中点的值建立一个数的根节点，然后需要把原链表断开，分为前后两个链表，都不能包含原中节点，然后再分别对这两个链表递归调用原函数，分别连上左右子节点即可。代码如下：
+
+```cpp
+class Solution {
+public:
+    TreeNode *sortedListToBST(ListNode *head) {
+        if (!head) return NULL;
+        if (!head->next) return new TreeNode(head->val);
+        ListNode *slow = head;
+        ListNode *fast = head;
+        ListNode *last = slow;
+        while (fast->next && fast->next->next) {
+            last = slow;
+            slow = slow->next;
+            fast = fast->next->next;
+        }
+        fast = slow->next;
+        last->next = NULL;
+        TreeNode *cur = new TreeNode(slow->val);
+        if (head != slow) cur->left = sortedListToBST(head);
+        cur->right = sortedListToBST(fast);
+        return cur;
+    }
+};
+```
 
 ---
 

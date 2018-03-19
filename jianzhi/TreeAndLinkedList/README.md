@@ -2,14 +2,61 @@
 
 ### 常见考点
 **（其中双指针分为先后指针和快慢指针两种，先后指针主要解决倒数第k个节点相关问题，快慢指针主要解决环的问题）**
+
+* 链表排序算法：主要记住基于链表的归并排序（链表的递归）
+
 * 逆向查找/打印相关： 使用栈、先后指针、头插法；
 
-* 链表变形相关：使用指针遍历；经常用到头结点统一遍历操作；（合并两个链表；链表去重；）
+* 链表变形相关：使用指针遍历；经常用到头结点统一遍历操作；快慢指针找中间节点、头插法、隔空插法；（合并两个链表；链表去重；）
 
 * 链表环相关：快慢指针找入口节点；
 
 * 链表和树的转化相关：合理地使用递归在链表和树之间相互转化
 
+---
+
+### 链表排序相关
+
+#### 148. Sort List
+
+常见排序方法有很多，插入排序，选择排序，堆排序，快速排序，冒泡排序，归并排序，桶排序等等。。它们的时间复杂度不尽相同，而这里题目限定了时间必须为O(nlgn)，符合要求只有快速排序，归并排序，堆排序，而根据单链表的特点，最适于用归并排序。代码如下：
+
+```cpp
+class Solution {
+public:
+    ListNode* sortList(ListNode* head) {
+        if (!head || !head->next) return head;
+        ListNode *slow = head, *fast = head, *pre = head;
+        while (fast && fast->next) {
+            pre = slow;
+            slow = slow->next;
+            fast = fast->next->next;
+        }
+        pre->next = NULL;
+        return merge(sortList(head), sortList(slow));
+    }
+    ListNode* merge(ListNode* l1, ListNode* l2) {
+        ListNode *dummy = new ListNode(-1);
+        ListNode *cur = dummy;
+        while (l1 && l2) {
+            if (l1->val < l2->val) {
+                cur->next = l1;
+                l1 = l1->next;
+            } else {
+                cur->next = l2;
+                l2 = l2->next;
+            }
+            cur = cur->next;
+        }
+        if (l1) cur->next = l1;
+        if (l2) cur->next = l2;
+        return dummy->next;
+    }
+};
+```
+
+
+---
 
 ### 逆向查找/打印
 
@@ -265,9 +312,40 @@ public:
 
 ---
 
-### 链表变形相关
+### 链表变形相关*
 
 **链表变形相关记住要设置头结点（又叫dummy节点），统一整个算法操作**
+
+**使用快慢指针可以快速找到链表中间节点**
+
+#### 203. Remove Linked List Elements(遍历并删除链表中的节点，需要依赖dummy节点和pre指针)
+
+```cpp
+class Solution {
+public:
+    ListNode* removeElements(ListNode* head, int val) {
+        //创建dummy节点
+        ListNode *dummy = new ListNode(-1), *pre = dummy;
+        dummy->next = head;
+        //使用pre指针，每次pre要处理的是pre->next的那个节点
+        //因此pre可以保证不要链表越界遍历，并且可以提前处理终点节点的问题。
+        while (pre->next) {
+            if (pre->next->val == val) {
+                ListNode *t = pre->next;
+                pre->next = t->next;
+                t->next = NULL;
+                delete t;
+            } else {
+                pre = pre->next;
+            }
+        }
+        return dummy->next;
+    }
+};
+```
+
+
+
 
 #### 24. Swap Nodes in Pairs
 解题思路：  
@@ -579,6 +657,48 @@ public:
             cur = pre->next;
             pre->next = NULL;
             return cur;
+        }
+    }
+};
+```
+
+#### 143. Reorder List
+
+这道链表重排序问题可以拆分为以下三个小问题：
+
+1. 使用快慢指针来找到链表的中点，并将链表从中点处断开，形成两个独立的链表。
+
+2. 将第二个链翻转。
+
+3. 将第二个链表的元素间隔地插入第一个链表中
+
+```cpp
+class Solution {
+public:
+    void reorderList(ListNode *head) {
+        if (!head || !head->next || !head->next->next) return;
+        ListNode *fast = head;
+        ListNode *slow = head;
+        while (fast->next && fast->next->next) {
+            slow = slow->next;
+            fast = fast->next->next;
+        }
+        ListNode *mid = slow->next;
+        slow->next = NULL;
+        ListNode *last = mid;
+        ListNode *pre = NULL;
+        while (last) {
+            ListNode *next = last->next;
+            last->next = pre;
+            pre = last;
+            last = next;
+        }
+        while (head && pre) {
+            ListNode *next = head->next;
+            head->next = pre;
+            pre = pre->next;
+            head->next->next = next;
+            head = next;
         }
     }
 };

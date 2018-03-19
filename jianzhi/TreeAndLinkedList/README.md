@@ -804,10 +804,24 @@ public:
 
 ---
 
+## 树（使用好递归、和层序遍历）*
 
-** 063-二叉搜索树的第K个结点
+相关考点：  
 
+1. 二叉树重建：使用递归、前中后序的知识（二叉树和数组重建、二叉树和链表重建）
 
+2. 树的匹配问题：使用递归，和特定匹配要求（相关题目：树的子结构、对称/镜像树、路径和值的匹配、树深度匹配）
+
+3. 二叉搜索树的问题： BST的前中后序、BST与双向链表转化
+
+4. 平衡二叉树问题：AVG的树判定、AVG树的性质；
+
+---
+
+### 二叉树重建相关问题*：
+**使用递归、前中后序的知识（二叉树和数组重建、二叉树和链表重建）**
+
+### 1.二叉树和数组的重建问题：
 
 #### 006 重建二叉树
 题目描述
@@ -937,7 +951,98 @@ public:
 };
 ```
 
+#### 027 二叉搜索树与双向链表
+**题目描述**
 
+输入一棵二叉搜索树，将该二叉搜索树转换成一个排序的双向链表。
+要求不能创建任何新的结点，只能调整树中结点指针的指向。
+
+##### 解题思路：
+将BST转换为有序双向链表是一道比较常考的题目，因为同时考察到了BST的性质，同时又是和链表
+指针操作密切相关的实操题目。  
+首先，变换BST的前提是了解BST的基本性质：
+  * BST的左节点的值 < 根结点的值 < 右子节点的值
+  * BST的中序遍历结果是有序数列
+
+因此解法有两种：
+  * 解法一：  
+  在中序遍历的过程中完成从二叉搜索树到双向链表的转换，访问过程需修改为链接操作。  
+  这里需要注意的是：中序遍历中当前结点的前一个节点
+    * 要么是当前结点的左子树的的最右孩子  
+    * 要么是当前结点其前一个节点的右孩子    
+
+
+  * 中序遍历过程中需要做的就是：  
+    * 当前节点左指针指向前一个被访问节点  
+    * 如果前一个被访问节点不为NULL,则让前一个节点的右指针指向当前被访问节点
+    * 记录当前被访问节点为前一个被访问节点，然后继续访问右子树、继续中序遍历
+
+```cpp
+class Solution {
+public:
+    TreeNode* Convert(TreeNode* pRootOfTree)
+    {
+        if(pRootOfTree == NULL)
+        {
+            return NULL;
+        }
+
+        TreeNode *pLastNode = NULL;
+        ConvertRecursion(pRootOfTree, &pLastNode);
+
+        TreeNode *node = pLastNode;
+        while(pLastNode != NULL
+           && pLastNode->left != NULL)
+        {
+           pLastNode = pLastNode->left;
+        }
+
+        return pLastNode;
+    }
+
+    void ConvertRecursion(TreeNode *root, TreeNode **pLastNode)
+    {
+        //按中序遍历方式遍历BST同时在访问节点时构造双向链表
+        if(root == NULL)
+        {
+            return;
+        }
+        TreeNode *currNode = root;
+
+        //先递归左子树
+        if(currNode->left != NULL)
+        {
+            ConvertRecursion(root->left, pLastNode);
+        }
+
+
+        //再访问当前节点，将BST进行向双向链表的转化
+        currNode->left = *pLastNode;
+        if(*pLastNode != NULL)
+        {
+            (*pLastNode)->right = currNode;
+        }
+
+        //将当前节点记作上一个被访问节点
+        *pLastNode = currNode;
+
+        //继续按中序遍历访问右子树
+        if(currNode->right != NULL)
+        {
+            ConvertRecursion(currNode->right, pLastNode);
+        }
+    }
+};
+```
+
+
+
+
+
+---
+
+### 树的匹配问题*
+**使用递归，和特定匹配要求（相关题目：树的子结构、对称/镜像树、路径和值的匹配、树深度匹配）**
 
 #### 018 树的子结构
 题目描述
@@ -1018,6 +1123,59 @@ public:
     }
 };
 ```
+
+#### 059 对称的二叉树
+**题目描述**：  
+请实现一个函数，用来判断一颗二叉树是不是对称的。
+注意，如果一个二叉树同此二叉树的镜像是同样的，定义其为对称的
+
+
+#####题目分析：  
+判断二叉树是否对称和二叉树镜像是一类题目。
+  * 制造二叉树镜像时就是层序遍历然后交换左右子树；
+  * 所以判断二叉树镜像时可以层序遍历然后判断当前结点的左右子结点是否相等。
+
+```cpp
+class Solution
+{
+public:
+    bool isSymmetrical(TreeNode* pRoot)
+    {
+        if(pRoot == NULL)
+        {
+            return true;   
+        }
+        return isSymmetricalRecursion(pRoot->left, pRoot->right);
+    }
+
+    bool isSymmetricalRecursion(TreeNode *pLeft, TreeNode *pRight)
+    {
+        //层序遍历：先判断左右子节点是否相等。
+        if(pLeft->val != pRight->val)
+        {
+            return false;
+        }
+
+        //然后继续左右子树的判断
+        //首先判断左右子节点是否同时为空
+        if(pLeft == NULL && pRight == NULL)
+        {
+            return true;
+        }
+        if((pLeft == NULL && pRight != NULL) ||
+              (pLeft != NULL && pRight == NULL))
+        {
+            return false;
+        }
+
+        //  左子树的左与右子树的右对称
+        //  左子树的右与右子树的左对称
+        return isSymmetricalRecursion(pLeft->left, pRight->right)
+            && isSymmetricalRecursion(pLeft->right, pRight->left);
+    }
+};
+```
+
 
 #### 019 二叉树的镜像
 题目描述
@@ -1177,6 +1335,184 @@ public:
 };
 ```
 
+#### 025 二叉树中和为某一值的路径
+
+题目描述
+输入一颗二叉树和一个整数，打印出二叉树中结点值的和为输入整数的所有路径。路径定义为从树的根结点开始往下一直到叶结点所经过的结点形成一条路径
+
+#####解题思路：
+思路还是比较好想的，用个递归来实现，先序遍历，
+
+* 每次访问一个节点，那么就将当前权值求和
+* 如果当前权值和与期待的和一致，那么说明我们找到了一个路径，保存或者输出
+* 否则的话就递归其左右孩子节点 这里需要注意一个问题，就是递归退出的时候。  
+**权值和的信息是保存在递归栈中的会恢复，但是我们保存的路径是无法恢复的，那么我们就需要在递归返回时将数据弹出**
+
+**针对递归问题，传参数优于使用static共享变量，因为共享变量会导致多线程问题以及资源竞争**
+```cpp
+class Solution
+{
+public:
+    vector< vector<int> > m_res;
+
+    vector< vector<int> > FindPath(TreeNode* root, int expectNumber)
+    {
+        if(root == NULL)
+        {
+            return m_res;
+        }
+        vector<int> path;
+        FindPath(root, expectNumber, path, 0);
+
+        return m_res;
+    }
+
+    void FindPath(TreeNode* root, int expectNumber, vector<int> path, int currentSum)
+    {
+        currentSum += root->val;
+        path.push_back(root->val);
+
+        ///
+        if(currentSum == expectNumber
+        && ((root->left == NULL && root->right == NULL)))
+        {
+            debug <<"find a path" <<endl;
+            for(int i = 0; i < path.size( ); i++)
+            {
+                debug <<path[i] <<" ";
+            }
+            debug <<endl;
+
+            m_res.push_back(path);
+        }
+
+        if(root->left != NULL)
+        {
+            FindPath(root->left, expectNumber, path, currentSum);
+        }
+        if(root->right != NULL)
+        {
+            FindPath(root->right, expectNumber, path, currentSum);
+        }
+
+        //  此处不需要恢复currentSum和path的值:                                  
+        //  因为currentSum作为参数在函数递归调用返回时会自动恢复                 
+        //  而如果作为静态局部变量存储则需要进行恢复                             
+        //currentSum -= root->val;                                               
+       //path.pop_back( );      
+    }
+
+};
+```
+
+#### 039 二叉树的深度
+
+**题目描述**  
+输入一棵二叉树，求该树的深度。从根结点到叶结点依次经过的结点（含根、叶结点）形成树的一条路径，最长路径的长度为树的深度。
+
+解题思路：  
+本题是一道比较简单地题目，主要考察树的深度遍历方法。然后值得注意的就是，递归两种主要的解题&参数传递的思路，一种是自顶向下的，另一种是自底向上的。  
+相关链接： [树的遍历](http://blog.csdn.net/gatieme/article/details/51163010)
+
+* 自顶向下传递参数的递归思路：
+```cpp
+int TreeDepthRecursion(TreeNode *root, int depth)
+    {
+        if(root == NULL)
+        {
+            return depth;
+        }
+        else
+        {
+            int leftDepth = TreeDepthRecursion(root->left, depth + 1);
+            int rightDepth = TreeDepthRecursion(root->right, depth + 1);
+
+            return max(leftDepth, rightDepth);
+        }
+    }
+```
+
+* 自底向上返回参数的递归思路：
+
+```cpp
+int TreeDepthRecursion(TreeNode *root)
+    {
+        if(root == NULL)
+        {
+            return 0;
+        }
+        else
+        {
+            int leftDepth = TreeDepthRecursion(root->left);
+            int rightDepth = TreeDepthRecursion(root->right);
+
+            return max(leftDepth, rightDepth) + 1;
+        }
+    }
+```
+
+#### 058 二叉树的下一个结点
+**题目描述**  
+给定一个二叉树和其中的一个结点，请找出中序遍历顺序的下一个结点并且返回。注意，树中的结点不仅包含左右子结点，同时包含指向父结点的指针。
+
+**解题思路**：  
+中序遍历时，当前结点与下一个被遍历到的结点间的关系是：
+  * 如果当前结点有右子树, 那么其中序遍历的下一个结点就是其右子树的最左结点；
+
+  * 如果当前结点没有右子树, 而它是其父结点的左子结点那么其中序遍历的下一个结点就是他的父亲结点；
+
+  * 如果当前结点没有右子树，而它还是其父结点的右子结点，这种情况下其下一个结点应该是当前结点所在的左子树的根, 因此我们可以顺着其父节点一直向上遍历, 直到找到一个是它父结点的左子结点的结点。
+
+  ```cpp
+  class Solution {
+  public:
+      TreeLinkNode* GetNext(TreeLinkNode* pNode)
+      {
+          if(pNode == NULL)
+          {
+              return NULL;
+          }
+
+          TreeLinkNode *pNext = NULL;
+
+          //  如果当前结点有右子树, 那么其中序遍历的下一个结点就是其右子树的最左结点
+          if(pNode->right != NULL)
+          {
+              //  找到右子树的最左孩子
+              pNext = pNode->right;
+              while(pNext->left != NULL)
+              {
+                  pNext = pNext->left;
+              }
+          }
+          else if(pNode->right == NULL && pNode->next != NULL)
+          {
+              TreeLinkNode *pCurrent = pNode;
+              TreeLinkNode *pParent = pNode->next;
+              //  如果当前结点是其父结点的左子结点那么其中序遍历的
+              //  下一个结点就是他的父亲结点
+
+              //  如果当前结点是其父结点的右子结点，
+              //  这种情况下其下一个结点应该是当前结点所在的左子树的根
+              //  因此我们可以顺着其父节点一直向上遍历,
+              //  直到找到一个是它父结点的左子结点的结点
+              while(pParent != NULL && pCurrent == pParent->right)
+              {
+                  pCurrent = pParent;
+                  pParent = pParent->next;
+              }
+              pNext = pParent;
+          }
+
+          return pNext;
+      }
+  };
+  ```
+
+---
+
+### 二叉搜索树问题
+
 #### 024 二叉搜索树的后序遍历序列
 题目描述
 
@@ -1263,209 +1599,12 @@ public:
 };
 ```
 
-#### 025 二叉树中和为某一值的路径
-
-题目描述
-输入一颗二叉树和一个整数，打印出二叉树中结点值的和为输入整数的所有路径。路径定义为从树的根结点开始往下一直到叶结点所经过的结点形成一条路径
-
-#####解题思路：
-思路还是比较好想的，用个递归来实现，先序遍历，
-
-* 每次访问一个节点，那么就将当前权值求和
-* 如果当前权值和与期待的和一致，那么说明我们找到了一个路径，保存或者输出
-* 否则的话就递归其左右孩子节点 这里需要注意一个问题，就是递归退出的时候。  
-**权值和的信息是保存在递归栈中的会恢复，但是我们保存的路径是无法恢复的，那么我们就需要在递归返回时将数据弹出**
-
-**针对递归问题，传参数优于使用static共享变量，因为共享变量会导致多线程问题以及资源竞争**
-```cpp
-class Solution
-{
-public:
-    vector< vector<int> > m_res;
-
-    vector< vector<int> > FindPath(TreeNode* root, int expectNumber)
-    {
-        if(root == NULL)
-        {
-            return m_res;
-        }
-        vector<int> path;
-        FindPath(root, expectNumber, path, 0);
-
-        return m_res;
-    }
-
-    void FindPath(TreeNode* root, int expectNumber, vector<int> path, int currentSum)
-    {
-        currentSum += root->val;
-        path.push_back(root->val);
-
-        ///
-        if(currentSum == expectNumber
-        && ((root->left == NULL && root->right == NULL)))
-        {
-            debug <<"find a path" <<endl;
-            for(int i = 0; i < path.size( ); i++)
-            {
-                debug <<path[i] <<" ";
-            }
-            debug <<endl;
-
-            m_res.push_back(path);
-        }
-
-        if(root->left != NULL)
-        {
-            FindPath(root->left, expectNumber, path, currentSum);
-        }
-        if(root->right != NULL)
-        {
-            FindPath(root->right, expectNumber, path, currentSum);
-        }
-
-        //  此处不需要恢复currentSum和path的值:                                  
-        //  因为currentSum作为参数在函数递归调用返回时会自动恢复                 
-        //  而如果作为静态局部变量存储则需要进行恢复                             
-        //currentSum -= root->val;                                               
-       //path.pop_back( );      
-    }
-
-};
-```
-
-#### 026 复杂链表的复制
 
 
-#### 027 二叉搜索树与双向链表
-**题目描述**
+---
 
-输入一棵二叉搜索树，将该二叉搜索树转换成一个排序的双向链表。
-要求不能创建任何新的结点，只能调整树中结点指针的指向。
+### 平衡二叉树问题
 
-##### 解题思路：
-将BST转换为有序双向链表是一道比较常考的题目，因为同时考察到了BST的性质，同时又是和链表
-指针操作密切相关的实操题目。  
-首先，变换BST的前提是了解BST的基本性质：
-  * BST的左节点的值 < 根结点的值 < 右子节点的值
-  * BST的中序遍历结果是有序数列
-
-因此解法有两种：
-  * 解法一：  
-  在中序遍历的过程中完成从二叉搜索树到双向链表的转换，访问过程需修改为链接操作。  
-  这里需要注意的是：中序遍历中当前结点的前一个节点
-    * 要么是当前结点的左子树的的最右孩子  
-    * 要么是当前结点其前一个节点的右孩子    
-
-
-  * 中序遍历过程中需要做的就是：  
-    * 当前节点左指针指向前一个被访问节点  
-    * 如果前一个被访问节点不为NULL,则让前一个节点的右指针指向当前被访问节点
-    * 记录当前被访问节点为前一个被访问节点，然后继续访问右子树、继续中序遍历
-
-```cpp
-class Solution {
-public:
-    TreeNode* Convert(TreeNode* pRootOfTree)
-    {
-        if(pRootOfTree == NULL)
-        {
-            return NULL;
-        }
-
-        TreeNode *pLastNode = NULL;
-        ConvertRecursion(pRootOfTree, &pLastNode);
-
-        TreeNode *node = pLastNode;
-        while(pLastNode != NULL
-           && pLastNode->left != NULL)
-        {
-           pLastNode = pLastNode->left;
-        }
-
-        return pLastNode;
-    }
-
-    void ConvertRecursion(TreeNode *root, TreeNode **pLastNode)
-    {
-        //按中序遍历方式遍历BST同时在访问节点时构造双向链表
-        if(root == NULL)
-        {
-            return;
-        }
-        TreeNode *currNode = root;
-
-        //先递归左子树
-        if(currNode->left != NULL)
-        {
-            ConvertRecursion(root->left, pLastNode);
-        }
-
-
-        //再访问当前节点，将BST进行向双向链表的转化
-        currNode->left = *pLastNode;
-        if(*pLastNode != NULL)
-        {
-            (*pLastNode)->right = currNode;
-        }
-
-        //将当前节点记作上一个被访问节点
-        *pLastNode = currNode;
-
-        //继续按中序遍历访问右子树
-        if(currNode->right != NULL)
-        {
-            ConvertRecursion(currNode->right, pLastNode);
-        }
-    }
-};
-```
-
-
-#### 039 二叉树的深度
-
-**题目描述**  
-输入一棵二叉树，求该树的深度。从根结点到叶结点依次经过的结点（含根、叶结点）形成树的一条路径，最长路径的长度为树的深度。
-
-解题思路：  
-本题是一道比较简单地题目，主要考察树的深度遍历方法。然后值得注意的就是，递归两种主要的解题&参数传递的思路，一种是自顶向下的，另一种是自底向上的。  
-相关链接： [树的遍历](http://blog.csdn.net/gatieme/article/details/51163010)
-
-* 自顶向下传递参数的递归思路：
-```cpp
-int TreeDepthRecursion(TreeNode *root, int depth)
-    {
-        if(root == NULL)
-        {
-            return depth;
-        }
-        else
-        {
-            int leftDepth = TreeDepthRecursion(root->left, depth + 1);
-            int rightDepth = TreeDepthRecursion(root->right, depth + 1);
-
-            return max(leftDepth, rightDepth);
-        }
-    }
-```
-
-* 自底向上返回参数的递归思路：
-
-```cpp
-int TreeDepthRecursion(TreeNode *root)
-    {
-        if(root == NULL)
-        {
-            return 0;
-        }
-        else
-        {
-            int leftDepth = TreeDepthRecursion(root->left);
-            int rightDepth = TreeDepthRecursion(root->right);
-
-            return max(leftDepth, rightDepth) + 1;
-        }
-    }
-```
 #### 039 平衡二叉树
 题目描述
 
@@ -1520,116 +1659,27 @@ public:
 };
 ```
 
-
-#### 058 二叉树的下一个结点
-**题目描述**  
-给定一个二叉树和其中的一个结点，请找出中序遍历顺序的下一个结点并且返回。注意，树中的结点不仅包含左右子结点，同时包含指向父结点的指针。
-
-**解题思路**：  
-中序遍历时，当前结点与下一个被遍历到的结点间的关系是：
-  * 如果当前结点有右子树, 那么其中序遍历的下一个结点就是其右子树的最左结点；
-
-  * 如果当前结点没有右子树, 而它是其父结点的左子结点那么其中序遍历的下一个结点就是他的父亲结点；
-
-  * 如果当前结点没有右子树，而它还是其父结点的右子结点，这种情况下其下一个结点应该是当前结点所在的左子树的根, 因此我们可以顺着其父节点一直向上遍历, 直到找到一个是它父结点的左子结点的结点。
-
-  ```cpp
-  class Solution {
-  public:
-      TreeLinkNode* GetNext(TreeLinkNode* pNode)
-      {
-          if(pNode == NULL)
-          {
-              return NULL;
-          }
-
-          TreeLinkNode *pNext = NULL;
-
-          //  如果当前结点有右子树, 那么其中序遍历的下一个结点就是其右子树的最左结点
-          if(pNode->right != NULL)
-          {
-              //  找到右子树的最左孩子
-              pNext = pNode->right;
-              while(pNext->left != NULL)
-              {
-                  pNext = pNext->left;
-              }
-          }
-          else if(pNode->right == NULL && pNode->next != NULL)
-          {
-              TreeLinkNode *pCurrent = pNode;
-              TreeLinkNode *pParent = pNode->next;
-              //  如果当前结点是其父结点的左子结点那么其中序遍历的
-              //  下一个结点就是他的父亲结点
-
-              //  如果当前结点是其父结点的右子结点，
-              //  这种情况下其下一个结点应该是当前结点所在的左子树的根
-              //  因此我们可以顺着其父节点一直向上遍历,
-              //  直到找到一个是它父结点的左子结点的结点
-              while(pParent != NULL && pCurrent == pParent->right)
-              {
-                  pCurrent = pParent;
-                  pParent = pParent->next;
-              }
-              pNext = pParent;
-          }
-
-          return pNext;
-      }
-  };
-  ```
-
-#### 059 对称的二叉树
-**题目描述**：  
-请实现一个函数，用来判断一颗二叉树是不是对称的。
-注意，如果一个二叉树同此二叉树的镜像是同样的，定义其为对称的
+---
 
 
-#####题目分析：  
-判断二叉树是否对称和二叉树镜像是一类题目。
-  * 制造二叉树镜像时就是层序遍历然后交换左右子树；
-  * 所以判断二叉树镜像时可以层序遍历然后判断当前结点的左右子结点是否相等。
 
-```cpp
-class Solution
-{
-public:
-    bool isSymmetrical(TreeNode* pRoot)
-    {
-        if(pRoot == NULL)
-        {
-            return true;   
-        }
-        return isSymmetricalRecursion(pRoot->left, pRoot->right);
-    }
 
-    bool isSymmetricalRecursion(TreeNode *pLeft, TreeNode *pRight)
-    {
-        //层序遍历：先判断左右子节点是否相等。
-        if(pLeft->val != pRight->val)
-        {
-            return false;
-        }
 
-        //然后继续左右子树的判断
-        //首先判断左右子节点是否同时为空
-        if(pLeft == NULL && pRight == NULL)
-        {
-            return true;
-        }
-        if((pLeft == NULL && pRight != NULL) ||
-              (pLeft != NULL && pRight == NULL))
-        {
-            return false;
-        }
 
-        //  左子树的左与右子树的右对称
-        //  左子树的右与右子树的左对称
-        return isSymmetricalRecursion(pLeft->left, pRight->right)
-            && isSymmetricalRecursion(pLeft->right, pRight->left);
-    }
-};
-```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ---

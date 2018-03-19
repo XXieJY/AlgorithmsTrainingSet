@@ -262,6 +262,83 @@ public:
 
 ### 链表变形相关
 
+**链表变形相关记住要设置头结点（又叫dummy节点），统一整个算法操作**
+
+#### 24. Swap Nodes in Pairs
+解题思路：  
+对于迭代实现，还是需要建立dummy节点，注意在连接节点的时候，最好画个图，以免把自己搞晕了，参见代码如下：
+```cpp
+class Solution {
+public:
+    ListNode* swapPairs(ListNode* head) {
+        //建立dummy节点
+        ListNode *dummy = new ListNode(-1), *pre = dummy;
+        dummy->next = head;
+
+        while (pre->next && pre->next->next) {
+            ListNode *t = pre->next->next;
+            pre->next->next = t->next;
+            t->next = pre->next;
+            pre->next = t;
+            pre = t->next;
+        }
+        return dummy->next;
+    }
+};
+```
+
+#### 25. Reverse Nodes in k-Group
+解题思路**：   
+* 这道题让我们以每k个为一组来翻转链表，实际上是把原链表分成若干小段，然后分别对其进行翻转，那么肯定总共需要两个函数，一个是用来分段的，一个是用来翻转的。
+* 加入dummy node后的链表变为-1->1->2->3->4->5，如果k为3的话，我们的目标是将1,2,3翻转一下，那么我们需要一些指针，[pre, cur->next]将当前分段区间框起来。然后翻转后pre的位置更新到如下新的位置：
+```cpp
+class Solution {
+public:
+    ListNode *reverseKGroup(ListNode *head, int k) {
+        //判断边界条件
+        if (!head || k == 1)
+        {
+            return head;
+        }
+        //创建dummy节点
+        ListNode *dummy = new ListNode(-1);
+        ListNode *pre = dummy, *cur = head;
+        dummy->next = head;
+        //循环分段地reverse链表
+        int i = 0;
+        while (cur)
+        {
+            ++i;
+            //如果[pre,cur->next]构成k的长度的段，对段进行reverse；
+            if (i % k == 0)
+            {
+                pre = reverseOneGroup(pre, cur->next);
+                cur = pre->next;
+            }
+            else
+            {
+                cur = cur->next;
+            }
+        }
+        return dummy->next;
+    }
+
+    ListNode *reverseOneGroup(ListNode *pre, ListNode *next)
+    {
+        ListNode *last = pre->next;
+        ListNode *cur = last->next;
+        while(cur != next)
+        {
+            last->next = cur->next;
+            cur->next = pre->next;
+            pre->next = cur;
+            cur = last->next;
+        }
+        return last;
+    }
+};
+```
+
 #### 017 合并两个排序的链表
 
 题目描述  
@@ -444,6 +521,60 @@ public:
             }
         }
         return first->next;
+    }
+};
+```
+
+#### 61. Rotate List
+解题思路**：
+分析题目可知，就是要找到倒数第k个节点，然后将[k,end]的部分截取出来拼接到链表头部
+因此使用快慢指针可解。
+
+```cpp
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* rotateRight(ListNode* head, int k) {
+        if (!head || !(head->next) || k == 0)
+        {
+            return head;
+        }
+
+        int S = 0;
+        for (ListNode* i = head; i; i = i->next)
+        {
+            ++S;
+        }
+        if (k == S)
+        {
+            return head;
+        }
+        else
+        {
+            int remain = k % S;
+            ListNode* pre = head;
+            ListNode* cur = head;
+            for (; remain > 0; --remain)
+            {
+                cur = cur->next;
+            }
+            while(cur->next)
+            {
+                pre = pre->next;
+                cur = cur->next;
+            }
+            cur->next = head;
+            cur = pre->next;
+            pre->next = NULL;
+            return cur;
+        }
     }
 };
 ```

@@ -1,3 +1,8 @@
+### c++可以使用<sstream>库解决字符串流的问题：  
+C++引入了ostringstream、istringstream、stringstream这三个类，要使用他们创建对象就必须包含<sstream>这个头文件。
+[link](https://www.cnblogs.com/gamesky/archive/2013/01/09/2852356.html)
+---
+
 字符串相关问题：
 #### *012 打印1到最大的N位数
 **(关于字符串排列组合输出的样板题)**

@@ -524,10 +524,32 @@ public:
 };
 ```
 
+---
 
-####  ** 031连续子数组的最大和
+## 区间型DP（涉及区间比较、覆盖之类的问题）
 
+#### 303. Range Sum Query - Immutable
 
+解题思路*：
+* 这道题的难点就在于是否能想到来用建立累计直方图的思想来建立一个区间DP；
+* 其中dp[i]表示[0, i]区间的数字之和，那么[i,j]就可以表示为dp[j]-dp[i-1]，这里要注意一下当i=0时，直接返回dp[j]即可，参见代码如下：
+
+```cpp
+class NumArray {
+public:
+    NumArray(vector<int> &nums) {
+        dp = nums;
+        for (int i = 1; i < nums.size(); ++i) {
+            dp[i] += dp[i - 1];
+        }
+    }
+    int sumRange(int i, int j) {
+        return i == 0? dp[j] : dp[j] - dp[i - 1];
+    }
+private:
+    vector<int> dp;
+};
+```
 
 
 

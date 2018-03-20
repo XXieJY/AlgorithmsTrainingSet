@@ -693,6 +693,69 @@ public:
 };
 ```
 
+#### 463. Island Perimeter(和dfs无关的，求岛屿周长，且图中只有一个岛屿（因为只有一个岛屿所以和连通子、DFS算法什么的都没关系）)
+
+解题思路：  
+* 这道题给了我们一个格子图，若干连在一起的格子形成了一个小岛，规定了图中只有一个相连的岛，且岛中没有湖，让我们求岛的周长。
+* 我们知道一个格子有四条边，但是当两个格子相邻，周围为6，若某个格子四周都有格子，那么这个格子一条边都不算在周长里。那么我们怎么统计出岛的周长呢？第一种方法，我们对于每个格子的四条边分别来处理，首先看左边的边，只有当左边的边处于第一个位置或者当前格子的左面没有岛格子的时候，左边的边计入周长。其他三条边的分析情况都跟左边的边相似，这里就不多叙述了，参见代码如下：
+
+```cpp
+class Solution {
+public:
+    int islandPerimeter(vector<vector<int>>& grid) {
+        if (grid.empty() || grid[0].empty()) return 0;
+        int m = grid.size(), n = grid[0].size(), res = 0;
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (grid[i][j] == 0) continue;
+                if (j == 0 || grid[i][j - 1] == 0) ++res;
+                if (i == 0 || grid[i - 1][j] == 0) ++res;
+                if (j == n - 1 || grid[i][j + 1] == 0) ++res;
+                if (i == m - 1 || grid[i + 1][j] == 0) ++res;
+            }
+        }
+        return res;
+    }
+};
+```
+
+#### 130. Surrounded Regions
+解题思路：  
+* 这道题有点像围棋，将包住的O都变成X，但不同的是边缘的O不算被包围，跟之前那道Number of Islands 岛屿的数量很类似，都可以用DFS来解。
+* 在网上看到大家普遍的做法是扫面矩阵的四条边，如果有O，则用DFS遍历，将所有连着的O都变成另一个字符，比如，这样剩下的O都是被包围的，然后将这些O变成X，在把特殊字符变回O就行了。代码如下：
+
+```cpp
+class Solution {
+public:
+    void solve(vector<vector<char> >& board) {
+        for (int i = 0; i < board.size(); ++i) {
+            for (int j = 0; j < board[i].size(); ++j) {
+                if ((i == 0 || i == board.size() - 1 || j == 0 || j == board[i].size() - 1) && board[i][j] == 'O')
+                    solveDFS(board, i, j);
+            }
+        }
+        for (int i = 0; i < board.size(); ++i) {
+            for (int j = 0; j < board[i].size(); ++j) {
+                if (board[i][j] == 'O') board[i][j] = 'X';
+                if (board[i][j] == '$') board[i][j] = 'O';
+            }
+        }
+    }
+    void solveDFS(vector<vector<char> > &board, int i, int j) {
+        if (board[i][j] == 'O') {
+            board[i][j] = '$';
+            if (i > 0 && board[i - 1][j] == 'O')
+                solveDFS(board, i - 1, j);
+            if (j < board[i].size() - 1 && board[i][j + 1] == 'O')
+                solveDFS(board, i, j + 1);
+            if (i < board.size() - 1 && board[i + 1][j] == 'O')
+                solveDFS(board, i + 1, j);
+            if (j > 1 && board[i][j - 1] == 'O')
+                solveDFS(board, i, j - 1);
+        }
+    }
+};
+```
 
 
 

@@ -13,6 +13,8 @@
 
 * 链表和树的转化相关：合理地使用递归在链表和树之间相互转化
 
+* 其他：BST和卡特兰数、
+
 ---
 
 ### 链表排序相关
@@ -807,19 +809,297 @@ public:
 ## 树（使用好递归、和层序遍历）*
 
 相关考点：  
+1. 二叉树遍历问题：二叉树的前中后序遍历，层序遍历的递归和非递归解法；
 
-1. 二叉树重建：使用递归、前中后序的知识（二叉树和数组重建、二叉树和链表重建）
+2. 二叉树重建：使用递归、前中后序的知识（二叉树和数组重建、二叉树和链表重建）
 
-2. 树的匹配问题：使用递归，和特定匹配要求（相关题目：树的子结构、对称/镜像树、路径和值的匹配、树深度匹配）
+3. 树的匹配问题：使用递归，和特定匹配要求（相关题目：树的子结构、对称/镜像树、路径和值的匹配、树深度匹配）
 
-3. 二叉搜索树的问题： BST的前中后序、BST与双向链表转化
+4. 二叉搜索树的问题： BST的前中后序、BST与双向链表转化
 
-4. 平衡二叉树问题：AVG的树判定、AVG树的性质；
+5. 平衡二叉树问题：AVG的树判定、AVG树的性质；
+
+---
+
+### 二叉树遍历问题：
+
+#### 1.二叉树的前序遍历
+
+#### 144. Binary Tree Preorder Traversal
+* 递归法二叉树前序遍历
+```cpp
+void PreOrder(TreeNode *root)
+{
+    //递归出口
+    if(root == NULL)
+    {
+        return;
+    }
+    //前序遍历在当前节点先做些操作
+    //do something here
+    PreOrder(root->left);
+    PreOrder(root->right);
+    //如果还需要前序遍历的递归中结合一点bottom up的操作应该写在这里
+    //do bottom up operations
+
+}
+
+```
+
+* 非递归法二叉树前序遍历  
+用非递归的方法，这就要用到栈辅助二叉树遍历。由于先序遍历的顺序是"根-左-右", 算法为：
+1. 把根节点push到栈中
+2. 循环检测栈是否为空，若不空，则取出栈顶元素，保存其值，然后看其右子节点是否存在，若存在则push到栈中。再看其左子节点，若存在，则push到栈中。  
+
+代码如下：
+```cpp
+class Solution {
+public:
+    vector<int> preorderTraversal(TreeNode* root) {
+        if (!root)
+        {
+            return{};
+        }
+        vector<int> res;
+        stack<TreeNode*> s {{root}};
+        while (!s.empty())
+        {
+            TreeNode *t = s.top();
+            s.pop();
+            res.push_back(t->val);
+            if (t->right)
+            {
+                s.push(t->right);
+            }
+            if (t->left)
+            {
+                s.push(t->left);
+            }
+        }
+        return res;
+    }
+};
+```
+
+#### 94. Binary Tree Inorder Traversal*
+
+* 中序遍历的递归解法：
+```cpp
+// Recursion
+class Solution {
+public:
+    vector<int> inorderTraversal(TreeNode *root) {
+        vector<int> res;
+        inorder(root, res);
+        return res;
+    }
+    void inorder(TreeNode *root, vector<int> &res) {
+        //递归出口
+        if (!root)
+        {
+          return;
+        }
+        if (root->left)
+        {
+          inorder(root->left, res);
+        }
+        //中序遍历先左，然后再对当前节点做一些操作
+        //do somethin here
+        res.push_back(root->val);
+        //最后再右
+        if (root->right)
+        {
+          inorder(root->right, res);
+        }
+    }
+};
+```
+
+* 中序遍历非递归解法*：  
+需要用栈来做，思路是从根节点开始，先将根节点压入栈，然后再将其所有左子结点压入栈，然后取出栈顶节点。  
+保存节点值，再将当前指针移到其右子节点上，若存在右子节点，则在下次循环时又可将其所有左子结点压入栈中。这样就保证了访问顺序为左-根-右，代码如下：
+
+```cpp
+class Solution {
+public:
+    vector<int> inorderTraversal(TreeNode *root) {
+        vector<int> res;
+        stack<TreeNode*> s;
+        TreeNode *p = root;
+        while (p || !s.empty())
+        {
+            //将当前节点和其所有左子节点入栈
+            while (p)
+            {
+                s.push(p);
+                p = p->left;
+            }
+            //取出栈顶节点并访问
+            p = s.top();
+            s.pop();
+            res.push_back(p->val);
+            //然后转向这个节点的右子节点
+            p = p->right;
+        }
+        return res;
+    }
+};
+```
+
+#### 145. Binary Tree Postorder Traversal
+
+* 后序遍历递归解法*：
+
+```cpp
+class Solution {
+public:
+    vector<int> inorderTraversal(TreeNode *root) {
+        vector<int> res;
+        inorder(root, res);
+        return res;
+    }
+    void inorder(TreeNode *root, vector<int> &res) {
+        //递归出口
+        if (!root)
+        {
+          return;
+        }
+        if (root->left)
+        {
+          inorder(root->left, res);
+        }
+        //再右
+        if (root->right)
+        {
+          inorder(root->right, res);
+        }
+        //最后再对当前节点做一些操作
+        //do somethin here
+        res.push_back(root->val);
+    }
+};
+```
+
+* 后序遍历非递归解法*：
+由于后序遍历的顺序是左-右-根，而先序遍历的顺序是根-左-右，二者其实还是很相近的，我们可以先在先序遍历的方法上做些小改动，使其遍历顺序变为根-右-左，然后翻转一下，就是左-右-根啦，翻转的方法我们使用反向Q，哦不，是反向加入结果res，每次都在结果res的开头加入结点值，而改变先序遍历的顺序就只要该遍历一下入栈顺序，先左后右，这样出栈处理的时候就是先右后左啦，参见代码如下：
+
+
+```cpp
+class Solution {
+public:
+    vector<int> postorderTraversal(TreeNode* root) {
+        if (!root) return {};
+        vector<int> res;
+        stack<TreeNode*> s{{root}};
+        while (!s.empty()) {
+            TreeNode *t = s.top(); s.pop();
+            res.insert(res.begin(), t->val);
+            if (t->left) s.push(t->left);
+            if (t->right) s.push(t->right);
+        }
+        return res;
+    }
+};
+```
+
+#### 102. Binary Tree Level Order Traversal(二叉树的层序遍历)*
+解题思路：  
+* 层序遍历二叉树是典型的广度优先搜索BFS的应用，但是这里稍微复杂一点的是，我们要把各个层的数分开，存到一个二维向量里面。
+* 大体思路还是基本相同的，建立一个queue，然后先把根节点放进去，这时候找根节点的左右两个子节点，这时候去掉根节点，此时queue里的元素就是下一层的所有节点。
+* 用一个for循环遍历它们，然后存到一个一维向量里，遍历完之后再把这个一维向量存到二维向量里，以此类推，可以完成层序遍历。代码如下：
+
+```cpp
+class Solution {
+public:
+    vector<vector<int> > levelOrder(TreeNode *root) {
+        //判断边界条件
+        if (root == NULL)
+        {
+          return res;
+        }
+        //声明辅助变量
+        //res保存层序遍历值，queue辅助层序遍历，层序遍历需要首先把根节点插入队列
+        vector<vector<int> > res;
+        queue<TreeNode*> q;
+        q.push(root);
+        while (!q.empty()) {
+            vector<int> oneLevel;
+            int size = q.size();
+            //每层只在queue中取当前size个的节点
+            for (int i = 0; i < size; ++i) {
+                TreeNode *node = q.front();
+                q.pop();
+                oneLevel.push_back(node->val);
+                if (node->left) q.push(node->left);
+                if (node->right) q.push(node->right);
+            }
+            res.push_back(oneLevel);
+        }
+        return res;
+    }
+};
+```
+
+#### 105. Construct Binary Tree from Preorder and Inorder Traversal（用前序遍历和后序遍历还原二叉树）
+解题思路*：  
+* 由于先序的顺序的第一个肯定是根，所以原二叉树的根节点可以知道，题目中给了一个很关键的条件就是树中没有相同元素，有了这个条件我们就可以在中序遍历中也定位出根节点的位置，并以根节点的位置将中序遍历拆分为左右两个部分，分别对其递归调用原函数。代码如下：
+
+```cpp
+class Solution {
+public:
+    TreeNode *buildTree(vector<int> &preorder, vector<int> &inorder)
+    {
+        return buildTree(preorder, 0, preorder.size() - 1, inorder, 0, inorder.size() - 1);
+    }
+    TreeNode *buildTree(vector<int> &preorder, int pLeft, int pRight, vector<int> &inorder, int iLeft, int iRight)
+    {
+        if (pLeft > pRight || iLeft > iRight)
+        {
+            return NULL;
+        }
+        int i = 0;
+        for (i = iLeft; i <= iRight; ++i)
+        {
+            if (preorder[pLeft] == inorder[i]) break;
+        }
+        TreeNode *cur = new TreeNode(preorder[pLeft]);
+        cur->left = buildTree(preorder, pLeft + 1, pLeft + i - iLeft, inorder, iLeft, i - 1);
+        cur->right = buildTree(preorder, pLeft + i - iLeft + 1, pRight, inorder, i + 1, iRight);
+        return cur;
+    }
+};
+```
+
+#### 106. Construct Binary Tree from Inorder and Postorder Traversal
+解题思路*：  
+* 我们知道中序的遍历顺序是左-根-右，后序的顺序是左-右-根，对于这种树的重建一般都是采用递归来做。
+* 由于后序的顺序的最后一个肯定是根，所以原二叉树的根节点可以知道，题目中给了一个很关键的条件就是树中没有相同元素，有了这个条件我们就可以在中序遍历中也定位出根节点的位置，并以根节点的位置将中序遍历拆分为左右两个部分，分别对其递归调用原函数。代码如下：
+
+```cpp
+class Solution {
+public:
+    TreeNode *buildTree(vector<int> &inorder, vector<int> &postorder) {
+        return buildTree(inorder, 0, inorder.size() - 1, postorder, 0, postorder.size() - 1);
+    }
+    TreeNode *buildTree(vector<int> &inorder, int iLeft, int iRight, vector<int> &postorder, int pLeft, int pRight) {
+        if (iLeft > iRight || pLeft > pRight) return NULL;
+        TreeNode *cur = new TreeNode(postorder[pRight]);
+        int i = 0;
+        for (i = iLeft; i < inorder.size(); ++i) {
+            if (inorder[i] == cur->val) break;
+        }
+        cur->left = buildTree(inorder, iLeft, i - 1, postorder, pLeft, pLeft + i - iLeft - 1);
+        cur->right = buildTree(inorder, i + 1, iRight, postorder, pLeft + i - iLeft, pRight - 1);
+        return cur;
+    }
+};
+```
 
 ---
 
 ### 二叉树重建相关问题*：
 **使用递归、前中后序的知识（二叉树和数组重建、二叉树和链表重建）**
+
 
 ### 1.二叉树和数组的重建问题：
 
@@ -1044,8 +1324,24 @@ public:
 ### 树的匹配问题*
 **使用递归，和特定匹配要求（相关题目：树的子结构、对称/镜像树、路径和值的匹配、树深度匹配）**
 
+
+#### 100. Same Tree
+解题思路：  
+判断两棵树是否相同和之前的判断两棵树是否对称都是一样的原理，利用深度优先搜索DFS来递归。代码如下：
+
+```cpp
+class Solution {
+public:
+    bool isSameTree(TreeNode *p, TreeNode *q) {
+        if (!p && !q) return true;
+        if ((p && !q) || (!p && q) || (p->val != q->val)) return false;
+        return isSameTree(p->left, q->left) && isSameTree(p->right, q->right);
+    }
+};
+```
+
 #### 018 树的子结构
-题目描述
+题目描述*:
 > 输入两颗二叉树A，B，判断B是不是A的子结构。
 
 #####解题思路：  
@@ -1124,7 +1420,7 @@ public:
 };
 ```
 
-#### 059 对称的二叉树
+#### 059 对称的二叉树 101. Symmetric Tree
 **题目描述**：  
 请实现一个函数，用来判断一颗二叉树是不是对称的。
 注意，如果一个二叉树同此二叉树的镜像是同样的，定义其为对称的
@@ -1405,7 +1701,7 @@ public:
 };
 ```
 
-#### 039 二叉树的深度
+#### 039 二叉树的深度（Bottom-Up和Top-Down必备题目）
 
 **题目描述**  
 输入一棵二叉树，求该树的深度。从根结点到叶结点依次经过的结点（含根、叶结点）形成树的一条路径，最长路径的长度为树的深度。
@@ -1424,16 +1720,16 @@ int TreeDepthRecursion(TreeNode *root, int depth)
         }
         else
         {
+            //Top-down应该随着递归参数一起传递给下一个递归
             int leftDepth = TreeDepthRecursion(root->left, depth + 1);
             int rightDepth = TreeDepthRecursion(root->right, depth + 1);
-
             return max(leftDepth, rightDepth);
         }
     }
 ```
 
-* 自底向上返回参数的递归思路：
-
+* 自底向上返回参数的递归思路：  
+Bottom up的递归应该写在递归调用代码的最后面
 ```cpp
 int TreeDepthRecursion(TreeNode *root)
     {
@@ -1445,7 +1741,7 @@ int TreeDepthRecursion(TreeNode *root)
         {
             int leftDepth = TreeDepthRecursion(root->left);
             int rightDepth = TreeDepthRecursion(root->right);
-
+            //bottom up代码写在递归调用的最后面
             return max(leftDepth, rightDepth) + 1;
         }
     }
@@ -1510,8 +1806,40 @@ int TreeDepthRecursion(TreeNode *root)
   ```
 
 ---
-
+**
 ### 二叉搜索树问题
+
+#### 99. Recover Binary Search Tree
+解题思路：  
+* 遍历二叉搜索树到一维数组中。然后对数组排序以后再放回BST中。
+* 这种最一般的解法可针对任意个数目的节点错乱的情况，这里先贴上此种解法：  
+
+```cpp
+class Solution {
+public:
+    void recoverTree(TreeNode *root) {
+        vector<TreeNode*> list;
+        vector<int> vals;
+        inorder(root, list, vals);
+        sort(vals.begin(), vals.end());
+        for (int i = 0; i < list.size(); ++i) {
+            list[i]->val = vals[i];
+        }
+    }
+    void inorder(TreeNode *root, vector<TreeNode*> &list, vector<int> &vals) {
+        if (!root) return;
+        inorder(root->left, list, vals);
+        //将BST节点值按中序遍历顺序存在list
+        //将BST节点按中序遍历顺序存在另一个list
+        list.push_back(root);
+        vals.push_back(root->val);
+        inorder(root->right, list, vals);
+    }
+};
+```
+
+
+
 
 #### 024 二叉搜索树的后序遍历序列
 题目描述
@@ -1661,53 +1989,21 @@ public:
 
 ---
 
+#### 95. Unique Binary Search Trees （BST和卡特兰数）
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
----
-## Leetcode
-Maximum Depth of Binary Tree  
-
-Binary Tree Paths  
-
-Minimum Subtree  
-
-Balanced Binary Tree  
-
-Subtree with Maximum Average  
-
-Flattern Binary Tree to Linked List  
-
-Lowest Common Ancestor  
-
-LCA II  
-
-LCA III  
-
-Binary Tree Longest Consecutive Sequence  
-
-Binary Tree Path Sum  
-
-Binary Tree Path Sum II  
-
-Binary Tree Path Sum III  
-
-Binary Search Tree
+```cpp
+class Solution {
+public:
+    int numTrees(int n) {
+        vector<int> dp(n + 1, 0);
+        dp[0] = 1;
+        dp[1] = 1;
+        for (int i = 2; i <= n; ++i) {
+            for (int j = 0; j < i; ++j) {
+                dp[i] += dp[j] * dp[i - 1 - j];
+            }
+        }
+        return dp[n];
+    }
+};
+```

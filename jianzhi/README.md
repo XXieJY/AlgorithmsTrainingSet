@@ -29,7 +29,7 @@
   * 图：比较经典的dfs求连同区域（常结合递归和栈一起实现），bfs求最短路径（常结合队列实现）。
   * 堆：TOP k问题的数据结构
   * 哈希表：查找频繁时直接用他
-  
+
 
 
 ---
@@ -44,6 +44,45 @@ Time Complexity in Coding Interview
 • O(n3) 数组，枚举，动态规划
 • O(2^n) 与组合有关的搜索 combination
 • O(n!) 与排列有关的搜索 permutation
+
+---
+
+(面试参考)[https://www.nowcoder.com/discuss/55353]:  
+
+* c++
+  * STL：
+    * STL的数据结构: (如何实现的、特点)
+      * 连续存储的数据结构： vector, queue, stack
+      * 链式存储的数据结构： 链表？ 堆priority_queue
+      * 集合和哈希： set, map
+    * STL的内存分配器/迭代器：
+      * Allocator、iterator
+  * 基础语言特性：
+    * OOP:基础结构（class、struct）；基本服务（多态、重载、虚函数、构造/拷贝构造/析构、动态绑定）
+    * 内存结构（堆内存、栈内存）、内存操作（new\malloc\delete\free)
+    * 指针、引用
+  * c++11特性：
+    * 多线程、智能指针
+
+* 网络
+  * TCP/IP
+    * 链接的建立和终止（三次握手四次挥手）
+    * 超时重传机制
+  * HTTP
+    * GET POST等等
+    * 状态码
+    * 长连接
+* 操作系统
+  * linux进程
+    * 进程间通信
+    * 进程调度
+  * 虚拟内存
+* 项目
+  * 设计模式
+  * 业务效果
+  * 线程池
+
+[refs](https://www.nowcoder.com/discuss/61958?type=2&order=4&pos=14&page=16)
 
 ---
 

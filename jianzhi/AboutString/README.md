@@ -1,9 +1,144 @@
 ### c++可以使用<sstream>库解决字符串流的问题：  
 C++引入了ostringstream、istringstream、stringstream这三个类，要使用他们创建对象就必须包含<sstream>这个头文件。
 [link](https://www.cnblogs.com/gamesky/archive/2013/01/09/2852356.html)
+
 ---
 
-字符串相关问题：
+## 字符串相关问题：
+* 字符串变形：
+  * 翻转之类的字符串变形：（使用一个或者多个栈翻转字符串）
+  * 字符串和排列组合：常见为字符串打印相关(递归全排列法、交换排列法)
+* 字符串查找/匹配：
+  * 如查找第一次出现的 （常见使用 hash set存储、额外数组存储）
+  * 匹配字符串判断字符串是否是有效数字；
+* 字符串和整数间的转换：
+  * 字符串转整数
+  * 整数转字符串
+
+
+---
+
+### 字符串查找匹配：  
+
+#### 035 第一个只出现一次的字符位置
+解题思路：  
+  bitmap方法-同计数法，略微有变动。我们计数数组不简单的存储计数。
+  * 声明两个size=26的数组分别存放a-z和A-Z在字符串中出现的情况
+  * 只出现一次的字符，则存储这个字符在字符串中出现的位置。
+  * 出现多次的字符，就存储标识-1，因此查找数组中非-1的最小值即可。
+
+```cpp
+class Solution {
+public:
+        int FirstNotRepeatingChar(string V) {
+                int E[26] = { 0 }, E2[26] = { 0 };
+                int S;
+
+                S = V.size();
+                for (int i = 0; i < S; ++i) {
+                        if ('a' <= V[i] && V[i] <= 'z') {
+                                int j = V[i] - 'a';
+                                if (E[j] == 0) {
+                                        E[j] = i + 1;
+                                }
+                                else {
+                                        E[j] = -1;
+                                }
+                        }
+                        else if ('A' <= V[i] && V[i] <= 'Z') {
+                                int j = V[i] - 'A';
+                                if (E2[j] == 0) {
+                                        E2[j] = i + 1;
+                                }
+                                else {
+                                        E2[j] = -1;
+                                }
+                        }
+                }
+
+                int res = INT_MAX;
+                for (int i = 0; i < 26; ++i)
+                {
+                        if (E[i] != 0 && E[i] != -1)
+                        {
+                                res = min(res, E[i]);
+                        }
+                        if (E2[i] != 0 && E2[i] != -1)
+                        {
+                                res = min(res, E2[i]);
+                        }
+                }
+                return res > V.size() ? -1 : res - 1;
+        }
+
+
+};
+```
+
+---
+
+### 字符串变形：
+
+#### 042 翻转单词顺序列
+
+**解题思路**：  
+字符串逆序就是使用栈的FILO性质，如果是按单词的字符串逆序则使用双栈进行，先逆序单词然后进第二个栈逆序整个句子。
+
+```cpp
+class Solution
+{
+public:
+    string ReverseSentence(string str)
+    {
+        if (str.size() == 0)
+        {
+            return str;
+        }
+
+        string result;
+        stack<char>stk1;
+        stack<char>stk2;
+
+        for (auto i : str)
+        { //把str中的全部压入
+            stk1.push(i);
+        }
+        //  通过将字符串压入栈中, 现在出栈顺序正好是入展顺序的逆序
+        //  即我们实现了一次整个字符串的翻转
+
+        //  接下来我们翻转每个单词
+        //  只要不是空格就一直入栈(实现翻转)
+        //  遇见空格的时候，就读取栈中元素(出栈的顺序正好是每个单词的顺序)
+        result = "";
+        while (!stk1.empty())
+        {
+            if (stk1.top() != ' ')
+            {   //没有遇到空格 就再弹出 压到第二个栈
+                stk2.push(stk1.top());
+                stk1.pop();
+            }
+            else
+            {   //如果遇到了空格 一个单词结束了  将第二个栈里的弹出
+                stk1.pop();
+                while (!stk2.empty())
+                {
+                    result += stk2.top();
+                    stk2.pop();
+                }
+                result += " ";
+            }
+        }
+        //将第二个栈剩余的单词输出
+        while (!stk2.empty()) {
+            result += stk2.top();
+            stk2.pop();
+        }
+        return result;
+    }
+};
+```
+
+
 #### *012 打印1到最大的N位数
 **(关于字符串排列组合输出的样板题)**
 
@@ -69,120 +204,12 @@ public:
 };
 ```
 
-#### 035 第一个只出现一次的字符位置
 
 
-解题思路：  
-  bitmap方法-同计数法，略微有变动。我们计数数组不简单的存储计数。
-  * 只出现一次的字符会存储出现的位置
-  * 出现多次的字符就存储标识-1 因此查找数组中非-1的最小值即可。
 
-```cpp
-class Solution {
-public:
-        int FirstNotRepeatingChar(string V) {
-                int E[26] = { 0 }, E2[26] = { 0 };
-                int S;
+---
 
-                S = V.size();
-                for (int i = 0; i < S; ++i) {
-                        if ('a' <= V[i] && V[i] <= 'z') {
-                                int j = V[i] - 'a';
-                                if (E[j] == 0) {
-                                        E[j] = i + 1;
-                                }
-                                else {
-                                        E[j] = -1;
-                                }
-                        }
-                        else if ('A' <= V[i] && V[i] <= 'Z') {
-                                int j = V[i] - 'A';
-                                if (E2[j] == 0) {
-                                        E2[j] = i + 1;
-                                }
-                                else {
-                                        E2[j] = -1;
-                                }
-                        }
-                }
-
-                int res = INT_MAX;
-                for (int i = 0; i < 26; ++i)
-                {
-                        if (E[i] != 0 && E[i] != -1)
-                        {
-                                res = min(res, E[i]);
-                        }
-                        if (E2[i] != 0 && E2[i] != -1)
-                        {
-                                res = min(res, E2[i]);
-                        }
-                }
-                return res > V.size() ? -1 : res - 1;
-        }
-
-
-};
-```
-
-#### 042 翻转单词顺序列
-
-**解题思路**：  
-字符串逆序就是使用栈的FILO性质，如果是按单词的字符串逆序则使用双栈进行，先逆序单词然后进第二个栈逆序整个句子。
-
-```cpp
-class Solution
-{
-public:
-    string ReverseSentence(string str)
-    {
-        if (str.size() == 0)
-        {
-            return str;
-        }
-
-        string result;
-        stack<char>stk1;
-        stack<char>stk2;
-
-        for (auto i : str)
-        { //把str中的全部压入
-            stk1.push(i);
-        }
-        //  通过将字符串压入栈中, 现在出栈顺序正好是入展顺序的逆序
-        //  即我们实现了一次整个字符串的翻转
-
-        //  接下来我们翻转每个单词
-        //  只要不是空格就一直入栈(实现翻转)
-        //  遇见空格的时候，就读取栈中元素(出栈的顺序正好是每个单词的顺序)
-        result = "";
-        while (!stk1.empty())
-        {
-            if (stk1.top() != ' ')
-            {   //没有遇到空格 就再弹出 压到第二个栈
-                stk2.push(stk1.top());
-                stk1.pop();
-            }
-            else
-            {   //如果遇到了空格 一个单词结束了  将第二个栈里的弹出
-                stk1.pop();
-                while (!stk2.empty())
-                {
-                    result += stk2.top();
-                    stk2.pop();
-                }
-                result += " ";
-            }
-        }
-        //将第二个栈剩余的单词输出
-        while (!stk2.empty()) {
-            result += stk2.top();
-            stk2.pop();
-        }
-        return result;
-    }
-};
-```
+### 字符串和整数间的转换：
 
 #### 049 把字符串转换成整数
 
@@ -294,6 +321,7 @@ public:
     }
 };
 ```
+
 ####* 054-表示数值的字符串
 题目描述  
 请实现一个函数用来判断字符串是否表示数值（包括整数和小数）。例如，字符串"+100","5e2","-123","3.1416"和"-1E-16"都表示数值。 但是"12e","1a3.14","1.2.3","+-5"和"12e+4.3"都不是。
@@ -405,6 +433,4 @@ public:
 ```
 
 
-
-* 自动机方法：
-https://www.nowcoder.com/questionTerminal/6f8c901d091949a5837e24bb82a731f2
+---

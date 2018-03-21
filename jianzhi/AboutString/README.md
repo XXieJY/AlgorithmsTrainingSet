@@ -9,16 +9,85 @@ C++引入了ostringstream、istringstream、stringstream这三个类，要使用
   * 翻转之类的字符串变形：（使用一个或者多个栈翻转字符串）
   * 字符串和排列组合：常见为字符串打印相关(递归全排列法、交换排列法)
 * 字符串查找/匹配：
-  * 如查找第一次出现的 （常见使用 hash set存储、额外数组存储）
+  * 无重复、子串相关问题（使用hash记录位置）
+  * 如查找第一次出现的 （常见使用 hash存储、额外数组存储）
   * 匹配字符串判断字符串是否是有效数字；
+  * 匹配括号问题；（使用栈）
 * 字符串和整数间的转换：
   * 字符串转整数
   * 整数转字符串
+* 回文问题；（常见是使用DP来解决回文问题，判断回文有专门的dp递推式）
 
 
 ---
 
-### 字符串查找匹配：  
+### 字符串查找匹配：
+
+#### 3. Longest Substring Without Repeating Characters（最长无重复子串）
+* 建立一个256位大小的整型数组来代替哈希表，这样做可以记录256个字符。
+* 然后我们需要定义两个变量res和left，其中res用来记录最长无重复子串的长度，left指向该无重复子串左边的起始位置。
+* 然后我们遍历整个字符串，对于每一个遍历到的字符：
+  * 如果哈希表中该字符串对应的值为0，说明没有遇到过该字符，则此时更新最长无重复子串，i - left + 1，其中i是最长无重复子串最右边的位置，left是最左边的位置.
+  * 还有一种情况也需要计算最长无重复子串，就是当哈希表中的值小于left，这是由于此时出现过重复的字符，left的位置更新了，如果又遇到了新的字符，就要重新计算最长无重复子串。
+* 最后每次都要在哈希表中将当前字符对应的值赋值为i+1，这样就可以在hash中存储对应字符的下一个字符位置，如果当前字符重复，则直接可以将left移动到当前重复字符的下一个字符位置。代码如下：
+```cpp
+class Solution {
+public:
+    int lengthOfLongestSubstring(string s)
+    {
+        int m[256] = {0}, res = 0, left = 0;
+        for (int i = 0; i < s.size(); ++i)
+        {
+            if (m[s[i]] == 0 || m[s[i]] < left)
+            {
+                res = max(res, i - left + 1);
+            }
+            else
+            {
+                left = m[s[i]];
+            }
+            m[s[i]] = i+1;
+        }
+        return res;
+    }
+};
+```
+
+#### 14. Longest Common Prefix
+
+解题思路：  
+这道题让我们求一系列字符串的共同前缀，没有什么特别的技巧，无脑查找即可。
+* 我们定义两个变量i和j，其中i是遍历搜索字符串中的字符，j是遍历字符串集中的每个字符串。
+* 这里将单词上下排好，则相当于一个各行长度有可能不相等的二维数组，我们遍历顺序和一般的横向逐行遍历不同，而是采用纵向逐列遍历。我们每次取出第一个字符串的某一个位置的单词，然后遍历其他所有字符串的对应位置看是否相等。
+  * 在遍历的过程中，如果某一行没有了，说明其为最短的单词，因为共同前缀的长度不能长于最短单词，所以此时返回已经找出的共同前缀。
+  * 如果有不满足的直接返回res。
+  * 如果都相同，则将当前字符存入结果，继续检查下一个位置的字符，参见代码如下：
+```cpp
+class Solution {
+public:
+    string longestCommonPrefix(vector<string>& strs) {
+        //判断边界条件
+        if (strs.empty())
+        {
+            return "";
+        }
+        string res = "";
+        for (int j = 0; j < strs[0].size(); ++j) {
+            char c = strs[0][j];
+            //按纵列同时遍历每一行的每个单词
+            for (int i = 1; i < strs.size(); ++i) {
+                //如果当前行的长度小于j，或者当前行的第j个字符值strs[i][j] != c
+                if (j >= strs[i].size() || strs[i][j] != c)
+                {
+                    return res;
+                }
+            }
+            res.push_back(c);
+        }
+        return res;
+    }
+};
+```
 
 #### 035 第一个只出现一次的字符位置
 解题思路：  
@@ -73,6 +142,52 @@ public:
 
 
 };
+```
+
+#### 20. Valid Parentheses(括号字符串匹配)
+这道题让我们验证输入的字符串是否为括号字符串，包括大括号，中括号和小括号。
+* 用一个栈，从开始遍历输入字符串。
+  * 如果当前字符为左半边括号时，则将其压入栈中。
+  * 如果遇到右半边括号时，若此时栈为空，则直接返回false，如不为空，则取出栈顶元素，若为对应的左半边括号，则继续循环，反之返回false，代码如下：
+```cpp
+class Solution {
+public:
+    bool isValid(string s) {
+        //声明辅助栈，用来括号匹配
+        stack<char> parentheses;
+        for (int i = 0; i < s.size(); ++i) {
+            if (s[i] == '(' || s[i] == '[' || s[i] == '{')
+            {
+                parentheses.push(s[i]);
+            }
+            else
+            {
+                if (parentheses.empty())
+                {
+                     return false;
+                }
+                else if (s[i] == ')' && parentheses.top() != '(')
+                {
+                    return false;
+                }
+                else if (s[i] == ']' && parentheses.top() != '[')
+                {
+                    return false;
+                }
+                else if (s[i] == '}' && parentheses.top() != '{')
+                {
+                    return false;
+                }
+                else
+                {
+                    parentheses.pop();
+                }
+
+            }
+        }
+        return parentheses.empty();
+    }
+}; 
 ```
 
 ---
@@ -204,9 +319,50 @@ public:
 };
 ```
 
-
-
-
+#### 17. Letter Combinations of a Phone Number（求字符串排列组合的所有情况应该递归DFS+字典）
+解题思路：  
+这道题让我们求电话号码的字母组合，即数字2到9中每个数字可以代表若干个字母，然后给一串数字，求出所有可能的组合。
+* 我们用递归Recursion来解。
+* 此外因为是从字符串待选项中pick排列组合的元素，所有需要建立一个字典(hash)，用来保存每个数字所代表的字符串。
+* 然后我们还需要一个变量level，记录当前生成的字符串的字符个数，实现套路和上述那些题十分类似，代码如下：
+```cpp
+class Solution {
+public:
+    vector<string> letterCombinations(string digits)
+    {
+        //判断边界条件
+        vector<string> res;
+        if (digits.empty())
+        {
+            return res;
+        }
+        //创建字典数组
+        string dict[] = {"abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"};
+        //进入递归主体
+        letterCombinationsDFS(digits, dict, 0, "", res);
+        return res;
+    }
+    void letterCombinationsDFS(string digits, string dict[], int level, string out, vector<string> &res)
+    {
+        //dfs递归出口
+        if (level == digits.size())
+        {
+             res.push_back(out);
+        }
+        else
+        {
+            string str = dict[digits[level] - '2'];
+            //每层的每个字符可以分叉出k个递归
+            for (int i = 0; i < str.size(); ++i)
+            {
+                out.push_back(str[i]);
+                letterCombinationsDFS(digits, dict, level + 1, out, res);
+                out.pop_back();
+            }
+        }
+    }
+};
+```
 ---
 
 ### 字符串和整数间的转换：
@@ -432,5 +588,49 @@ public:
 };
 ```
 
-
 ---
+
+### 回文问题****：
+
+#### 5. Longest Palindromic Substring
+* 此题可以用动态规划Dynamic Programming来解。
+* 维护一个二维数组dp，其中dp[i][j]表示字符串区间[i, j]是否为回文串。
+  * 当i = j时，只有一个字符，肯定是回文串。
+  * 如果i = j + 1，说明是相邻字符，此时需要判断s[i]是否等于s[j]。
+  * 如果i和j不相邻，即i - j >= 2时，除了判断s[i]和s[j]相等之外，dp[j + 1][i - 1]若为真，就是回文串，通过以上分析，可以写出递推式如下：
+
+  >  dp[i, j] = 1,    if i == j  
+     dp[i, j]= s[i] == s[j],                                if j = i + 1  
+    dp[i, j]= s[i] == s[j] && dp[i + 1][j - 1],    if j > i + 1      
+
+```cpp
+class Solution {
+public:
+    string longestPalindrome(string s)
+    {
+        //初始化二维dp数组和一些辅助变量
+        int dp[s.size()][s.size()] = {0}, left = 0, right = 0, len = 0;
+
+        //二维dp的for循环
+        for (int j = 0; j < s.size(); ++j)
+        {
+            //长度为1的子串一定是回文串
+            dp[j][j] = 1;
+            for (int i = 0; i < j; ++i)
+            {
+                //判断子串[i,j]是否是回文串的dp递推式
+                //即：(当前子串的两端字符是否相等 && (子串长度为1或者2 || 子串包含的子串[i+1 : j-1]是否是回文串)
+                dp[i][j] = (s[i] == s[j] && (j - i < 2 || dp[i + 1][j - 1]));
+                //如果当前回文串的长度大于记录中的回文串则替换它
+                if (dp[i][j] && len < j - i + 1)
+                {
+                    len = j - i + 1;
+                    left = i;
+                    right = j;
+                }
+            }
+        }
+        return s.substr(left, right - left + 1);
+    }
+};
+```

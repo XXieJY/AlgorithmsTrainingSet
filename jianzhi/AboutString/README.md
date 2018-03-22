@@ -187,8 +187,77 @@ public:
         }
         return parentheses.empty();
     }
-}; 
+};
 ```
+
+#### 32. Longest Valid Parentheses(最长有效括号字符串序列)栈+最大值结果记录
+解题思路：  
+* 最长有效括号比之前那道 Valid Parentheses 验证括号难度要大一些，这里我们还是借助栈来求解，然后还需要定义个start变量来记录合法括号串的起始位置。
+* 我们遍历字符串，如果遇到左括号，则将当前下标压入栈，如果遇到右括号，如果当前栈为空，则将下一个坐标位置记录到start，如果栈不为空，则将栈顶元素取出，此时若栈为空，则更新结果和i - start + 1中的较大值，否则更新结果和i - 栈顶元素中的较大值，代码如下：
+```cpp
+class Solution {
+public:
+    int longestValidParentheses(string s)
+    {
+        //还是用栈匹配有效括号
+        //然后使用res记录最长有效括号，每次有右括号时，更新res的值
+        int res = 0, start = 0;
+        stack<int> m;
+        for (int i = 0; i < s.size(); ++i)
+        {
+            if (s[i] == '(')
+            {
+                m.push(i);
+            }
+            else if (s[i] == ')')
+            {
+                if (m.empty())
+                {
+                    start = i + 1;
+                }
+                else
+                {
+                    m.pop();
+                    res = m.empty() ? max(res, i - start + 1) : max(res, i - m.top());
+                }
+            }
+        }
+        return res;
+    }
+};
+```
+
+#### 49. Group Anagrams(hash table标识错位词)
+解题思路''':
+这道题让我们群组给定字符串集中所有的错位词，所谓的错位词就是两个字符串中字母出现的次数都一样，只是位置不同，比如abc，bac, cba等它们就互为错位词.
+* 如果把错位词的字符顺序重新排列，那么会得到相同的结果，所以重新排序是判断是否互为错位词的方法。
+* 由于错位词重新排序后都会得到相同的字符串，因此使用hash table的方法<string, vector<string>>，将所有错位词都保存到字符串数组中，建立key和字符串数组之间的映射，最后再存入结果res中即可。参考代码如下：
+
+```cpp
+class Solution {
+public:
+    vector<vector<string>> groupAnagrams(vector<string>& strs) {
+        //使用unordered_map保存错位词排序结果和所有相同错位词的映射
+        vector<vector<string>> res;
+        unordered_map<string, vector<string>> m;
+        for (string str : strs)
+        {
+            //将排序后的字符串作为key，则可以将相同的错位词保存在同一个<string, vector<string>>中
+            string t = str;
+            sort(t.begin(), t.end());
+            m[t].push_back(str);
+        }
+        for (auto a : m)
+        {
+            res.push_back(a.second);
+        }
+        return res;
+    }
+};
+```
+
+
+
 
 ---
 

@@ -5,6 +5,7 @@ C++引入了ostringstream、istringstream、stringstream这三个类，要使用
 ---
 
 ## 字符串相关问题：
+* 用STL字符串库有geek解的题目
 * 字符串变形：
   * 翻转之类的字符串变形：（使用一个或者多个栈翻转字符串）
   * 字符串和排列组合：常见为字符串打印相关(递归全排列法、交换排列法)
@@ -18,6 +19,59 @@ C++引入了ostringstream、istringstream、stringstream这三个类，要使用
   * 整数转字符串
 * 回文问题；（常见是使用DP来解决回文问题，判断回文有专门的dp递推式）
 
+---
+
+### 用STL字符串库有geek解的题目
+
+#### 165. Compare Version Numbers（sstream拆分带'.'的字符串）
+Compare two version numbers version1 and version2.  
+If version1 > version2 return 1, if version1 < version2 return -1, otherwise return 0.  
+
+You may assume that the version strings are non-empty and contain only digits and the .   character.  
+The . character does not represent a decimal point and is used to separate number sequences.  
+For instance, 2.5 is not "two and a half" or "half way to version three", it is the fifth   second-level revision of the second first-level revision.  
+
+Here is an example of version numbers ordering:  
+
+0.1 < 1.1 < 1.2 < 13.37  
+
+解题思路：  
+由于这道题我们需要将版本号以’.'分开，那么我们可以借用强大的字符串流stringstream的功能来实现分段和转为整数，使用这种方法写的代码很简洁，如下所示：
+
+```cpp
+class Solution {
+public:
+    int compareVersion(string version1, string version2)
+    {
+        istringstream v1(version1 + "."), v2(version2 + ".");
+        int d1 = 0, d2 = 0;
+        char dot = '.';
+        //.good()判断流是否还有效，即是否还有数据可以读取
+        while (v1.good() || v2.good())
+        {
+            //使用istringstream拆分数字和dot
+            if (v1.good())
+            {
+                v1 >> d1 >> dot;
+            }
+            if (v2.good())
+            {
+                v2 >> d2 >> dot;
+            }
+            if (d1 > d2)
+            {
+                return 1;
+            }
+            else if (d1 < d2)
+            {
+                return -1;
+            }
+            d1 = d2 = 0;
+        }
+        return 0;
+    }
+};
+```
 
 ---
 
@@ -334,6 +388,54 @@ public:
             }
         }
         return dp.back();
+    }
+};
+```
+
+#### 115. Distinct Subsequences(二维DP的字符串匹配问题)
+解题思路：  
+* 看到有关字符串的子序列或者配准类的问题，首先应该考虑的就是用动态规划Dynamic Programming来求解，这个应成为条件反射。而所有DP问题的核心就是找出递推公式，想这道题就是递推一个二维的dp数组，下面我们从题目中给的例子来分析，这个二维dp数组应为：
+> &nbsp; 0 r a b b b i t  
+0 1 1 1 1 1 1 1 1  
+r 0 1 1 1 1 1 1 1  
+a 0 0 1 1 1 1 1 1  
+b 0 0 0 1 2 3 3 3  
+b 0 0 0 0 1 3 3 3  
+i 0 0 0 0 0 0 3 3  
+t 0 0 0 0 0 0 0 3   
+
+* 首先，若原字符串和子序列都为空时，返回1，因为空串也是空串的一个子序列。
+* 若原字符串不为空，而子序列为空，也返回1，因为空串也是任意字符串的一个子序列。
+* 而当原字符串为空，子序列不为空时，返回0，因为非空字符串不能当空字符串的子序列。理清这些，二维数组dp的边缘便可以初始化了,下面只要找出递推式，就可以更新整个dp数组了。
+* 我们通过观察上面的二维数组可以发现:
+  * 当更新到dp[i][j]时，dp[i][j] >= dp[i][j - 1] 总是成立。
+  * 再进一步观察发现，当 T[i - 1] == S[j - 1] 时，dp[i][j] = dp[i][j - 1] + dp[i - 1][j - 1]，若不等， dp[i][j] = dp[i][j - 1]，所以，综合以上，递推式为：
+  * dp[i][j] = dp[i][j - 1] + (T[i - 1] == S[j - 1] ? dp[i - 1][j - 1] : 0)
+
+根据以上分析，可以写出代码如下：
+```cpp
+class Solution {
+public:
+    int numDistinct(string S, string T) {
+        //声明二维dp数组
+        int dp[T.size() + 1][S.size() + 1];
+        //初始化dp数组的边界值
+        for (int i = 0; i <= S.size(); ++i)
+        {
+             dp[0][i] = 1;  
+        }
+        for (int i = 1; i <= T.size(); ++i)
+        {
+             dp[i][0] = 0;
+        }
+        for (int i = 1; i <= T.size(); ++i)
+        {
+            for (int j = 1; j <= S.size(); ++j)
+            {
+                dp[i][j] = dp[i][j - 1] + (T[i - 1] == S[j - 1] ? dp[i - 1][j - 1] : 0);
+            }
+        }
+        return dp[T.size()][S.size()];
     }
 };
 ```
@@ -823,6 +925,49 @@ public:
             }
         }
         return s.substr(left, right - left + 1);
+    }
+};
+```
+
+#### 125. Valid Palindrome(带有空格干扰的回文字符串问题)
+Given a string, determine if it is a palindrome, considering only alphanumeric characters and ignoring cases.  
+
+For example,  
+"A man, a plan, a canal: Panama" is a palindrome.  
+"race a car" is not a palindrome.  
+解题思路：  
+验证回文字符串是比较常见的问题，所谓回文，就是一个正读和反读都一样的字符串，比如“level”或者“noon”等等就是回文串。
+* 但是这里，加入了空格和非字母数字的字符，增加了些难度，但其实原理还是很简单：只需要建立两个指针，left和right, 分别从字符的开头和结尾处开始遍历整个字符串。
+* 如果遇到非字母数字的字符就跳过，继续往下找，直到找到下一个字母数字或者结束遍历。
+* 如果遇到大写字母，就将其转为小写。
+* 等左右指针都找到字母数字时，比较这两个字符
+  * 若相等，则继续比较下面两个分别找到的字母数字；
+  * 若不相等，直接返回false.  
+时间复杂度为O(n), 代码如下：
+```cpp
+class Solution {
+public:
+    bool isPalindrome(string s)
+    {
+        int left = 0, right = s.size() - 1 ;
+        while (left < right)
+        {
+            if (!isAlphaNum(s[left])) ++left;
+            else if (!isAlphaNum(s[right])) --right;
+            else if ((s[left] + 32 - 'a') %32 != (s[right] + 32 - 'a') % 32) return false;
+            else
+            {
+                ++left; --right;
+            }
+        }
+        return true;
+    }
+    bool isAlphaNum(char &ch)
+    {
+        if (ch >= 'a' && ch <= 'z') return true;
+        if (ch >= 'A' && ch <= 'Z') return true;
+        if (ch >= '0' && ch <= '9') return true;
+        return false;
     }
 };
 ```

@@ -11,8 +11,8 @@ C++引入了ostringstream、istringstream、stringstream这三个类，要使用
 * 字符串查找/匹配：
   * 无重复、子串相关问题（使用hash记录位置）
   * 如查找第一次出现的 （常见使用 hash存储、额外数组存储）
-  * 匹配字符串判断字符串是否是有效数字；
   * 匹配括号问题；（使用栈）
+  * 字符串的匹配（通常用DP解字符串匹配问题）
 * 字符串和整数间的转换：
   * 字符串转整数
   * 整数转字符串
@@ -23,7 +23,7 @@ C++引入了ostringstream、istringstream、stringstream这三个类，要使用
 
 ### 字符串查找匹配：
 
-#### 3. Longest Substring Without Repeating Characters（最长无重复子串）
+#### 3. Longest Substring Without Repeating Characters（最长无重复子串：数组模拟hash table）
 * 建立一个256位大小的整型数组来代替哈希表，这样做可以记录256个字符。
 * 然后我们需要定义两个变量res和left，其中res用来记录最长无重复子串的长度，left指向该无重复子串左边的起始位置。
 * 然后我们遍历整个字符串，对于每一个遍历到的字符：
@@ -53,43 +53,111 @@ public:
 };
 ```
 
-#### 14. Longest Common Prefix
+#### 49. Group Anagrams(hash table标识错位词)
+解题思路''':
+这道题让我们群组给定字符串集中所有的错位词，所谓的错位词就是两个字符串中字母出现的次数都一样，只是位置不同，比如abc，bac, cba等它们就互为错位词.
+* 如果把错位词的字符顺序重新排列，那么会得到相同的结果，所以重新排序是判断是否互为错位词的方法。
+* 由于错位词重新排序后都会得到相同的字符串，因此使用hash table的方法<string, vector<string>>，将所有错位词都保存到字符串数组中，建立key和字符串数组之间的映射，最后再存入结果res中即可。参考代码如下：
 
-解题思路：  
-这道题让我们求一系列字符串的共同前缀，没有什么特别的技巧，无脑查找即可。
-* 我们定义两个变量i和j，其中i是遍历搜索字符串中的字符，j是遍历字符串集中的每个字符串。
-* 这里将单词上下排好，则相当于一个各行长度有可能不相等的二维数组，我们遍历顺序和一般的横向逐行遍历不同，而是采用纵向逐列遍历。我们每次取出第一个字符串的某一个位置的单词，然后遍历其他所有字符串的对应位置看是否相等。
-  * 在遍历的过程中，如果某一行没有了，说明其为最短的单词，因为共同前缀的长度不能长于最短单词，所以此时返回已经找出的共同前缀。
-  * 如果有不满足的直接返回res。
-  * 如果都相同，则将当前字符存入结果，继续检查下一个位置的字符，参见代码如下：
 ```cpp
 class Solution {
 public:
-    string longestCommonPrefix(vector<string>& strs) {
-        //判断边界条件
-        if (strs.empty())
+    vector<vector<string>> groupAnagrams(vector<string>& strs) {
+        //使用unordered_map保存错位词排序结果和所有相同错位词的映射
+        vector<vector<string>> res;
+        unordered_map<string, vector<string>> m;
+        for (string str : strs)
         {
-            return "";
+            //将排序后的字符串作为key，则可以将相同的错位词保存在同一个<string, vector<string>>中
+            string t = str;
+            sort(t.begin(), t.end());
+            m[t].push_back(str);
         }
-        string res = "";
-        for (int j = 0; j < strs[0].size(); ++j) {
-            char c = strs[0][j];
-            //按纵列同时遍历每一行的每个单词
-            for (int i = 1; i < strs.size(); ++i) {
-                //如果当前行的长度小于j，或者当前行的第j个字符值strs[i][j] != c
-                if (j >= strs[i].size() || strs[i][j] != c)
-                {
-                    return res;
-                }
-            }
-            res.push_back(c);
+        for (auto a : m)
+        {
+            res.push_back(a.second);
         }
         return res;
     }
 };
 ```
 
-#### 035 第一个只出现一次的字符位置
+#### 76. Minimum Window Substring(hash table+滑动窗口匹配)
+解题思路：  
+这道题的要求是要在O(n)的时间度里实现找到这个最小窗口字串，那么暴力搜索Brute Force肯定是不能用的，我们可以考虑哈希表，其中key是T中的字符，value是该字符出现的次数。
+* 我们最开始先扫描一遍T，把对应的字符及其出现的次数存到哈希表中。
+
+* 然后开始遍历S，遇到T中的字符，就把对应的哈希表中的value减一，直到包含了T中的所有的字符，纪录一个字串并更新最小字串值。
+
+* 将子窗口的左边界向右移，略掉不在T中的字符，如果某个在T中的字符出现的次数大于哈希表中的value，则也可以跳过该字符。
+
+```cpp
+class Solution {
+public:
+    string minWindow(string S, string T) {
+        //处理边界条件
+        if (T.size() > S.size())
+        {
+             return "";
+        }
+        //声明字符串子串问题的辅助变量：1.左边界守卫、计数器
+        //使用hash table
+        string res = "";
+        int left = 0, count = 0, minLen = S.size() + 1;
+        unordered_map<char, int> m;
+        for (int i = 0; i < T.size(); ++i)
+        {
+            if (m.find(T[i]) != m.end())
+            {
+                 ++m[T[i]];
+            }
+            else
+            {
+                m[T[i]] = 1;
+            }
+        }
+        //遍历字符串S
+        for (int right = 0; right < S.size(); ++right)
+        {
+            if (m.find(S[right]) != m.end())
+            {
+                --m[S[right]];
+                if (m[S[right]] >= 0)
+                {
+                    ++count;
+                }
+                //如果窗口已经覆盖字符串T，此时count == T.size()
+                while (count == T.size())
+                {
+                    //如果当前窗口值小于记录中最小窗口值，则更新答案
+                    if (right - left + 1 < minLen)
+                    {
+                        minLen = right - left + 1;
+                        res = S.substr(left, minLen);
+                    }
+                    //更新窗口左边界
+                    if (m.find(S[left]) != m.end())
+                    {
+                        ++m[S[left]];
+                        if (m[S[left]] > 0)
+                        {
+                            --count;
+                        }
+                    }
+                    ++left;
+                }
+            }
+        }
+        return res;
+    }
+};
+```
+
+
+
+
+
+#### 035 第一个只出现一次的字符位置(数组模拟hash table)
 解题思路：  
   bitmap方法-同计数法，略微有变动。我们计数数组不简单的存储计数。
   * 声明两个size=26的数组分别存放a-z和A-Z在字符串中出现的情况
@@ -144,7 +212,7 @@ public:
 };
 ```
 
-#### 20. Valid Parentheses(括号字符串匹配)
+#### 20. Valid Parentheses(括号字符串匹配:栈匹配)
 这道题让我们验证输入的字符串是否为括号字符串，包括大括号，中括号和小括号。
 * 用一个栈，从开始遍历输入字符串。
   * 如果当前字符为左半边括号时，则将其压入栈中。
@@ -227,34 +295,89 @@ public:
 };
 ```
 
-#### 49. Group Anagrams(hash table标识错位词)
-解题思路''':
-这道题让我们群组给定字符串集中所有的错位词，所谓的错位词就是两个字符串中字母出现的次数都一样，只是位置不同，比如abc，bac, cba等它们就互为错位词.
-* 如果把错位词的字符顺序重新排列，那么会得到相同的结果，所以重新排序是判断是否互为错位词的方法。
-* 由于错位词重新排序后都会得到相同的字符串，因此使用hash table的方法<string, vector<string>>，将所有错位词都保存到字符串数组中，建立key和字符串数组之间的映射，最后再存入结果res中即可。参考代码如下：
+#### 91. Decode Ways'(Dp字符串匹配)
+A message containing letters from A-Z is being encoded to numbers using the following mapping:  
+'A' -> 1  
+'B' -> 2  
+...  
+'Z' -> 26  
+Given an encoded message containing digits, determine the total number of ways to decode it.  
 
+For example,  
+Given encoded message "12", it could be decoded as "AB" (1 2) or "L" (12).  
+
+The number of ways decoding "12" is 2.  
+
+解题思路：  
+* 这道题要求解码方法，跟之前那道 Climbing Stairs 爬梯子问题 非常的相似，但是还有一些其他的限制条件，比如说一位数时不能为0，两位数不能大于26，其十位上的数也不能为0，出去这些限制条件，根爬梯子基本没啥区别，需要用动态规划Dynamci Programming来解。
+* 建立一位dp数组，长度比输入数组长多多2，全部初始化为1，因为斐波那契数列的前两项也为1，然后从第三个数开始更新，对应数组的第一个数。
+* 对每个数组首先判断其是否为0，若是将改为dp赋0，若不是，赋上一个dp值，此时相当如加上了dp[i - 1], 然后看数组前一位是否存在，如果存在且满足前一位不是0，且和当前为一起组成的两位数不大于26，则当前dp值加上dp[i - 2], 至此可以看出来跟斐波那契数组的递推式一样，代码如下：
 ```cpp
 class Solution {
 public:
-    vector<vector<string>> groupAnagrams(vector<string>& strs) {
-        //使用unordered_map保存错位词排序结果和所有相同错位词的映射
-        vector<vector<string>> res;
-        unordered_map<string, vector<string>> m;
-        for (string str : strs)
+    int numDecodings(string s)
+    {
+        //处理边界条件
+        if (s.empty() || (s.size() > 1 && s[0] == '0'))
         {
-            //将排序后的字符串作为key，则可以将相同的错位词保存在同一个<string, vector<string>>中
-            string t = str;
-            sort(t.begin(), t.end());
-            m[t].push_back(str);
+            return 0;
         }
-        for (auto a : m)
+        //声明dp数组
+        vector<int> dp(s.size() + 1, 0);
+        dp[0] = 1;
+        for (int i = 1; i < dp.size(); ++i)
         {
-            res.push_back(a.second);
+            dp[i] = (s[i - 1] == '0') ? 0 : dp[i - 1];
+            if (i > 1 && (s[i - 2] == '1' || (s[i - 2] == '2' && s[i - 1] <= '6')))
+            {
+                dp[i] += dp[i - 2];
+            }
+        }
+        return dp.back();
+    }
+};
+```
+
+
+
+
+#### 14. Longest Common Prefix
+
+解题思路：  
+这道题让我们求一系列字符串的共同前缀，没有什么特别的技巧，无脑查找即可。
+* 我们定义两个变量i和j，其中i是遍历搜索字符串中的字符，j是遍历字符串集中的每个字符串。
+* 这里将单词上下排好，则相当于一个各行长度有可能不相等的二维数组，我们遍历顺序和一般的横向逐行遍历不同，而是采用纵向逐列遍历。我们每次取出第一个字符串的某一个位置的单词，然后遍历其他所有字符串的对应位置看是否相等。
+  * 在遍历的过程中，如果某一行没有了，说明其为最短的单词，因为共同前缀的长度不能长于最短单词，所以此时返回已经找出的共同前缀。
+  * 如果有不满足的直接返回res。
+  * 如果都相同，则将当前字符存入结果，继续检查下一个位置的字符，参见代码如下：
+```cpp
+class Solution {
+public:
+    string longestCommonPrefix(vector<string>& strs) {
+        //判断边界条件
+        if (strs.empty())
+        {
+            return "";
+        }
+        string res = "";
+        for (int j = 0; j < strs[0].size(); ++j) {
+            char c = strs[0][j];
+            //按纵列同时遍历每一行的每个单词
+            for (int i = 1; i < strs.size(); ++i) {
+                //如果当前行的长度小于j，或者当前行的第j个字符值strs[i][j] != c
+                if (j >= strs[i].size() || strs[i][j] != c)
+                {
+                    return res;
+                }
+            }
+            res.push_back(c);
         }
         return res;
     }
 };
 ```
+
+
 
 
 

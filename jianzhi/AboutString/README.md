@@ -207,10 +207,6 @@ public:
 };
 ```
 
-
-
-
-
 #### 035 第一个只出现一次的字符位置(数组模拟hash table)
 解题思路：  
   bitmap方法-同计数法，略微有变动。我们计数数组不简单的存储计数。
@@ -263,6 +259,110 @@ public:
         }
 
 
+};
+```
+
+#### 383. Ransom Note（字符存放在hash table中的查找问题）
+Given an arbitrary ransom note string and another string containing letters from all the magazines, write a function that will return true if the ransom note can be constructed from the magazines ; otherwise, it will return false.  
+
+Each letter in the magazine string can only be used once in your ransom note.  
+
+Note:  
+You may assume that both strings contain only lowercase letters.  
+
+canConstruct("a", "b") -> false  
+canConstruct("aa", "ab") -> false  
+canConstruct("aa", "aab") -> true  
+
+解题思路：  
+用哈希Map存储待查字符串，然后遍历目标字符串，对hash map进行查找和更新value。
+最后如果遍历完时，没有出现value值小于零，则说明可以。
+
+```cpp
+class Solution {
+public:
+    bool canConstruct(string ransomNote, string magazine) {
+        unordered_map<char, int> m;
+        //将待查字符串中的字符存放到hash table中
+        for (char c : magazine)
+        {
+            ++m[c];
+        }
+        for (char c : ransomNote)
+        {
+            if (--m[c] < 0)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+};
+```
+
+#### 387. First Unique Character in a String
+Given a string, find the first non-repeating character in it and return it's index. If it doesn't exist, return -1.  
+
+Examples:  
+
+s = "leetcode"  
+return 0.  
+
+s = "loveleetcode",  
+return 2.  
+
+解题思路：  
+* 用哈希表建立每个字符和其出现次数的映射。
+* 然后按顺序遍历字符串，找到第一个出现次数为1的字符，返回其位置即可，参见代码如下：
+```cpp
+class Solution {
+public:
+    int firstUniqChar(string s) {
+        unordered_map<char, int> m;
+        //先用hash map统计字符串中每个字符出现的次数
+        for (char c : s) ++m[c];
+        //然后按序遍历字符串找到以第一个map中value为1的字符
+        for (int i = 0; i < s.size(); ++i) {
+            if (m[s[i]] == 1) return i;
+        }
+        return -1;
+    }
+};
+```
+
+#### 434. Number of Segments in a String
+Count the number of segments in a string, where a segment is defined to be a contiguous sequence of non-space characters.  
+
+Please note that the string does not contain any non-printable characters.  
+
+Example:  
+
+Input: "Hello, my name is John"  
+Output: 5  
+
+解题思路：   
+* 按序遍历字符串。
+* 每次遇到新单词时,res加一，然后往后遍历到单词结尾处。
+* 然后再寻找下一个单词第一个字符，寻找过程中如果遇到空格直接跳过，如果不是空格，则计数器加1，然后用个while循环找到下一个空格的位置，这样就遍历完了一个单词，再重复上面的操作直至结束，就能得到正确结果：
+```cpp
+class Solution {
+public:
+    int countSegments(string s) {
+        int res = 0, n = s.size();
+        for (int i = 0; i < n; ++i)
+        {
+            if (s[i] == ' ')
+            {
+              continue;
+            }
+            ++res;
+            while (i < n && s[i] != ' ')
+            {
+               ++i;
+            }
+        }
+        return res;
+    }
 };
 ```
 
@@ -479,7 +579,49 @@ public:
 };
 ```
 
+#### 696. Count Binary Substrings(按顺序遍历字符串再筛选子串的问题)
 
+* 分别统计0和1的个数，而且如果当前遇到的是1，那么只要之前统计的0的个数大于当前1的个数，就一定有一个对应的子字符串。
+* 而一旦前一个数字和当前的数字不一样的时候，那么当前数字的计数要重置为1。
+* 所以我们遍历元数组，如果是第一个数字，那么对应的ones或zeros自增1。
+* 然后进行分情况讨论，如果当前数字是1，然后判断如果前面的数字也是1，则ones自增1，否则ones重置为1。如果此时zeros大于ones，res自增1。反之同理，如果当前数字是0，然后判断如果前面的数字也是0，则zeros自增1，否则zeros重置为1。如果此时ones大于zeros，res自增1。参见代码如下：
+
+```cpp
+class Solution {
+public:
+    int countBinarySubstrings(string s)
+    {
+        int zeros = 0, ones = 0, res = 0;
+        for (int i = 0; i < s.size(); ++i)
+        {
+            if (i == 0)
+            {
+                (s[i] == '1') ? ++ones : ++zeros;
+            }
+            else
+            {
+                if (s[i] == '1')
+                {
+                    ones = (s[i - 1] == '1') ? ones + 1 : 1;
+                    if (zeros >= ones)
+                    {
+                        ++res;
+                    }
+                }
+                else if (s[i] == '0')
+                {
+                    zeros = (s[i - 1] == '0') ? zeros + 1 : 1;
+                    if (ones >= zeros)
+                    {
+                        ++res;
+                    }
+                }
+            }
+        }
+        return res;
+    }
+};
+```
 
 
 
@@ -487,6 +629,62 @@ public:
 ---
 
 ### 字符串变形：
+
+#### 344. Reverse String（双指针变形字符串）
+Write a function that takes a string as input and returns the string reversed.  
+Example:  
+Given s = "hello", return "olleh".  
+这道题没什么难度，直接从两头往中间走，同时交换两边的字符即可，参见代码如下：
+```cpp
+class Solution {
+public:
+    string reverseString(string s) {
+        int left = 0, right = s.size() - 1;
+        while (left < right) {
+            char t = s[left];
+            s[left++] = s[right];
+            s[right--] = t;
+        }
+        return s;
+    }
+};
+```
+
+#### 345. Reverse Vowels of a String（双指针+额外判定 变形字符串）
+Write a function that takes a string as input and reverse only the vowels of a string.  
+
+Example 1:  
+Given s = "hello", return "holle".  
+
+Example 2:  
+Given s = "leetcode", return "leotcede".  
+
+解题思路：  
+这道题让我们翻转字符串中的元音字母，元音字母有五个a,e,i,o,u，需要注意的是大写的也算，所以总共有十个字母。
+* 我们写一个isVowel的函数来判断当前字符是否为元音字母。
+* 如果两边都是元音字母，那么我们交换。
+* 如果左边的不是，向右移动一位，如果右边的不是，则向左移动一位，参见代码如下：
+```cpp
+class Solution {
+public:
+    string reverseVowels(string s) {
+        int left = 0, right= s.size() - 1;
+        while (left < right) {
+            if (isVowel(s[left]) && isVowel(s[right])) {
+                swap(s[left++], s[right--]);
+            } else if (isVowel(s[left])) {
+                --right;
+            } else {
+                ++left;
+            }
+        }
+        return s;
+    }
+    bool isVowel(char c) {
+        return c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u' || c == 'A' || c == 'E' || c == 'I' || c == 'O' || c == 'U';
+    }
+};
+```
 
 #### 042 翻转单词顺序列
 
@@ -886,7 +1084,7 @@ public:
 
 ### 回文问题****：
 
-#### 5. Longest Palindromic Substring
+#### 5. Longest Palindromic Substring（dp解回文串问题）
 * 此题可以用动态规划Dynamic Programming来解。
 * 维护一个二维数组dp，其中dp[i][j]表示字符串区间[i, j]是否为回文串。
   * 当i = j时，只有一个字符，肯定是回文串。
@@ -929,7 +1127,7 @@ public:
 };
 ```
 
-#### 125. Valid Palindrome(带有空格干扰的回文字符串问题)
+#### 125. Valid Palindrome(带有空格干扰的回文字符串问题)(双指针处理回文串问题)
 Given a string, determine if it is a palindrome, considering only alphanumeric characters and ignoring cases.  
 
 For example,  
@@ -968,6 +1166,105 @@ public:
         if (ch >= 'A' && ch <= 'Z') return true;
         if (ch >= '0' && ch <= '9') return true;
         return false;
+    }
+};
+```
+
+#### 680. Valid Palindrome II(可以修改一次字符串，再判断回文串的问题)
+Given a non-empty string s, you may delete at most one character. Judge whether you can make it a palindrome.  
+
+Example 1:  
+Input: "aba"  
+Output: True  
+Example 2:  
+Input: "abca"  
+Output: True  
+Explanation: You could delete the character 'c'.  
+
+解题思路：  
+* 这道题是之前那道Valid Palindrome的拓展，还是让我们验证回复字符串，但是区别是这道题的字符串中只含有小写字母，而且这道题允许删除一个字符。
+* 那么当遇到不匹配的时候，我们到底是删除左边的字符，还是右边的字符呢，我们的做法是两种情况都要算一遍，只要有一种能返回true，那么结果就返回true。
+* 我们可以写一个子函数来判断字符串中的某一个范围内的子字符串是否为回文串，参见代码如下：.
+
+```cpp
+class Solution {
+public:
+    bool validPalindrome(string s) {
+        int left = 0, right = s.size() - 1;
+        while (left < right)
+        {
+            if (s[left] != s[right])
+            {
+                return isValid(s, left, right - 1) || isValid(s, left + 1, right);
+            }
+            ++left;
+            --right;
+        }
+        return true;
+    }
+    bool isValid(string s, int left, int right)
+    {
+        while (left < right)
+        {
+            if (s[left] != s[right])
+            {
+                return false;
+            }
+            ++left;
+            --right;
+        }
+        return true;
+    }
+};
+```
+
+#### 336. Palindrome Pairs（hash table解回文串问题）
+Given a list of unique words. Find all pairs of distinct indices (i, j) in the given list, so that the concatenation of the two words, i.e. words[i] + words[j] is a palindrome.  
+
+Example 1:  
+Given words = ["bat", "tab", "cat"]  
+Return [[0, 1], [1, 0]]  
+The palindromes are ["battab", "tabbat"]  
+
+解题思路：  
+这道题给我们了许多单词，让我们找出回文对，就是两个单词拼起来是个回文字符串，我最开始尝试的是brute force的方法，每两个单词都拼接起来然后判断是否是回文字符串，但是通过不了OJ，会超时，可能这也是这道题标为Hard的原因之一吧，那么我们只能找别的方法来做，通过学习大神们的解法，发现如下两种方法比较好，其实两种方法的核心思想都一样，写法略有不同而已，那么我们先来看第一种方法吧，要用到哈希表来建立每个单词和其位置的映射，然后需要一个set来保存出现过的单词的长度，算法的思想是，遍历单词集，对于遍历到的单词，我们对其翻转一下，然后在哈希表查找翻转后的字符串是否存在，注意不能和原字符串的坐标位置相同，因为有可能一个单词翻转后和原单词相等，现在我们只是处理了bat和tab的情况，还存在abcd和cba，dcb和abcd这些情况需要考虑，这就是我们为啥需要用set，由于set是自动排序的，我们可以找到当前单词长度在set中的iterator，然后从开头开始遍历set，遍历比当前单词小的长度，比如abcdd翻转后为ddcba，我们发现set中有长度为3的单词，然后我们dd是否为回文串，若是，再看cba是否存在于哈希表，若存在，则说明abcdd和cba是回文对，存入结果中，对于dcb和aabcd这类的情况也是同样处理，我们要在set里找的字符串要在遍历到的字符串的左边和右边分别尝试，看是否是回文对，这样遍历完单词集，就能得到所有的回文对，参见代码如下：
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> palindromePairs(vector<string>& words) {
+        vector<vector<int>> res;
+        unordered_map<string, int> m;
+        set<int> s;
+        for (int i = 0; i < words.size(); ++i) {
+            m[words[i]] = i;
+            s.insert(words[i].size());
+        }
+        for (int i = 0; i < words.size(); ++i) {
+            string t = words[i];
+            int len = t.size();
+            reverse(t.begin(), t.end());
+            if (m.count(t) && m[t] != i) {
+                res.push_back({i, m[t]});
+            }
+            auto a = s.find(len);
+            for (auto it = s.begin(); it != a; ++it) {
+                int d = *it;
+                if (isValid(t, 0, len - d - 1) && m.count(t.substr(len - d))) {
+                    res.push_back({i, m[t.substr(len - d)]});
+                }
+                if (isValid(t, d, len - 1) && m.count(t.substr(0, d))) {
+                    res.push_back({m[t.substr(0, d)], i});
+                }
+            }
+        }
+        return res;
+    }
+    bool isValid(string t, int left, int right) {
+        while (left < right) {
+            if (t[left++] != t[right--]) return false;
+        }
+        return true;
     }
 };
 ```

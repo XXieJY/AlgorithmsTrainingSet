@@ -464,6 +464,75 @@ public:
 
 ## 划分型DP
 
+#### Perfect Squares 分割整数为完全平方数(没理解，建议记住递推式)
+Given a positive integer n, find the least number of perfect square numbers (for example, 1, 4, 9, 16, ...) which sum to n.  
+
+For example, given n = 12, return 3 because 12 = 4 + 4 + 4; given n = 13, return 2 because 13 = 4 + 9.  
+解题思路：
+* 建立一个长度为n+1的一维dp数组，其中dp[i]表示正整数i能少能由多个完全平方数组成，将第一个值初始化为0，其余值都初始化为INT_MAX。
+* 使用双循环dp，外层i从0循环到n，内层j从1循环到i+j*j <= n的位置，然后每次更新dp[i+j*j]的值。
+* 最后返回dp[n]即可，也就是dp数组的最后一个数字，参见代码如下：
+
+```cpp
+class Solution {
+public:
+    int numSquares(int n) {
+        vector<int> dp(n + 1, INT_MAX);
+        dp[0] = 0;
+        //重要的是 i + j * j
+        for (int i = 0; i <= n; ++i)
+        {
+            for (int j = 1; i + j * j <= n; ++j)
+            {
+                dp[i + j * j] = min(dp[i + j * j], dp[i] + 1);
+            }
+        }
+        return dp.back();
+    }
+};
+```
+
+#### Integer Break 整数拆成乘积最大元素
+
+解法一：拆3
+* 从5开始，数字都需要先拆出所有的3，一直拆到剩下一个数为2或者4，剩4就不用再拆了（因为拆成两个2和不拆没有意义，而且4不能拆出一个3剩一个1，这样会比拆成2+2的乘积小。）
+* 那么这样我们就可以写代码了，先预处理n为2和3的情况。
+    * 然后先将结果res初始化为1，然后当n大于4开始循环，我们结果自乘3，n自减3。
+    * 根据之前的分析，当跳出循环时，n只能是2或者4，再乘以res返回即可：
+```cpp
+class Solution {
+public:
+    int integerBreak(int n)
+    {
+        if (n == 2 || n == 3)
+        {
+            return n - 1;
+        }
+        int res = 1;
+        while (n > 4)
+        {
+            res *= 3;
+            n -= 3;
+        }
+        return res * n;
+    }
+};
+```
+
+* dp解法
+```cpp
+public int integerBreak(int n) {
+    int[] dp = new int[n + 1];
+    dp[1] = 1;
+    for(int i = 2; i <= n; i++) {
+        for(int j = 1; j <= i - 1; j++) {
+            dp[i] = Math.max(dp[i], Math.max(j * dp[i - j], j * (i - j)));
+        }
+    }
+    return dp[n];
+}
+```
+
 #### 139. Word Break
 
 Given a non-empty string s and a dictionary wordDict containing a list of non-empty words, determine if s can be segmented into a space-separated sequence of one or more dictionary words. You may assume the dictionary does not contain duplicate words.

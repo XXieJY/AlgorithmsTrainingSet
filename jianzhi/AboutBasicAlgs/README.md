@@ -206,7 +206,8 @@ class Solution{
 * 同时，递归排序的核心代码也就是标准的分治bottom-up的代码。
 
 
-* 分治bottom up代码
+* 分治bottom up代码  
+
 ```cpp
 class Solution{
     void mergeSort(...)
@@ -226,7 +227,8 @@ class Solution{
 
 ```
 
-* 标准归并排序代码
+* 标准归并排序代码  
+
 ```cpp
 //递归地完成归并排序
 void mergeSort(int a[], int first, int last, int temp[])
@@ -514,8 +516,413 @@ public:
 ---
 
 ### 树的算法：树的遍历(前/中/后/层序)、树的恢复(前+中/中+后恢复树)、树的分解(树转数组、树转链表)
-参考TreeAndLinkedList的文档
+
+#### 树的遍历(前/中/后/层序)
+
+* 递归法二叉树前序遍历
+144. Binary Tree Preorder Traversal
+```cpp
+void PreOrder(TreeNode *root)
+{
+    //递归出口
+    if(root == NULL)
+    {
+        return;
+    }
+    //前序遍历在当前节点先做些操作
+    //do something here
+    PreOrder(root->left);
+    PreOrder(root->right);
+    //如果还需要前序遍历的递归中结合一点bottom up的操作应该写在这里
+    //do bottom up operations
+
+}
+
+```
+
+* 非递归法二叉树前序遍历  
+用非递归的方法，这就要用到栈辅助二叉树遍历。由于先序遍历的顺序是"根-左-右", 算法为：
+1. 把根节点push到栈中
+2. 循环检测栈是否为空，若不空，则取出栈顶元素，保存其值，然后看其右子节点是否存在，若存在则push到栈中。再看其左子节点，若存在，则push到栈中。  
+
+代码如下：
+```cpp
+class Solution {
+public:
+    vector<int> preorderTraversal(TreeNode* root) {
+        if (!root)
+        {
+            return{};
+        }
+        vector<int> res;
+        stack<TreeNode*> s {{root}};
+        while (!s.empty())
+        {
+            TreeNode *t = s.top();
+            s.pop();
+            res.push_back(t->val);
+            if (t->right)
+            {
+                s.push(t->right);
+            }
+            if (t->left)
+            {
+                s.push(t->left);
+            }
+        }
+        return res;
+    }
+};
+```
 
 
+* 中序遍历的递归解法：
+```cpp
+// Recursion
+class Solution {
+public:
+    vector<int> inorderTraversal(TreeNode *root) {
+        vector<int> res;
+        inorder(root, res);
+        return res;
+    }
+    void inorder(TreeNode *root, vector<int> &res) {
+        //递归出口
+        if (!root)
+        {
+          return;
+        }
+        if (root->left)
+        {
+          inorder(root->left, res);
+        }
+        //中序遍历先左，然后再对当前节点做一些操作
+        //do somethin here
+        res.push_back(root->val);
+        //最后再右
+        if (root->right)
+        {
+          inorder(root->right, res);
+        }
+    }
+};
+```
 
----
+* 中序遍历非递归解法*：  
+需要用栈来做，思路是从根节点开始，先将根节点压入栈，然后再将其所有左子结点压入栈，然后取出栈顶节点。  
+保存节点值，再将当前指针移到其右子节点上，若存在右子节点，则在下次循环时又可将其所有左子结点压入栈中。这样就保证了访问顺序为左-根-右，代码如下：
+
+```cpp
+class Solution {
+public:
+    vector<int> inorderTraversal(TreeNode *root) {
+        vector<int> res;
+        stack<TreeNode*> s;
+        TreeNode *p = root;
+        while (p || !s.empty())
+        {
+            //将当前节点和其所有左子节点入栈
+            while (p)
+            {
+                s.push(p);
+                p = p->left;
+            }
+            //取出栈顶节点并访问
+            p = s.top();
+            s.pop();
+            res.push_back(p->val);
+            //然后转向这个节点的右子节点
+            p = p->right;
+        }
+        return res;
+    }
+};
+```
+
+
+* 后序遍历递归解法*：
+
+```cpp
+class Solution {
+public:
+    vector<int> inorderTraversal(TreeNode *root) {
+        vector<int> res;
+        inorder(root, res);
+        return res;
+    }
+    void inorder(TreeNode *root, vector<int> &res) {
+        //递归出口
+        if (!root)
+        {
+          return;
+        }
+        if (root->left)
+        {
+          inorder(root->left, res);
+        }
+        //再右
+        if (root->right)
+        {
+          inorder(root->right, res);
+        }
+        //最后再对当前节点做一些操作
+        //do somethin here
+        res.push_back(root->val);
+    }
+};
+```
+
+* 后序遍历非递归解法*：
+由于后序遍历的顺序是左-右-根，而先序遍历的顺序是根-左-右，二者其实还是很相近的，我们可以先在先序遍历的方法上做些小改动，使其遍历顺序变为根-右-左，然后翻转一下，就是左-右-根啦，翻转的方法我们使用反向Q，哦不，是反向加入结果res，每次都在结果res的开头加入结点值，而改变先序遍历的顺序就只要该遍历一下入栈顺序，先左后右，这样出栈处理的时候就是先右后左啦，参见代码如下：
+
+
+```cpp
+class Solution {
+public:
+    vector<int> postorderTraversal(TreeNode* root) {
+        if (!root) return {};
+        vector<int> res;
+        stack<TreeNode*> s{{root}};
+        while (!s.empty()) {
+            TreeNode *t = s.top(); s.pop();
+            res.insert(res.begin(), t->val);
+            if (t->left) s.push(t->left);
+            if (t->right) s.push(t->right);
+        }
+        return res;
+    }
+};
+```
+
+* 二叉树层序遍历（队列辅助层序遍历）
+解题思路：  
+* 层序遍历二叉树是典型的广度优先搜索BFS的应用，但是这里稍微复杂一点的是，我们要把各个层的数分开，存到一个二维向量里面。
+* 大体思路还是基本相同的，建立一个queue，然后先把根节点放进去，这时候找根节点的左右两个子节点，这时候去掉根节点，此时queue里的元素就是下一层的所有节点。
+* 用一个for循环遍历它们，然后存到一个一维向量里，遍历完之后再把这个一维向量存到二维向量里，以此类推，可以完成层序遍历。代码如下：
+
+```cpp
+class Solution {
+public:
+    vector<vector<int> > levelOrder(TreeNode *root) {
+        //判断边界条件
+        if (root == NULL)
+        {
+          return res;
+        }
+        //声明辅助变量
+        //res保存层序遍历值，queue辅助层序遍历，层序遍历需要首先把根节点插入队列
+        vector<vector<int> > res;
+        queue<TreeNode*> q;
+        q.push(root);
+        while (!q.empty()) {
+            vector<int> oneLevel;
+            int size = q.size();
+            //每层只在queue中取当前size个的节点
+            for (int i = 0; i < size; ++i) {
+                TreeNode *node = q.front();
+                q.pop();
+                oneLevel.push_back(node->val);
+                if (node->left) q.push(node->left);
+                if (node->right) q.push(node->right);
+            }
+            res.push_back(oneLevel);
+        }
+        return res;
+    }
+};
+```
+
+### 二叉树重建相关问题*：
+**使用递归、前中后序的知识（二叉树和数组重建、二叉树和链表重建）**  
+
+
+首先树的重建也可以算作遍历树的相关问题，然后遍历树的问题都要和递归有关系。  
+
+首先要明确前序遍历和中序遍历之间的关系：  
+  * 前序遍历的顺序为：根左右  
+  * 中序遍历的顺序为：左根右  
+
+因此可以根据这个关系指定重建树的递归规则：
+  1. 我们先根据前序遍历序列的第一个确定根，然后在中序遍历的序列中找到根的位置，根左边的就是其左子树，右边就是其右子树
+  2. 构建根和左右子树
+  3. 递归的进行1和2
+
+
+#### （用前序遍历和中序遍历还原二叉树）
+解题思路*：  
+* 由于先序的顺序的第一个肯定是根，所以原二叉树的根节点可以知道，题目中给了一个很关键的条件就是树中没有相同元素，有了这个条件我们就可以在中序遍历中也定位出根节点的位置，并以根节点的位置将中序遍历拆分为左右两个部分，分别对其递归调用原函数。代码如下：
+
+```cpp
+class Solution {
+public:
+    TreeNode *buildTree(vector<int> &preorder, vector<int> &inorder)
+    {
+        return buildTree(preorder, 0, preorder.size() - 1, inorder, 0, inorder.size() - 1);
+    }
+    TreeNode *buildTree(vector<int> &preorder, int pLeft, int pRight, vector<int> &inorder, int iLeft, int iRight)
+    {
+        if (pLeft > pRight || iLeft > iRight)
+        {
+            return NULL;
+        }
+        int i = 0;
+        for (i = iLeft; i <= iRight; ++i)
+        {
+            if (preorder[pLeft] == inorder[i]) break;
+        }
+        TreeNode *cur = new TreeNode(preorder[pLeft]);
+        cur->left = buildTree(preorder, pLeft + 1, pLeft + i - iLeft, inorder, iLeft, i - 1);
+        cur->right = buildTree(preorder, pLeft + i - iLeft + 1, pRight, inorder, i + 1, iRight);
+        return cur;
+    }
+};
+```
+
+#### （用中序遍历和后序遍历还原二叉树）
+解题思路*：  
+* 我们知道中序的遍历顺序是左-根-右，后序的顺序是左-右-根，对于这种树的重建一般都是采用递归来做。
+* 由于后序的顺序的最后一个肯定是根，所以原二叉树的根节点可以知道，题目中给了一个很关键的条件就是树中没有相同元素，有了这个条件我们就可以在中序遍历中也定位出根节点的位置，并以根节点的位置将中序遍历拆分为左右两个部分，分别对其递归调用原函数。代码如下：
+
+```cpp
+class Solution {
+public:
+    TreeNode *buildTree(vector<int> &inorder, vector<int> &postorder) {
+        return buildTree(inorder, 0, inorder.size() - 1, postorder, 0, postorder.size() - 1);
+    }
+    TreeNode *buildTree(vector<int> &inorder, int iLeft, int iRight, vector<int> &postorder, int pLeft, int pRight) {
+        if (iLeft > iRight || pLeft > pRight) return NULL;
+        TreeNode *cur = new TreeNode(postorder[pRight]);
+        int i = 0;
+        for (i = iLeft; i < inorder.size(); ++i) {
+            if (inorder[i] == cur->val) break;
+        }
+        cur->left = buildTree(inorder, iLeft, i - 1, postorder, pLeft, pLeft + i - iLeft - 1);
+        cur->right = buildTree(inorder, i + 1, iRight, postorder, pLeft + i - iLeft, pRight - 1);
+        return cur;
+    }
+};
+```
+
+### 树的分解
+
+
+#### 二叉树转链表（先序遍历将二叉树展开）
+解题思路：  
+* 利用DFS的思路找到最左子节点，然后回到其父节点，把其父节点和右子节点断开，将原左子结点连上父节点的右子节点上，然后再把原右子节点连到新右子节点的右子节点上，然后再回到上一父节点做相同操作。代码如下：
+
+```cpp
+// Recursion
+class Solution {
+public:
+    void flatten(TreeNode *root) {
+        //选是一波dfs找到最左叶子节点
+        if (!root)
+        {
+             return;
+        }
+        if (root->left)
+        {
+            flatten(root->left);
+        }
+        if (root->right)
+        {
+            flatten(root->right);
+        }
+
+        //然后bottom-up地展开二叉树
+        TreeNode *tmp = root->right;
+        root->right = root->left;
+        root->left = NULL;
+        while (root->right)
+        {
+             root = root->right;
+        }
+        root->right = tmp;
+    }
+};
+```
+
+
+#### BST转双向链表
+**题目描述**
+
+输入一棵二叉搜索树，将该二叉搜索树转换成一个排序的双向链表。
+要求不能创建任何新的结点，只能调整树中结点指针的指向。
+
+##### 解题思路：
+将BST转换为有序双向链表是一道比较常考的题目，因为同时考察到了BST的性质，同时又是和链表
+指针操作密切相关的实操题目。  
+首先，变换BST的前提是了解BST的基本性质：
+  * BST的左节点的值 < 根结点的值 < 右子节点的值
+  * BST的中序遍历结果是有序数列
+
+因此解法有两种：
+  * 解法一：  
+  在中序遍历的过程中完成从二叉搜索树到双向链表的转换，访问过程需修改为链接操作。  
+  这里需要注意的是：中序遍历中当前结点的前一个节点
+    * 要么是当前结点的左子树的的最右孩子  
+    * 要么是当前结点其前一个节点的右孩子    
+
+
+  * 中序遍历过程中需要做的就是：  
+    * 当前节点左指针指向前一个被访问节点  
+    * 如果前一个被访问节点不为NULL,则让前一个节点的右指针指向当前被访问节点
+    * 记录当前被访问节点为前一个被访问节点，然后继续访问右子树、继续中序遍历
+
+```cpp
+class Solution {
+public:
+    TreeNode* Convert(TreeNode* pRootOfTree)
+    {
+        if(pRootOfTree == NULL)
+        {
+            return NULL;
+        }
+
+        TreeNode *pLastNode = NULL;
+        ConvertRecursion(pRootOfTree, &pLastNode);
+
+        TreeNode *node = pLastNode;
+        while(pLastNode != NULL
+           && pLastNode->left != NULL)
+        {
+           pLastNode = pLastNode->left;
+        }
+
+        return pLastNode;
+    }
+
+    void ConvertRecursion(TreeNode *root, TreeNode **pLastNode)
+    {
+        //按中序遍历方式遍历BST同时在访问节点时构造双向链表
+        if(root == NULL)
+        {
+            return;
+        }
+        TreeNode *currNode = root;
+
+        //先递归左子树
+        if(currNode->left != NULL)
+        {
+            ConvertRecursion(root->left, pLastNode);
+        }
+
+
+        //再访问当前节点，将BST进行向双向链表的转化
+        currNode->left = *pLastNode;
+        if(*pLastNode != NULL)
+        {
+            (*pLastNode)->right = currNode;
+        }
+
+        //将当前节点记作上一个被访问节点
+        *pLastNode = currNode;
+
+        //继续按中序遍历访问右子树
+        if(currNode->right != NULL)
+        {
+            ConvertRecursion(currNode->right, pLastNode);
+        }
+    }
+};
+```

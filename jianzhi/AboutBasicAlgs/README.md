@@ -80,61 +80,61 @@ class Solution{
 * 在有重复有序数组中查找（那就是查找区间了）
 ```cpp
 class Solution{
-  vector<int> binarySearch(vector<int> E, int T)
-  {
-    if ((int S = E.size()) == 0)
+    vector<int> binarySearch(vector<int> E, int T)
     {
-      return -1;
-    }
+        if ((int S = E.size()) == 0)
+        {
+            return -1;
+        }
 
-    //初始化变量，先查找左边界
-    int L = 0, R = S - 1, pivot = 0, A = -1, B = -1;
-    while (L <= R)
-    {
-      pivot = L + (R - L) / 2;
-      //左右游标回向目标值的左边界靠拢
-      if (E[pivot] >= T)
-      {
-        R = pivot - 1;
-      }
-      else
-      {
-        L = pivot + 1;
-      }
+        //初始化变量，先查找左边界
+        int L = 0, R = S - 1, pivot = 0, A = -1, B = -1;
+        while (L <= R)
+        {
+            pivot = L + (R - L) / 2;
+            //左右游标回向目标值的左边界靠拢
+            if (E[pivot] >= T)
+            {
+                R = pivot - 1;
+            }
+            else
+            {
+                L = pivot + 1;
+            }
+        }
+        //注意这里的判断条件
+        //因为允许可重复查找则有可能会查找出边界或者结果事实上是大于Target的值
+        if (L < S && E[L] == T)
+        {
+            A = L;
+        }
+        else
+        {
+            return new vector<int>{-1, -1};
+        }
+        L = 0, R = S - 1, pivot = 0;
+        while (L <= R)
+        {
+            pivot = L + (R - L) / 2;
+            if (E[pivot] <= T)
+            {
+                L = pivot + 1;
+            }
+            else
+            {
+                R = pivot - 1;
+            }
+        }
+        //注意这里的判断条件
+        //因为允许可重复查找则有可能会查找出边界或者结果事实上是小于Target的值
+        if (R > = 0 && E[R] == T)
+        {
+            return new vector<int>{L, R};
+        }
+        else
+        {
+            return new vector<int>{-1, -1};
+        }
     }
-    //注意这里的判断条件
-    //因为允许可重复查找则有可能会查找出边界或者结果事实上是大于Target的值
-    if (L < S && E[L] == T)
-    {
-      A = L;
-    }
-    else
-    {
-      return new vector<int>{-1, -1};
-    }
-    L = 0, R = S - 1, pivot = 0;
-    while (L <= R)
-    {
-      pivot = L + (R - L) / 2;
-      if (E[pivot] <= T)
-      {
-        L = pivot + 1;
-      }
-      else
-      {
-        R = pivot - 1;
-      }
-    }
-    //注意这里的判断条件
-    //因为允许可重复查找则有可能会查找出边界或者结果事实上是小于Target的值
-    if (R > = 0 && E[R] == T)
-    {
-      return new vector<int>{L, R};
-    }
-    else
-    {
-      return new vector<int>{-1, -1};
-    }
-  }
-}
+}   
 ```

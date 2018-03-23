@@ -1,12 +1,10 @@
 # Leetcode
 
 DP的六种主流问题：
-1. 坐标型15%    
-2. 序列型30%  
-3. 双序列型30%  
-4. 划分型10%
-5. 背包型10%  
-6. 区间型5%  
+1. 坐标&序列DP    
+2. 划分DP
+3. 背包DP  
+4. 区间DP  
 
 ---
 
@@ -70,6 +68,46 @@ public:
             if (dp[i] < 0) return false;
         }
         return dp[n - 1] >= 0;
+    }
+};
+```
+
+#### 300. Longest Increasing Subsequence
+Given an unsorted array of integers, find the length of longest increasing subsequence.
+
+For example,
+Given [10, 9, 2, 5, 3, 7, 101, 18],
+The longest increasing subsequence is [2, 3, 7, 101], therefore the length is 4. Note that there may be more than one LIS combination, it is only necessary for you to return the length.
+
+Your algorithm should run in O(n2) complexity.
+
+Follow up: Could you improve it to O(n log n) time complexity?
+
+解题思路：
+* 无后效性与状态转移公式：因为DP问题会有无后效性，所以在坐标/序列型DP题里的状态转移公式大都只和前一个
+节点有关。LIS问题中也是：dp[i]只和dp[j]有关联，然后通过遍历nums[0:i-1]与dp[i]的关系，找到最大的dp[j]+1的值（最开始所有dp[i]都等于1）。
+* 找到当前dp[i]的最大值后，将其保存到res中，这样免去了再次遍历整个dp[i]寻找最大值的麻烦（在for循环中同时解dp问题和记录最大dp[i]的值）。
+
+
+```cpp
+class Solution {
+public:
+    int lengthOfLIS(vector<int>& nums)
+    {
+        vector<int> dp(nums.size(), 1);
+        int res = 0;
+        for (int i = 0; i < nums.size(); ++i)
+        {
+            for (int j = 0; j < i; ++j)
+            {
+                if (nums[i] > nums[j])
+                {
+                    dp[i] = max(dp[i], dp[j] + 1);
+                }
+            }
+            res = max(res, dp[i]);
+        }
+        return res;
     }
 };
 ```
@@ -532,50 +570,6 @@ public:
             }
         }
         return dp[T.size()][S.size()];
-    }
-};
-```
-
----
-
-## 序列型DP
-
-#### 300. Longest Increasing Subsequence
-Given an unsorted array of integers, find the length of longest increasing subsequence.
-
-For example,
-Given [10, 9, 2, 5, 3, 7, 101, 18],
-The longest increasing subsequence is [2, 3, 7, 101], therefore the length is 4. Note that there may be more than one LIS combination, it is only necessary for you to return the length.
-
-Your algorithm should run in O(n2) complexity.
-
-Follow up: Could you improve it to O(n log n) time complexity?
-
-解题思路：
-* 无后效性与状态转移公式：因为DP问题会有无后效性，所以在坐标/序列型DP题里的状态转移公式大都只和前一个
-节点有关。LIS问题中也是：dp[i]只和dp[j]有关联，然后通过遍历nums[0:i-1]与dp[i]的关系，找到最大的dp[j]+1的值（最开始所有dp[i]都等于1）。
-* 找到当前dp[i]的最大值后，将其保存到res中，这样免去了再次遍历整个dp[i]寻找最大值的麻烦（在for循环中同时解dp问题和记录最大dp[i]的值）。
-
-
-```cpp
-class Solution {
-public:
-    int lengthOfLIS(vector<int>& nums)
-    {
-        vector<int> dp(nums.size(), 1);
-        int res = 0;
-        for (int i = 0; i < nums.size(); ++i)
-        {
-            for (int j = 0; j < i; ++j)
-            {
-                if (nums[i] > nums[j])
-                {
-                    dp[i] = max(dp[i], dp[j] + 1);
-                }
-            }
-            res = max(res, dp[i]);
-        }
-        return res;
     }
 };
 ```

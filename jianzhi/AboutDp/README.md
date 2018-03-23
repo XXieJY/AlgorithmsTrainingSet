@@ -300,12 +300,66 @@ public:
 ```
 
 ---
-## 字符串的匹配DP
+## 字符串的查找和匹配DP
 **只要是遇到字符串的子序列或是匹配问题直接就上动态规划Dynamic Programming，其他的都不要考虑，什么递归呀的都是浮云，千辛万苦的写了递归结果拿到OJ上妥妥Time Limit Exceeded，能把人气昏了，所以还是直接就考虑DP解法省事些。一般来说字符串匹配问题都是更新一个二维dp数组，核心就在于通过更新二维数组的规律找出状态转移公式。**
 
+#### 5. Longest Palindromic Substring（最长回文子串查找）
+Given a string s, find the longest palindromic substring in s. You may assume that the maximum length of s is 1000.  
+
+Example:  
+
+Input: "babad"  
+
+Output: "bab"  
+
+Note: "aba" is also a valid answer.  
+
+解题思路：  
+* 此题可以用动态规划Dynamic Programming来解。
+* 维护一个二维数组dp，其中dp[i][j]表示字符串区间[i, j]是否为回文串。
+  * 当i = j时，只有一个字符，肯定是回文串。
+  * 如果i = j + 1，说明是相邻字符，此时需要判断s[i]是否等于s[j]。
+  * 如果i和j不相邻，即i - j >= 2时，除了判断s[i]和s[j]相等之外，dp[j + 1][i - 1]若为真，就是回文串，通过以上分析，可以写出递推式如下：
+
+  >  dp[i, j] = 1,    if i == j  
+     dp[i, j]= s[i] == s[j],                                if j = i + 1  
+    dp[i, j]= s[i] == s[j] && dp[i + 1][j - 1],    if j > i + 1      
+
+```cpp
+class Solution {
+public:
+    string longestPalindrome(string s)
+    {
+        //初始化二维dp数组和一些辅助变量
+        //left right len 作为全局变量存储当前最长回文子串的左右边界以及长度
+        int dp[s.size()][s.size()] = {0}, left = 0, right = 0, len = 0;
+
+        //二维dp的for循环
+        for (int j = 0; j < s.size(); ++j)
+        {
+            //长度为1的子串一定是回文串
+            dp[j][j] = 1;
+            for (int i = 0; i < j; ++i)
+            {
+                //判断子串[i,j]是否是回文串的dp递推式
+                //即：(当前子串的两端字符是否相等 && (子串长度为1或者2 || 子串包含的子串[i+1 : j-1]是否是回文串)
+                dp[i][j] = (s[i] == s[j] && (j - i < 2 || dp[i + 1][j - 1]));
+                //如果当前回文串的长度大于记录中的回文串则替换它
+                if (dp[i][j] && len < j - i + 1)
+                {
+                    len = j - i + 1;
+                    left = i;
+                    right = j;
+                }
+            }
+        }
+        return s.substr(left, right - left + 1);
+    }
+};
+```
+
+
 #### 72. Edit Distance
-
-
 解题思路：  
 * 首先维护一个二维的数组dp，其中dp[i][j]表示从word1的前i个字符转换到word2的前j个字符所需要的步骤。那我们可以先给这个二维数组dp的第一行第一列赋值，这个很简单，因为第一行和第一列对应的总有一个字符串是空串，于是转换步骤完全是另一个字符串的长度。
 * 最短编辑距离可以看作路径DP的变化形式。主要是理解将编辑距离问题转化成二维DP问题后与原问题的对应关系。

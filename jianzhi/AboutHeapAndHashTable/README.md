@@ -3,6 +3,7 @@
 常见题型有：
 * K-th问题: 最大kth应该使用最小堆构造、最小kth应该使用最大堆构造，c++使用priority_queue实现最大最小堆；
 
+* hash-set 应该使用 unordered_map；
 
 ---
 

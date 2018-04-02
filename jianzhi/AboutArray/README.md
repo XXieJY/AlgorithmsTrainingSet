@@ -403,7 +403,40 @@ public:
 };
 ```
 
-#### 029 数组中出现次数超过一半的数字
+---
+
+### 数组元素的查找
+
+#### Third Maximum Number 第三大的数 (变量记录元素值法)
+解题思路：  
+这道题让我们求数组中第三大的数，如果不存在的话那么就返回最大的数，题目中说明了这里的第三大不能和第二大相同，必须是严格的小于，而并非小于等于。这道题并不是很难，如果知道怎么求第二大的数，那么求第三大的数的思路都是一样的。
+* 那么我们用三个变量first, second, third来分别保存第一大，第二大，和第三大的数，然后我们遍历数组，如果遍历到的数字大于当前第一大的数first，那么三个变量各自错位赋值，如果当前数字大于second，小于first，那么就更新second和third，如果当前数字大于third，小于second，那就只更新third；
+* 注意这里有个坑，就是初始化要用长整型long的最小值，否则当数组中有INT_MIN存在时，程序就不知道该返回INT_MIN还是最大值first了，参见代码如下：
+
+```cpp
+class Solution {
+public:
+    int thirdMax(vector<int>& nums) {
+        long first = LONG_MIN, second = LONG_MIN, third = LONG_MIN;
+        for (int num : nums) {
+            if (num > first) {
+                third = second;
+                second = first;
+                first = num;
+            } else if (num > second && num < first) {
+                third = second;
+                second = num;
+            } else if (num > third && num < second) {
+                third = num;
+            }
+        }
+        return (third == LONG_MIN || third == second) ? first : third;
+    }
+};
+```
+
+
+#### 029 数组中出现次数超过一半的数字(排序和查找法)
 题目描述
 数组中有一个数字出现的次数超过数组长度的一半，请找出这个数字。例如输入一个长度为9的数组{1,2,3,2,2,2,5,4,2}。由于数字2在数组中出现了5次，超过数组长度的一半，因此输出2。如果不存在则输出0。
 ##### 解题思路：
@@ -1100,7 +1133,89 @@ public:
 };
 ```
 
+### 子数组的和的相关问题
+计算子数组之和的常用方法应该是建立累加数组，然后我们可以快速计算出任意一个长度为k的子数组，用来更新结果res。
+
+#### Maximum Average Subarray I 子数组的最大平均值
+
+```cpp
+class Solution {
+public:
+    double findMaxAverage(vector<int>& nums, int k) {
+        int n = nums.size();
+        vector<int> sums = nums;
+        for (int i = 1; i < n; ++i) {
+            sums[i] = sums[i - 1] + nums[i];
+        }
+        double mx = sums[k - 1];
+        for (int i = k; i < n; ++i) {
+            mx = max(mx, (double)sums[i] - sums[i - k]);
+        }
+        return mx / k;
+    }
+};
+```
+
+#### Maximum Product Subarray 求最大子数组乘积
+
+解题思路：  
+* 这道题最直接的方法就是用DP来做，而且要用两个dp数组，其中f[i]表示子数组[0, i]范围内的最大子数组乘积，g[i]表示子数组[0, i]范围内的最小子数组乘积，初始化时f[0]和g[0]都初始化为nums[0]，其余都初始化为0。
+* 那么从数组的第二个数字开始遍历，那么此时的最大值和最小值只会在这三个数字之间产生，即f[i-1]*nums[i]，g[i-1]*nums[i]，和nums[i]。所以我们用三者中的最大值来更新f[i]，用最小值来更新g[i]，然后用f[i]来更新结果res即可，参见代码如下：
+
+```cpp
+class Solution {
+public:
+    int maxProduct(vector<int>& nums) {
+        int res = nums[0], n = nums.size();
+        vector<int> f(n, 0), g(n, 0);
+        f[0] = nums[0];
+        g[0] = nums[0];
+        for (int i = 1; i < n; ++i) {
+            f[i] = max(max(f[i - 1] * nums[i], g[i - 1] * nums[i]), nums[i]);
+            g[i] = min(min(f[i - 1] * nums[i], g[i - 1] * nums[i]), nums[i]);
+            res = max(res, f[i]);
+        }
+        return res;
+    }
+};
+```
+
+
 ### 数组排列组合+DFS
+
+#### 79. Word Search
+
+解题思路*：  
+这道题是典型的深度优先遍历DFS的应用，原二维数组就像是一个迷宫，可以上下左右四个方向行走，我们以二维数组中每一个数都作为起点和给定字符串做匹配，我们还需要一个和原数组等大小的visited数组，是bool型的，用来记录当前位置是否已经被访问过，因为题目要求一个cell只能被访问一次。如果二维数组board的当前字符和目标字符串word对应的字符相等，则对其上下左右四个邻字符分别调用DFS的递归函数，只要有一个返回true，那么就表示可以找到对应的字符串，否则就不能找到，具体看代码实现如下：
+
+```cpp
+class Solution {
+public:
+    bool exist(vector<vector<char> > &board, string word) {
+        if (word.empty()) return true;
+        if (board.empty() || board[0].empty()) return false;
+        vector<vector<bool> > visited(board.size(), vector<bool>(board[0].size(), false));
+        for (int i = 0; i < board.size(); ++i) {
+            for (int j = 0; j < board[i].size(); ++j) {
+                if (search(board, word, 0, i, j, visited)) return true;
+            }
+        }
+        return false;
+    }
+    bool search(vector<vector<char> > &board, string word, int idx, int i, int j, vector<vector<bool> > &visited) {
+        if (idx == word.size()) return true;
+        if (i < 0 || j < 0 || i >= board.size() || j >= board[0].size() || visited[i][j] || board[i][j] != word[idx]) return false;
+        visited[i][j] = true;
+        bool res = search(board, word, idx + 1, i - 1, j, visited)
+                 || search(board, word, idx + 1, i + 1, j, visited)
+                 || search(board, word, idx + 1, i, j - 1, visited)
+                 || search(board, word, idx + 1, i, j + 1, visited);
+        visited[i][j] = false;
+        return res;
+    }
+};
+```
+
 
 #### Combinations 组合项
 Given two integers n and k, return all possible combinations of k numbers out of 1 ... n.  
@@ -1371,6 +1486,47 @@ public:
 };
 ```
 
+#### Next Permutation 下一个排列
+这道题让我们求下一个排列顺序，有题目中给的例子可以看出来，如果给定数组是降序，则说明是全排列的最后一种情况，则下一个排列就是最初始情况，可以参见之前的博客 Permutations 全排列。我们再来看下面一个例子，有如下的一个数组  
+
+1　　2　　7　　4　　3　　1    
+
+下一个排列为：  
+
+1　　3　　1　　2　　4　　7  
+
+那么是如何得到的呢，我们通过观察原数组可以发现，如果从末尾往前看，数字逐渐变大，到了2时才减小的，然后我们再从后往前找第一个比2大的数字，是3，那么我们交换2和3，再把此时3后面的所有数字转置一下即可，步骤如下：  
+
+1　　2　　7　　4　　3　　1  
+
+1　　2　　7　　4　　3　　1  
+
+1　　3　　7　　4　　2　　1  
+
+1　　3　　1　　2　　4　　7  
+
+```cpp
+class Solution {
+public:
+    void nextPermutation(vector<int> &num) {
+        int i, j, n = num.size();
+        for (i = n - 2; i >= 0; --i) {
+            if (num[i + 1] > num[i]) {
+                for (j = n - 1; j > i; --j) {
+                    if (num[j] > num[i]) break;
+                }
+                swap(num[i], num[j]);
+                reverse(num.begin() + i + 1, num.end());
+                return;
+            }
+        }
+        reverse(num.begin(), num.end());
+    }
+};
+```
+
+
+
 
 ####  Subsets 子集合
 Given a set of distinct integers, S, return all possible subsets.  
@@ -1466,6 +1622,34 @@ public:
             out.pop_back();
             while (i + 1 < S.size() && S[i] == S[i + 1]) ++i;
         }
+    }
+};
+```
+
+### 滑动窗口计算数组的子数组
+解题思路：  
+这道题给了我们一个数组，让我们求最短的无序连续子数组，根据题目中的例子也不难分析出来是让我们找出数组中的无序的部分。
+* 那么我最开始的想法就是要确定无序子数组的起始和结束位置，这样就能知道子数组的长度了。
+    * 所以我们用一个变量start来记录起始位置，然后我们开始遍历数组，当我们发现某个数字比其前面的数字要小的时候，说明此时数组不再有序，所以我们要将此数字向前移动，移到其应该在的地方；
+    * 我们用另一个变量j来记录移动到的位置，然后我们考虑要不要用这个位置来更新start的值，当start还是初始值-1时，肯定要更新，因为这是出现的第一个无序的地方，还有就是如果当前位置小于start也要更新，这说明此时的无序数组比之前的更长了。
+* 我们举个例子来说明，比如数组[1,3,5,4,2]，第一个无序的地方是数字4，它移动到的正确位置是坐标2，此时start更新为2，然后下一个无序的地方是数字2，它的正确位置是坐标1，所以此时start应更新为1，这样每次用i - start + 1来更新结果res时才能得到正确的结果，参见代码如下：
+```cpp
+class Solution {
+public:
+    int findUnsortedSubarray(vector<int>& nums) {
+        int res = 0, start = -1, n = nums.size();
+        for (int i = 1; i < n; ++i) {
+            if (nums[i] < nums[i - 1]) {
+                int j = i;
+                while (j > 0 && nums[j] < nums[j - 1]) {
+                    swap(nums[j], nums[j - 1]);
+                    --j;
+                }
+                if (start == -1 || start > j) start = j;
+                res = max(res, i - start + 1);
+            }
+        }
+        return res;
     }
 };
 ```

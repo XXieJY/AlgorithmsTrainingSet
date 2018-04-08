@@ -405,7 +405,47 @@ public:
 
 ---
 
-### 数组元素的查找
+### 数组元素的搜索
+
+
+#### Search for a Range 搜索一个范围(数组的范围搜索：先确定一个位置，然后左右向外延伸)
+Given a sorted array of integers, find the starting and ending position of a given target value.  
+
+Your algorithm's runtime complexity must be in the order of O(log n).  
+
+If the target is not found in the array, return [-1, -1].  
+
+For example,  
+Given [5, 7, 7, 8, 8, 10] and target value 8,  
+return [3, 4].  
+
+解题思路：  
+* 这道题让我们在一个有序整数数组中寻找相同目标值的起始和结束位置，而且限定了时间复杂度为O(logn)，这是典型的二分查找法的时间复杂度，所以这道题我们也需要用此方法。
+* 我们的思路是首先对原数组使用二分查找法。
+    * 找出其中一个目标值的位置。
+    * 然后向两边搜索找出起始和结束的位置，代码如下：
+
+```cpp
+class Solution {
+public:
+    vector<int> searchRange(vector<int>& nums, int target) {
+        int idx = search(nums, 0, nums.size() - 1, target);
+        if (idx == -1) return {-1, -1};
+        int left = idx, right = idx;
+        while (left > 0 && nums[left - 1] == nums[idx]) --left;
+        while (right < nums.size() - 1 && nums[right + 1] == nums[idx]) ++right;
+        return {left, right};
+    }
+    int search(vector<int>& nums, int left, int right, int target) {
+        if (left > right) return -1;
+        int mid = left + (right - left) / 2;
+        if (nums[mid] == target) return mid;
+        else if (nums[mid] < target) return search(nums, mid + 1, right, target);
+        else return search(nums, left, mid - 1, target);
+    }
+};
+```
+
 
 #### Third Maximum Number 第三大的数 (变量记录元素值法)
 解题思路：  

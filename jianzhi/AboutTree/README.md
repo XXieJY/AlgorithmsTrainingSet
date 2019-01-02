@@ -1,27 +1,17 @@
-## 树（使用好递归、和层序遍历）*
-
-相关考点：  
-1. 二叉树遍历问题：二叉树的前中后序遍历，层序遍历的递归和非递归解法；
-
-2. 二叉树重建：使用递归、前中后序的知识（二叉树和数组重建、二叉树和链表重建）
-
-3. 树的匹配问题：使用递归，和特定匹配要求（相关题目：树的子结构、对称/镜像树、路径和值的匹配、树深度匹配）
-
-4. 二叉搜索树的问题： BST的前中后序、BST与双向链表转化
-
-5. 平衡二叉树问题：AVG的树判定、AVG树的性质；
-
-
-LeetCode中关于BST的题有Validate Binary Search Tree 验证二叉搜索树， Recover Binary Search Tree 复原二叉搜索树， Binary Search Tree Iterator 二叉搜索树迭代器， Unique Binary Search Trees 独一无二的二叉搜索树， Unique Binary Search Trees II 独一无二的二叉搜索树之二，Convert Sorted Array to Binary Search Tree 将有序数组转为二叉搜索树 , Convert Sorted List to Binary Search Tree 将有序链表转为二叉搜索树 和 Kth Smallest Element in a BST 二叉搜索树中的第K小的元素
-
----
+### 相关考点：  
+* 二叉树遍历问题：二叉树的前中后序遍历，层序遍历的递归和非递归解法；  
+* 二叉树重建：使用递归、前中后序的知识（二叉树和数组重建、二叉树和链表重建）
+* 树的匹配问题：使用递归，和特定匹配要求（相关题目：树的子结构、对称/镜像树、路径和值的匹配、树深度匹配）
+* 二叉搜索树的问题： BST的前中后序、BST与双向链表转化
+* 平衡二叉树问题：AVG的树判定、AVG树的性质；
 
 ### 树的算法：树的遍历(前/中/后/层序)、树的恢复(前+中/中+后恢复树)、树的分解(树转数组、树转链表)
 
-#### 树的遍历(前/中/后/层序)
+#### 树的前序遍历
 
 * 递归法二叉树前序遍历
-144. Binary Tree Preorder Traversal
+
+
 ```cpp
 void PreOrder(TreeNode *root)
 {
@@ -31,22 +21,25 @@ void PreOrder(TreeNode *root)
         return;
     }
     //前序遍历在当前节点先做些操作
+    cout << root->val;
     //do something here
     PreOrder(root->left);
     PreOrder(root->right);
     //如果还需要前序遍历的递归中结合一点bottom up的操作应该写在这里
+    //写在这里的代码会从叶子节点（也就是这里的递归出口）开始按bottom-up的顺序执行
     //do bottom up operations
 
 }
-
 ```
 
-* 非递归法二叉树前序遍历  
+* 非递归法二叉树前序遍历   
+
 用非递归的方法，这就要用到栈辅助二叉树遍历。由于先序遍历的顺序是"根-左-右", 算法为：
 1. 把根节点push到栈中
 2. 循环检测栈是否为空，若不空，则取出栈顶元素，保存其值，然后看其右子节点是否存在，若存在则push到栈中。再看其左子节点，若存在，则push到栈中。  
 
 代码如下：
+
 ```cpp
 class Solution {
 public:

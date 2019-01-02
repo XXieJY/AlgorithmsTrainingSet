@@ -1,5 +1,5 @@
 ### 相关考点：  
-* 二叉树遍历问题：二叉树的前中后序遍历，层序遍历的递归和非递归解法；  
+* 二叉树遍历问题：二叉树的前中后层序遍历的递归与非递归解法。
 * 二叉树重建：使用递归、前中后序的知识（二叉树和数组重建、二叉树和链表重建）
 * 树的匹配问题：使用递归，和特定匹配要求（相关题目：树的子结构、对称/镜像树、路径和值的匹配、树深度匹配）
 * 二叉搜索树的问题： BST的前中后序、BST与双向链表转化
@@ -248,83 +248,6 @@ public:
 };
 ```
 
-#### 求二叉树的高度和宽度：
-
-#### dfs求二叉树高度：
-解题思路：  
-这个可以使用递归，分别求出左子树的深度、右子树的深度，两个深度的较大值+1即可。
-
-```cpp
-int  getHeight(TreeNode root)
-{
-    if(root==null)
-       return 0;  
-   else{
-       int left=getHeight(root.left);
-       int right=getHeight(root.right);
-       return 1+Math.max(left,right);
-         }
-}
-```
-
-#### 求二叉树宽度
-求叶子树即为二叉树宽度：
-
-```cpp
-public  static int countOfLeaf(TreeNode root)
-{
-    int result=0;
-    if(root==null)
-      return 0;
-    if(root.left==null  || root.right==null)
-      return 1;
-    else
-         result= countOfLeaf(root.left)+countOfLeaf(root.right);
-
-    return result;
-
-
-}
-```
-
-### 二叉树的LCA（最近公共祖先）问题：
-
-#### 235 Lowest Common Ancestor of a Binary Search Tree
-解题思路：  
-这道题让我们求二叉搜索树的最小共同父节点,。这道题我们可以用BST递归来求解，我们首先来看题目中给的例子，由于二叉搜索树的特点是左<根<右，所以根节点的值一直都是中间值，大于左子树的所有节点值，小于右子树的所有节点值，那么我们可以做如下的判断，如果根节点的值大于p和q之间的较大值，说明p和q都在左子树中，那么此时我们就进入根节点的左子节点继续递归，如果根节点小于p和q之间的较小值，说明p和q都在右子树中，那么此时我们就进入根节点的右子节点继续递归，如果都不是，则说明当前根节点就是最小共同父节点，直接返回即可，参见代码如下：
-
-```cpp
-class Solution {
-public:
-    TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
-        if (!root) return NULL;
-        if (root->val > max(p->val, q->val))
-            return lowestCommonAncestor(root->left, p, q);
-        else if (root->val < min(p->val, q->val))
-            return lowestCommonAncestor(root->right, p, q);
-        else return root;
-    }
-};
-```
-
-#### 236 Lowest Common Ancestor of a Binary Tree
-解题思路：  
-这道求二叉树的最小共同父节点的题是之前那道Lowest Common Ancestor of a Binary Search Tree 二叉搜索树的最小共同父节点的Follow Up。跟之前那题不同的地方是，这道题是普通是二叉树，不是二叉搜索树，所以就不能利用其特有的性质，所以我们只能在二叉树中来搜索p和q，然后从路径中找到最后一个相同的节点即为父节点，我们可以用递归来实现，写法很简洁，代码如下：
-
-```cpp
-class Solution {
-public:
-    TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
-       if (!root || p == root || q == root) return root;
-       TreeNode *left = lowestCommonAncestor(root->left, p, q);
-       TreeNode *right = lowestCommonAncestor(root->right, p , q);
-       if (left && right) return root;
-       return left ? left : right;
-    }
-};
-```
-
-
 #### 二叉树重建相关问题*：  
 
 1. 用前序遍历和中序遍历还原二叉树
@@ -338,9 +261,12 @@ class Solution {
 public:
     TreeNode *buildTree(vector<int> &preorder, vector<int> &inorder)
     {
-        return buildTree(preorder, 0, preorder.size() - 1, inorder, 0, inorder.size() - 1);
+        return buildTree(preorder, 0, preorder.size() - 1,
+            inorder, 0, inorder.size() - 1);
     }
-    TreeNode *buildTree(vector<int> &preorder, int pLeft, int pRight, vector<int> &inorder, int iLeft, int iRight)
+
+    TreeNode *buildTree(vector<int> &preorder, int pLeft, int pRight,
+        vector<int> &inorder, int iLeft, int iRight)
     {
         if (pLeft > pRight || iLeft > iRight)
         {
@@ -352,8 +278,14 @@ public:
             if (preorder[pLeft] == inorder[i]) break;
         }
         TreeNode *cur = new TreeNode(preorder[pLeft]);
-        cur->left = buildTree(preorder, pLeft + 1, pLeft + i - iLeft, inorder, iLeft, i - 1);
-        cur->right = buildTree(preorder, pLeft + i - iLeft + 1, pRight, inorder, i + 1, iRight);
+        //preoder的剩余元素被递归地划分为[pLeft+1,pLeft+(i-ileft)]
+        //&[pleft+(i-iLeft)+1, pRight]。其中i-iLeft的值
+        //即为当前根节点的左子树的节点个数
+        //inoder的剩余元素被递归地划分为[iLeft, i-1]&[i+1,iRight]
+        cur->left = buildTree(preorder, pLeft + 1,
+            pLeft + (i - iLeft), inorder, iLeft, i - 1);
+        cur->right = buildTree(preorder, pLeft + (i - iLeft + 1),
+            pRight, inorder, i + 1, iRight);
         return cur;
     }
 };
@@ -370,37 +302,121 @@ public:
 class Solution {
 public:
     TreeNode *buildTree(vector<int> &inorder, vector<int> &postorder) {
-        return buildTree(inorder, 0, inorder.size() - 1, postorder, 0, postorder.size() - 1);
+        return buildTree(inorder, 0, inorder.size() - 1,
+            postorder, 0, postorder.size() - 1);
     }
-    TreeNode *buildTree(vector<int> &inorder, int iLeft, int iRight, vector<int> &postorder, int pLeft, int pRight) {
-        if (iLeft > iRight || pLeft > pRight) return NULL;
-        TreeNode *cur = new TreeNode(postorder[pRight]);
+
+    TreeNode *buildTree(vector<int> &inorder, int iLeft, int iRight,
+        vector<int> &postorder, int postLeft, int postRight)
+    {
+        if (iLeft > iRight || postLeft > postRight)
+            return NULL;    
         int i = 0;
-        for (i = iLeft; i < inorder.size(); ++i) {
+        for (i = iLeft; i < inorder.size(); ++i)
+        {
             if (inorder[i] == cur->val) break;
         }
-        cur->left = buildTree(inorder, iLeft, i - 1, postorder, pLeft, pLeft + i - iLeft - 1);
-        cur->right = buildTree(inorder, i + 1, iRight, postorder, pLeft + i - iLeft, pRight - 1);
+        //同理inorder剩余节点被递归划分为[iLeft, i-1]&[i+1, iRight]
+        //postorder剩余节点被递归划分为[postLeft, postLeft+(i-iLeft)-1]
+        //&[postLeft+(i-iLeft),postRight-1]
+        TreeNode *cur = new TreeNode(postorder[postRight]);
+        cur->left = buildTree(inorder, iLeft, i - 1,
+            postorder, postLeft, postLeft + (i-iLeft) - 1);
+        cur->right = buildTree(inorder, i + 1, iRight,
+            postorder, postLeft + (i-iLeft), postRight - 1);
         return cur;
     }
 };
 ```
 
-#### 树的分解
+#### 求二叉树的高度和宽度：
+
+#### dfs求二叉树高度：
+解题思路：  
+这个可以使用递归，分别求出左子树的深度、右子树的深度，两个深度的较大值+1即可。
+
+```cpp
+int  getHeight(TreeNode root)
+{
+    //递归出口，也就是叶子节点会接到从出口传来的返回值0
+    //此时叶子节点也就是会返回值1+Math.max(0,0)=1;
+    if(root==null)
+       return 0;  
+   else{
+       int left=getHeight(root.left);
+       int right=getHeight(root.right);
+       return 1+Math.max(left,right);
+         }
+}
+```
+
+#### 求二叉树宽度
+求叶子树即为二叉树宽度：
+递归地从底向上传递二叉树宽度
+
+```cpp
+public  static int countOfLeaf(TreeNode root)
+{
+    //空树的特殊情况
+    if(root==null)
+        return 0;
+    //递归出口：共统计三种情况(1.root.left!=null&&root.right==null)
+    //(2.root.left==null&&root.right!=null)
+    //(3.root.left==root.right==null)这三种情况都可以视作递归遇到叶子节点的
+    //出口，此时返回值是1.
+    if(root.left==null  || root.right==null)
+        return 1;
+    else
+        return countOfLeaf(root.left)+countOfLeaf(root.right);
+}
+```
+
+### 二叉树的LCA（最近公共祖先）问题：
+
+#### 235 Lowest Common Ancestor of a Binary Search Tree
+
+解题思路：  
+* 这道题让我们求二叉搜索树的最小共同父节点,这道题我们可以用BST广度优先搜索以递归的方式来求解。
+* 我们首先来看题目中给的例子，由于二叉搜索树的特点是左<根<右，所以根节点的值一直都是中间值，那么我们可以做如下的判断：
+    * 如果根节点的值大于p和q之间的较大值，说明p和q都在左子树中，那么此时我们就进入根节点的左子节点继续递归
+    * 如果根节点小于p和q之间的较小值，说明p和q都在右子树中，那么此时我们就进入根节点的右子节点继续递归
+    * 如果都不是，则说明当前根节点就是最小共同父节点，直接返回即可，参见代码如下：
+
+```cpp
+class Solution {
+public:
+    TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
+        //处理特殊情况即空树的情况
+        if (!root)
+            return NULL;
+        //如果当前根节点值大于p和q的最大值，则说明pq位于root的左子树
+        //则继续递归查找
+        if (root->val > max(p->val, q->val))
+            return lowestCommonAncestor(root->left, p, q);
+        //如果当前根节点值小于p和q的最小值，则说明pq位于root的右子树
+        else if (root->val < min(p->val, q->val))
+            return lowestCommonAncestor(root->right, p, q);
+        else return root;
+    }
+};
+```
+
+#### 树的操作
 1.  二叉树转链表（先序遍历将二叉树展开）  
 
 解题思路：  
 
-* 利用DFS的思路找到最左子节点，然后回到其父节点，把其父节点和右子节点断开，将原左子结点连上父节点的右子节点上.
-* 然后再把原右子节点连到新右子节点的右子节点上，然后再回到上一父节点做相同操作。代码如下：
+* 利用后序的思路走到最左子节点，然后bottom-up的做如下操作：
+    * 将当前节点右子节点备份，然后将当前节点右指针指向左子节点，并将左指针置空。
+    * 然后右指针向下找到叶子节点，将叶子节点指向备份的右子节点。
 
 ```cpp
 // Recursion
 class Solution {
 public:
     void flatten(TreeNode *root) {
-        //选是一波dfs找到最左叶子节点
-        if (!root)
+        //先是一波后序遍历找到最左叶子节点
+        if (root == nullptr)
         {
              return;
         }
@@ -442,16 +458,12 @@ public:
 
 因此解法有两种：
   * 解法一：  
-  在中序遍历的过程中完成从二叉搜索树到双向链表的转换，访问过程需修改为链接操作。  
-  这里需要注意的是：中序遍历中当前结点的前一个节点
-    * 要么是当前结点的左子树的的最右孩子  
-    * 要么是当前结点其前一个节点的右孩子    
 
-
-  * 中序遍历过程中需要做的就是：  
+  中序遍历过程中需要做的就是：  
+  * 记录当前被访问节点为前一个被访问节点，然后访问当前节点并作出如下动作：
     * 当前节点左指针指向前一个被访问节点  
     * 如果前一个被访问节点不为NULL,则让前一个节点的右指针指向当前被访问节点
-    * 记录当前被访问节点为前一个被访问节点，然后继续访问右子树、继续中序遍历
+  * 更新当前节点为下一个被访问节点的前一个被访问节点。并继续向右子树进行中序遍历重复如上操作。
 
 ```cpp
 class Solution {
@@ -459,54 +471,37 @@ public:
     TreeNode* Convert(TreeNode* pRootOfTree)
     {
         if(pRootOfTree == NULL)
-        {
             return NULL;
-        }
 
         TreeNode *pLastNode = NULL;
         ConvertRecursion(pRootOfTree, &pLastNode);
 
         TreeNode *node = pLastNode;
-        while(pLastNode != NULL
-           && pLastNode->left != NULL)
-        {
+        while(pLastNode != NULL&& pLastNode->left != NULL)
            pLastNode = pLastNode->left;
-        }
-
         return pLastNode;
     }
 
     void ConvertRecursion(TreeNode *root, TreeNode **pLastNode)
     {
-        //按中序遍历方式遍历BST同时在访问节点时构造双向链表
+        //递归出口，即访问到叶子节点的空指针时返回到上一层叶子节点
         if(root == NULL)
-        {
             return;
-        }
         TreeNode *currNode = root;
 
-        //先递归左子树
+        //按中序遍历方式进行bst转双向链表
         if(currNode->left != NULL)
-        {
             ConvertRecursion(root->left, pLastNode);
-        }
-
-
-        //再访问当前节点，将BST进行向双向链表的转化
+        //将当前节点左指针指向前一个被访问节点pLastNode
         currNode->left = *pLastNode;
+        //如果pLastNode非空则将pLastNode的右指针指向当前节点
         if(*pLastNode != NULL)
-        {
             (*pLastNode)->right = currNode;
-        }
-
         //将当前节点记作上一个被访问节点
         *pLastNode = currNode;
-
         //继续按中序遍历访问右子树
         if(currNode->right != NULL)
-        {
             ConvertRecursion(currNode->right, pLastNode);
-        }
     }
 };
 ```
@@ -514,10 +509,9 @@ public:
 ---
 
 ### 树的匹配问题*
-**使用递归，和特定匹配要求（相关题目：树的子结构、对称/镜像树、路径和值的匹配、树深度匹配）**
 
 
-#### 100. Same Tree
+1. Same Tree  
 解题思路：  
 判断两棵树是否相同和之前的判断两棵树是否对称都是一样的原理，利用深度优先搜索DFS来递归。代码如下：
 
@@ -525,18 +519,24 @@ public:
 class Solution {
 public:
     bool isSameTree(TreeNode *p, TreeNode *q) {
-        if (!p && !q) return true;
-        if ((p && !q) || (!p && q) || (p->val != q->val)) return false;
+        //当且仅当树p和树q的所有节点都匹配完了，说明p,q是同一个树
+        if (p == nullptr && q == nullptr)
+            return true;
+        //p,q不能完全匹配完整，或者当前p,q节点不匹配时返回false
+        if ((p !== nullptr && q == nullptr)
+            || (p == nullptr && q != nullptr)|| (p->val != q->val))
+            return false;
+        //继续层序地递归匹配
         return isSameTree(p->left, q->left) && isSameTree(p->right, q->right);
     }
 };
 ```
 
-#### 018 树的子结构
-题目描述*:
-> 输入两颗二叉树A，B，判断B是不是A的子结构。
+2.  树的子结构
 
-#####解题思路：  
+输入两颗二叉树A，B，判断B是不是A的子结构。
+
+解题思路：  
 要查找树A中是否存在和树B结构一样的子树，可以分成两步递归：  
 
 1. 第一步：  
@@ -562,63 +562,52 @@ class Solution {
 public:
     bool HasSubtree(TreeNode* A, TreeNode* B)
     {
-        //第一个递归，在A中找到B的根节点相等的节点，并调用第二递归进行判定
-        if(B == NULL || A == NULL)
-        {
+        //包含特殊情况B树为空树，返回false
+        //若A节点都不能作为B的根节点，也返回false
+        if(A == NULL || B == NULL)
             return false;
-        }
 
+        //先递归地从A中匹配到B树的根节点
         bool result;
         result = false;
         if(A->val == B->val)
         {
-            result = DoesAHaveB(A, B);
-        }
-
-        if(result != true)
-        {
-            return HasSubtree(A->left, B)
-            || HasSubtree(A->right, B);    
+            if(!DoesAHaveB(A,B))
+                return HasSubtree(A->left,B) || HasSubtree(A->right,B);
+            else
+                return true;
         }
         else
-        {
-            return true;
-        }
+            return HasSubtree(A->left,B) || HasSubtree(A->right,B);
 
     }
 
     bool DoesAHaveB(TreeNode *A, TreeNode *B)
     {
-        if(B == NULL)      //  子树为NULL，那么必然是子树
-        {
+        //如果B的节点全部匹配完了，说明B是A的子树
+        if(B == NULL)      
             return true;
-        }
-        else if(A == NULL)      //  子树不是NULL, 但是父亲树是NULL
-        {
+        //如果B的节点没有匹配完毕但是A的可用匹配节点已经用完了，说明B不是A子树
+        if(A == NULL)  
             return false;
-        }
-
-        //  两个节点的值不相等，那么两个树必然不是父子关系
+        // 当前AB节点的值不相等，那么两个树必然不是父子关系
         if(A->val != B->val)
-        {
             return false;
-        }
-        else      // 否则当前节点当前相等，则递归的判断左子树和右子树对应节点是否相同
-        {
+        //如果AB节点都没有匹配完毕且当前AB节点值是匹配的则继续层序递归地匹配下去
+        else      
             return DoesAHaveB(A->left, B->left)
                 && DoesAHaveB(A->right, B->right);
-        }
     }
 };
 ```
 
-#### 059 对称的二叉树 101. Symmetric Tree
+3. 对称的二叉树 101. Symmetric Tree  
 **题目描述**：  
 请实现一个函数，用来判断一颗二叉树是不是对称的。
 注意，如果一个二叉树同此二叉树的镜像是同样的，定义其为对称的
 
 
-#####题目分析：  
+题目分析：  
 判断二叉树是否对称和二叉树镜像是一类题目。
   * 制造二叉树镜像时就是层序遍历然后交换左右子树；
   * 所以判断二叉树镜像时可以层序遍历然后判断当前结点的左右子结点是否相等。
@@ -630,9 +619,7 @@ public:
     bool isSymmetrical(TreeNode* pRoot)
     {
         if(pRoot == NULL)
-        {
-            return true;   
-        }
+            return true;  
         return isSymmetricalRecursion(pRoot->left, pRoot->right);
     }
 
@@ -640,24 +627,15 @@ public:
     {
         //层序遍历：先判断左右子节点是否相等。
         if(pLeft->val != pRight->val)
-        {
             return false;
-        }
-
-        //然后继续左右子树的判断
-        //首先判断左右子节点是否同时为空
+        //左右子树节点均匹配完毕，返回true
         if(pLeft == NULL && pRight == NULL)
-        {
             return true;
-        }
-        if((pLeft == NULL && pRight != NULL) ||
-              (pLeft != NULL && pRight == NULL))
-        {
+        //此时说明pLeft和pRight不同时为空但是有一个节点是空
+        //说明左右子树节点数目不对称，一边匹配完了另一边仍剩余节点
+        if(pLeft == NULL || pRight == NULL)
             return false;
-        }
-
-        //  左子树的左与右子树的右对称
-        //  左子树的右与右子树的左对称
+        //左子树的左与右子树的右对称,左子树的右与右子树的左对称
         return isSymmetricalRecursion(pLeft->left, pRight->right)
             && isSymmetricalRecursion(pLeft->right, pRight->left);
     }
@@ -665,12 +643,12 @@ public:
 ```
 
 
-#### 019 二叉树的镜像
+4.  二叉树的镜像  
 题目描述
 
 操作给定的二叉树，将其变换为源二叉树的镜像。
 
-#####解题思路：  
+解题思路：  
 1. 递归解法制造镜像二叉树最简单： 按照先序遍历访问每个节点，然后交换当前节点的左右指针
 即可。
 
@@ -694,144 +672,12 @@ public:
 };
 ```
 
-2. 非递归解法:  
-非递归遍历树时必须使用栈对必要的节点指针进行保存。
 
 
-```cpp
-class Solution
-{
-public:
-    //第一个算法直接用栈模拟先序遍历的完整过程
-    void MirrorPre(TreeNode *root)
-    {
-        if(root == NULL)
-        {
-            return ;
-        }
+5.  二叉树中和为某一值的路径  
 
-        stack<TreeNode *> nstack;
-        TreeNode *node = root;
-
-        while(node != NULL
-           || nstack.empty( ) != true)
-        {
-            while(node != NULL)
-            {
-                //先序遍历先访问当前节点
-                if(node->left != NULL || node->right != NULL)
-                {
-                    swap(node->left, node->right);
-                }
-                //然后将当前节点存到栈，因为后面还需要它来访问右子树
-                nstack.push(node);
-                //然后继续访问左子节点
-                node = node->left;
-            }
-
-            //直到当前节点为空，访问上一个节点的右子节点
-            if(nstack.empty( ) != true)
-            {
-                node = nstack.top( );
-                nstack.pop( );
-                node = node->right;
-            }
-        }
-    }
-
-    //第二个事实上是一个BFS算法，宽度优先遍历/**层序遍历树**
-    void MirrorPreBFS(TreeNode *root)
-    {
-        if(root == NULL)
-        {
-            return;
-        }
-        TreeNode *node;
-        stack<TreeNode *> nstack;
-
-        nstack.push(root);
-        while(nstack.empty() != true)
-        {
-            node = nstack.top( );
-            nstack.pop( );
-
-            //  先交换, 然后递归左，接着递归右
-            //  相当与一次前序遍历
-            if(node->left != NULL || node->right != NULL)
-            {
-                swap(node->left, node->right);
-            }
-
-            if(node->left != NULL)
-            {
-                nstack.push(node->left);
-            }
-            if(node->right != NULL)
-            {
-                nstack.push(node->right);
-            }
-        }
-    }
-
-};
-```
-
-```cpp
-//中序遍历
-class Solution
-{
-public:
-    void MirrorIn(TreeNode *root)
-    {
-        if(root == NULL)
-        {
-            debug <<"The tree is NULL..." <<endl;
-            return NULL;
-        }
-
-        stack<TreeNode *> nstack;
-        TreeNode *node = root;
-
-        //  开始遍历整个二叉树
-        while(node != NULL || nstack.empty() != true)
-        {
-            // 不输出当前根节点，但是递归直至当前根节点node的最左端
-            while(node != NULL)
-            {
-                nstack.push(node);
-                node = node->left;
-            }
-
-            //  此时栈顶的元素是当前最左元素
-            //  它应该被输出
-            if(nstack.empty( ) != true)
-            {
-                node = nstack.top( );
-
-                //  将原来的输出改为交换左右子树即可
-                if(node->left != NULL || node->right != NULL)
-                {
-                    swap(node->left, node->right);
-                }
-
-                nstack.pop( );
-                //  中序遍历输出根后，向右转向
-                //  此时由于左右子树交换，因此原来的右子树是其左子树，向左转向
-                node = node->left;
-            }
-        }
-    }
-
-};
-```
-
-#### 025 二叉树中和为某一值的路径
-
-题目描述
-输入一颗二叉树和一个整数，打印出二叉树中结点值的和为输入整数的所有路径。路径定义为从树的根结点开始往下一直到叶结点所经过的结点形成一条路径
-
-#####解题思路：
-思路还是比较好想的，用个递归来实现，先序遍历，
+解题思路：
+用先序遍历，递归来实现。
 
 * 每次访问一个节点，那么就将当前权值求和
 * 如果当前权值和与期待的和一致，那么说明我们找到了一个路径，保存或者输出

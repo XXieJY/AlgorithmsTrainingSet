@@ -690,52 +690,37 @@ class Solution
 {
 public:
     vector< vector<int> > m_res;
-
     vector< vector<int> > FindPath(TreeNode* root, int expectNumber)
     {
         if(root == NULL)
-        {
             return m_res;
-        }
+
         vector<int> path;
         FindPath(root, expectNumber, path, 0);
 
         return m_res;
     }
 
-    void FindPath(TreeNode* root, int expectNumber, vector<int> path, int currentSum)
+    //注意这里的递归是传值而非传引用。
+    //而且因为传值的特性也起到了回溯路径records的功能
+    void FindPath(TreeNode* root, int expectNumber,
+        vector<int> path, int currentSum)
     {
         currentSum += root->val;
         path.push_back(root->val);
 
-        ///
-        if(currentSum == expectNumber
-        && ((root->left == NULL && root->right == NULL)))
-        {
-            debug <<"find a path" <<endl;
-            for(int i = 0; i < path.size( ); i++)
-            {
-                debug <<path[i] <<" ";
-            }
-            debug <<endl;
-
+        //如果当前节点是叶子节点且currentSum等于expectedNumber
+        //则说明找到一条合法路径
+        if(root->left == NULL && root->right == NULL
+            && currentSum == expectNumber)
             m_res.push_back(path);
-        }
-
+        //如果左子节点非空，则继续往下找
         if(root->left != NULL)
-        {
             FindPath(root->left, expectNumber, path, currentSum);
-        }
+        //如果右子节点非空则继续往下找
         if(root->right != NULL)
-        {
             FindPath(root->right, expectNumber, path, currentSum);
-        }
 
-        //  此处不需要恢复currentSum和path的值:                                  
-        //  因为currentSum作为参数在函数递归调用返回时会自动恢复                 
-        //  而如果作为静态局部变量存储则需要进行恢复                             
-        //currentSum -= root->val;                                               
-       //path.pop_back( );      
     }
 
 };
@@ -750,8 +735,11 @@ public:
 本题是一道比较简单地题目，主要考察树的深度遍历方法。然后值得注意的就是，递归两种主要的解题&参数传递的思路，一种是自顶向下的，另一种是自底向上的。  
 相关链接： [树的遍历](http://blog.csdn.net/gatieme/article/details/51163010)
 
-* 自顶向下传递参数的递归思路：
+* 自顶向下传递参数的递归思路：  
+**因此top-down是将算法信息放置在递归接口参数中传递下去**
 ```cpp
+public:
+int depth = 0;
 int TreeDepthRecursion(TreeNode *root, int depth)
     {
         if(root == NULL)
@@ -760,7 +748,8 @@ int TreeDepthRecursion(TreeNode *root, int depth)
         }
         else
         {
-            //Top-down应该随着递归参数一起传递给下一个递归
+            //将当前节点的深度depth+1以top-down地方向传递到下一层
+            //因此top-down是将算法信息放置在递归接口参数中传递下去
             int leftDepth = TreeDepthRecursion(root->left, depth + 1);
             int rightDepth = TreeDepthRecursion(root->right, depth + 1);
             return max(leftDepth, rightDepth);
@@ -769,7 +758,7 @@ int TreeDepthRecursion(TreeNode *root, int depth)
 ```
 
 * 自底向上返回参数的递归思路：  
-Bottom up的递归应该写在递归调用代码的最后面
+**Bottom up是将算法信息return的方式返回到上一层调用该接口的代码段对象中去。**
 ```cpp
 int TreeDepthRecursion(TreeNode *root)
     {
@@ -789,15 +778,15 @@ int TreeDepthRecursion(TreeNode *root)
 
 #### 058 二叉树的下一个结点
 **题目描述**  
-给定一个二叉树和其中的一个结点，请找出中序遍历顺序的下一个结点并且返回。注意，树中的结点不仅包含左右子结点，同时包含指向父结点的指针。
+给定一个二叉树和其中的一个结点，请找出中序遍历顺序的下一个结点
 
 **解题思路**：  
 中序遍历时，当前结点与下一个被遍历到的结点间的关系是：
-  * 如果当前结点有右子树, 那么其中序遍历的下一个结点就是其右子树的最左结点；
+* 1.有无右子树：
+    * 如果当前结点有右子树:  那么其中序遍历的下一个结点就是其右子树的最左结点；
+    * 如果当前结点没有右子树&它是其父结点的左子结点:那么其中序遍历的下一个结点就是他的父亲结点；
+    * 如果当前结点没有右子树&它是其父结点的右子结点:这种情况下其下一个结点应该是当前结点所在的左子树的根节点, 因此我们可以顺着其父节点一直向上遍历, 直到找到一个是它父结点的左子结点的结点。
 
-  * 如果当前结点没有右子树, 而它是其父结点的左子结点那么其中序遍历的下一个结点就是他的父亲结点；
-
-  * 如果当前结点没有右子树，而它还是其父结点的右子结点，这种情况下其下一个结点应该是当前结点所在的左子树的根, 因此我们可以顺着其父节点一直向上遍历, 直到找到一个是它父结点的左子结点的结点。
 
   ```cpp
   class Solution {
@@ -805,39 +794,31 @@ int TreeDepthRecursion(TreeNode *root)
       TreeLinkNode* GetNext(TreeLinkNode* pNode)
       {
           if(pNode == NULL)
-          {
               return NULL;
-          }
 
           TreeLinkNode *pNext = NULL;
-
           //  如果当前结点有右子树, 那么其中序遍历的下一个结点就是其右子树的最左结点
           if(pNode->right != NULL)
           {
               //  找到右子树的最左孩子
               pNext = pNode->right;
               while(pNext->left != NULL)
-              {
                   pNext = pNext->left;
-              }
+              return pNext;
           }
           else if(pNode->right == NULL && pNode->next != NULL)
           {
               TreeLinkNode *pCurrent = pNode;
               TreeLinkNode *pParent = pNode->next;
-              //  如果当前结点是其父结点的左子结点那么其中序遍历的
-              //  下一个结点就是他的父亲结点
 
-              //  如果当前结点是其父结点的右子结点，
-              //  这种情况下其下一个结点应该是当前结点所在的左子树的根
-              //  因此我们可以顺着其父节点一直向上遍历,
-              //  直到找到一个是它父结点的左子结点的结点
+              //如果pCurrent就直接是pParent的左子节点，则跳过while直接将pParent返回
+              //如果pCurrent是pParent的右子节点，则向上查找pParent节点直至pCurrent==pParent->left返回pParent或者pParent为NULL则返回NULL
               while(pParent != NULL && pCurrent == pParent->right)
               {
                   pCurrent = pParent;
                   pParent = pParent->next;
               }
-              pNext = pParent;
+              reutnr pParent;
           }
 
           return pNext;

@@ -1,35 +1,210 @@
-#### 315. Count of Smaller Numbers After Self
+#### 463. Island Perimeter(和dfs无关的，求岛屿周长，且图中只有一个岛屿（因为只有一个岛屿所以和连通子、DFS算法什么的都没关系）)
+
 解题思路：  
-这道题给定我们一个数组，让我们计算每个数字右边所有小于这个数字的个数，目测我们不能用brute force，OJ肯定不答应。
-* 那么我们为了提高运算效率，首先可以使用用二分搜索法，思路是将给定数组从最后一个开始，用二分法插入到一个新的数组，这样新数组就是有序的，那么此时该数字在新数组中的坐标就是原数组中其右边所有较小数字的个数，参见代码如下：
+* 这道题给了我们一个格子图，若干连在一起的格子形成了一个小岛，规定了图中只有一个相连的岛，且岛中没有湖，让我们求岛的周长。
+* 我们知道一个格子有四条边，但是当两个格子相邻，周围为6，若某个格子四周都有格子，那么这个格子一条边都不算在周长里。那么我们怎么统计出岛的周长呢？第一种方法，我们对于每个格子的四条边分别来处理，首先看左边的边，只有当左边的边处于第一个位置或者当前格子的左面没有岛格子的时候，左边的边计入周长。其他三条边的分析情况都跟左边的边相似，这里就不多叙述了，参见代码如下：
+
 ```cpp
 class Solution {
 public:
-    vector<int> countSmaller(vector<int>& nums)
-    {
-        vector<int> t, res(nums.size());
-        for (int i = nums.size() - 1; i >= 0; --i)
-        {
-            int left = 0, right = t.size();
-            while (left < right)
-            {
-                int mid = left + (right - left) / 2;
-                if (t[mid] >= nums[i])
-                {
-                  right = mid;
-                }
-                else
-                {
-                  left = mid + 1;
-                }
+    int islandPerimeter(vector<vector<int>>& grid) {
+        if (grid.empty() || grid[0].empty()) return 0;
+        int m = grid.size(), n = grid[0].size(), res = 0;
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (grid[i][j] == 0) continue;
+                if (j == 0 || grid[i][j - 1] == 0) ++res;
+                if (i == 0 || grid[i - 1][j] == 0) ++res;
+                if (j == n - 1 || grid[i][j + 1] == 0) ++res;
+                if (i == m - 1 || grid[i + 1][j] == 0) ++res;
             }
-            res[i] = right;
-            t.insert(t.begin() + right, nums[i]);
         }
         return res;
     }
 };
 ```
+
+#### 130. Surrounded Regions
+解题思路：  
+* 这道题有点像围棋，将包住的O都变成X，但不同的是边缘的O不算被包围，跟之前那道Number of Islands 岛屿的数量很类似，都可以用DFS来解。
+* 在网上看到大家普遍的做法是扫面矩阵的四条边，如果有O，则用DFS遍历，将所有连着的O都变成另一个字符，比如，这样剩下的O都是被包围的，然后将这些O变成X，在把特殊字符变回O就行了。代码如下：
+
+```cpp
+class Solution {
+public:
+    void solve(vector<vector<char> >& board) {
+        for (int i = 0; i < board.size(); ++i) {
+            for (int j = 0; j < board[i].size(); ++j) {
+                if ((i == 0 || i == board.size() - 1 || j == 0 || j == board[i].size() - 1) && board[i][j] == 'O')
+                    solveDFS(board, i, j);
+            }
+        }
+        for (int i = 0; i < board.size(); ++i) {
+            for (int j = 0; j < board[i].size(); ++j) {
+                if (board[i][j] == 'O') board[i][j] = 'X';
+                if (board[i][j] == '$') board[i][j] = 'O';
+            }
+        }
+    }
+    void solveDFS(vector<vector<char> > &board, int i, int j) {
+        if (board[i][j] == 'O') {
+            board[i][j] = '$';
+            if (i > 0 && board[i - 1][j] == 'O')
+                solveDFS(board, i - 1, j);
+            if (j < board[i].size() - 1 && board[i][j + 1] == 'O')
+                solveDFS(board, i, j + 1);
+            if (i < board.size() - 1 && board[i + 1][j] == 'O')
+                solveDFS(board, i + 1, j);
+            if (j > 1 && board[i][j - 1] == 'O')
+                solveDFS(board, i, j - 1);
+        }
+    }
+};
+```
+
+
+
+#### 200. Number of Islands**
+Given a 2d grid map of '1's (land) and '0's (water), count the number of islands. An island is surrounded by water and is formed by connecting adjacent lands horizontally or vertically. You may assume all four edges of the grid are all surrounded by water.
+
+解题思路：  
+* 这道求岛屿数量的题的本质是**求矩阵中连续区域的个数。**  
+* 求矩阵连续区域个数需要想到用深度优先搜索DFS来解：
+  * 先建立一个visited数组用来记录某个位置是否被访问过。
+  * 然后开始DFS二维数组：
+    * 对于一个为‘1’且未被访问过的位置X，我们递归进入其上下左右位置上为‘1’的数。
+    * 然后将X的visited对应值赋为true，继续进入其所有相连的邻位置，这样可以将这个连通区域所有的数找出来
+    * 找完本次区域后，我们将结果res自增1，然后我们在继续找下一个为‘1’且未被访问过的位置，以此类推直至遍历完整个原数组即可得到最终结果，代码如下：
+
+```cpp
+class Solution {
+public:
+    int numIslands(vector<vector<char> > &grid) {
+        if (grid.empty() || grid[0].empty()){
+          return 0;
+        }
+
+        int m, n, res;
+        m = grid.size();
+        n = grid[0].size();
+        res = 0;
+        vector<vector<bool> > visited(m, vector<bool>(n, false));
+
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (grid[i][j] == '1' && !visited[i][j]) {
+                    DFS(grid, visited, i, j);
+                    ++res;
+                }
+            }
+        }
+        return res;
+    }
+
+    void DFS(vector<vector<char> > &grid,
+      vector<vector<bool> > &visited, int x, int y) {
+
+        //先检测越界，再检测是否已经访问过
+        if (x < 0 || x >= grid.size() || y < 0 ||
+          y >= grid[0].size() || grid[x][y] != '1' || visited[x][y]) {
+              return;
+          }
+
+        //对于未访问过的节点，将其标记为已访问
+        //然后BFS地访问其四方向相邻节点
+        visited[x][y] = true;
+        DFS(grid, visited, x - 1, y);
+        DFS(grid, visited, x + 1, y);
+        DFS(grid, visited, x, y - 1);
+        DFS(grid, visited, x, y + 1);
+    }
+};
+```
+#### 695. Max Area of Island
+
+解题思路：  
+* 需要统计出每个岛的大小，再来更新结果res。
+* 先遍历grid，当遇到为1且未访问过的的点则进入递归函数。
+  * 在递归函数中，我们首先判断i和j是否越界，还有grid[i][j]是否为1，我们没有用visited数组，而是直接修改了grid数组，遍历过的标记为-1。
+  * 如果合法，那么cnt自增1，并且更新结果res，然后对其周围四个相邻位置分别调用递归函数即可，参见代码如下：
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> dirs{{-1,0},{1,0},{0,-1},{0,1}};
+
+    int maxAreaOfIsland(vector<vector<int>>& grid) {
+        int m = grid.size(), n = grid[0].size(), res = 0;
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (grid[i][j] != 1) continue;
+                int cnt = 0;
+                helper(grid, i, j, cnt, res);
+            }
+        }
+        return res;
+    }
+
+    void helper(vector<vector<int>>& grid, int i, int j, int& cnt, int& res) {
+        //越界检查
+        int m = grid.size(), n = grid[0].size();
+        if (i < 0 || i >= m ||
+            j < 0 || j >= n ||
+            grid[i][j] <= 0)
+        {
+            return;
+        }
+        //表示结点为已访问
+        grid[i][j] *= -1;
+
+        //最大连通区域面积累计
+        res = max(res, ++cnt);
+
+        for (auto dir : dirs)
+        {
+            helper(grid, i + dir[0], j + dir[1], cnt, res);
+        }
+    }
+};
+```
+
+#### 720. Longest Word in Dictionary
+解题思路*：
+* 这道题给了我们一个字典，是个字符串数组，然后问我们从单个字符开始拼，最长能组成啥单词，注意中间生成的字符串也要在字典中存在，而且当组成的单词长度相等时，返回字母顺序小的那个。
+* 那么为了快速的查找某个单词是否在字典中存在，我们将所有单词放到哈希集合中，在查找的时候，可以采用BFS或者DFS都行。
+* 先来看BFS的做法，使用一个queue来辅助，我们先把所有长度为1的单词找出排入queue中，当作种子选手，然后我们进行循环，每次从队首取一个元素出来，如果其长度大于我们维护的最大值mxLen，则更新mxLen和结果res，如果正好相等，也要更新结果res，取字母顺序小的那个。
+* 然后我们试着增加长度，做法就是遍历26个字母，将每个字母都加到单词后面，然后看是否在字典中存在，存在的话，就加入queue中等待下一次遍历，完了以后记得要恢复状态，参见代码如下：
+```cpp
+class Solution {
+public:
+    string longestWord(vector<string>& words) {
+        string res = "";
+        int mxLen = 0;
+        unordered_set<string> s(words.begin(), words.end());
+        queue<string> q;
+        for (string word : words) {
+            if (word.size() == 1) q.push(word);
+        }
+        while (!q.empty()) {
+            string t = q.front(); q.pop();
+            if (t.size() > mxLen) {
+                mxLen = t.size();
+                res = t;
+            } else if (t.size() == mxLen) {
+                res = min(res, t);
+            }
+            for (char c = 'a'; c <= 'z'; ++c) {
+                t.push_back(c);
+                if (s.count(t)) q.push(t);
+                t.pop_back();
+            }
+        }
+        return res;
+    }
+};
+```
+
+
 
 
 bits相关问题：
@@ -269,56 +444,7 @@ public:
 ```
 
 
-#### 698. Partition to K Equal Sum Subsets
 
-Given an array of integers nums and a positive integer k, find whether it's possible to divide this array into knon-empty subsets whose sums are all equal.
-
-Example 1:
-
-Input: nums = [4, 3, 2, 3, 5, 2, 1], k = 4
-Output: True
-Explanation: It's possible to divide it into 4 subsets (5), (1, 4), (2,3), (2,3) with equal sums.
-
-
-Note:
-
-1 <= k <= len(nums) <= 16.
-0 < nums[i] < 10000.
-
-解题思路：  
-这道题我们可以用递归来做:
-* 首先我们还是求出数组的所有数字之和sum，首先判断sum是否能整除k，不能整除的话直接返回false。
-* 然后需要一个visited数组来记录哪些数组已经被选中了，然后调用递归函数进行递归。  
-* 对于递归函数：  
-  * 我们的目标是组k个子集合，是的每个子集合之和为target = sum/k。
-  * 我们还需要变量start，表示从数组的某个位置开始查找，curSum为当前子集合之和.
-  * 如果k=1，说明此时只需要组一个子集合，那么当前的就是了，直接返回true。
-  * 如果curSum等于target了，说明凑够一个k的子集合。此时递归传入k-1，并将start和curSum都重置为0，开始继续找下一个。参见代码如下：
-
-```cpp
-class Solution {
-public:
-    bool canPartitionKSubsets(vector<int>& nums, int k) {
-        //判断是否整除K
-        int sum = accumulate(nums.begin(), nums.end(), 0);
-        if (sum % k != 0) return false;
-        //创建一个访问数组标记
-        vector<bool> visited(nums.size(), false);
-        return helper(nums, k, sum / k, 0, 0, visited);
-    }
-    bool helper(vector<int>& nums, int k, int target, int start, int curSum, vector<bool>& visited) {
-        if (k == 1) return true;
-        if (curSum == target) return helper(nums, k - 1, target, 0, 0, visited);
-        for (int i = start; i < nums.size(); ++i) {
-            if (visited[i]) continue;
-            visited[i] = true;
-            if (helper(nums, k, target, i + 1, curSum + nums[i], visited)) return true;
-            visited[i] = false;
-        }
-        return false;
-    }
-};
-```
 
 数论相关：
 
@@ -493,55 +619,7 @@ public:
 };
 ```
 
-### 回溯法+DFS/BFS题型：
-LeetCode的：Permutaions, PermutationsII, Combination Sum, Conbination SumII;  
-**这几题解法中的for循环，不仅是为了递归拆解出可能的解，同时也使用pop_back()在每层递归上
-进行一定程度的回溯，这样结合才能解题**
 
-#### 从回溯的思路看LeetCode-Combination Sum:
-```cpp
-#include<iostream>  
-#include<vector>  
-#include<algorithm>  
-using namespace std;  
-
-void backTracking(vector<vector<int>> &res, vector<int> arr ,vector<int>candidate ,int start,int target )  
-{  
-    if (target == 0)//满足条件，输出结果  
-    {  
-        res.push_back(arr);  
-        return;  
-    }  
-    for (int i = start; i < candidate.size(); i++)//枚举所有可能的路径  
-    {  
-        if (candidate[i] <= target)//满足界限函数和约束条件  
-        {  
-            arr.push_back(candidate[i]);  
-            backTracking(res, arr, candidate, i, target - candidate[i]);  
-            arr.pop_back();//回溯清理工作  
-        }  
-    }  
-}  
-
-int main()  
-{  
-    vector<int> candidate = { 2, 3, 6, 7 };  
-    int target = 7;  
-    vector<vector<int>> res;  
-    vector<int> arr;  
-    sort(candidate.begin(), candidate.end());  
-    backTracking(res, arr, candidate, 0, target);  
-    for (int i = 0; i < res.size(); i++)  
-    {  
-        for (int j = 0; j < res[i].size(); j++)  
-        {  
-            cout << res[i][j] << " ";  
-        }  
-        cout << endl;  
-    }  
-    return 0;  
-}  
-```
 
 ## 基础算法
 * 查找算法：二分查找

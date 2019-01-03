@@ -1035,3 +1035,210 @@ public:
     }
 };
 ```
+
+
+
+
+
+#### 513. Find Bottom Left Tree Value
+Given a binary tree, find the leftmost value in the last row of the tree.
+
+**解题思路**：  
+1. 这题可以直接通过先序遍历+维护当前深度和最大深度来做。
+* 因为本题要求二叉树的最左下树结点的值，那么首先应该想到使用先序遍历很快能访问到左下角节点。
+* 然后维护一个最大深度和当前节点的深度，由于先序遍历遍历的顺序是根-左-右，所以每一行最左边的结点肯定最先遍历到，那么由于是新一行，那么当前深度肯定比之前的最大深度大，所以我们可以更新最大深度为当前深度，结点值res为当前结点值，这样在遍历到该行其他结点时就不会更新结果res了，参见代码如下：
+* **此题只有使用共享参数的递归才比较好做,因此所有递归都会根据深度的判断去修改统一个res变量。**
+
+```cpp
+class Solution {
+public:
+    int findBottomLeftValue(TreeNode* root) {
+        if (!root) return 0;
+        //初始化树的深度为1，最左节点值为root->val
+        int max_depth = 1, res = root->val;
+        helper(root, 1, max_depth, res);
+        return res;
+    }
+    //注意递归接口传树深度的引用和最左节点值的引用
+    void helper(TreeNode* node, int depth, int& max_depth, int& res) {
+        if (!node) return;
+        //根据先序遍历的特性，每次深度增加是第一个被访问的节点
+        //一定是当前层的最左子节点
+        if (depth > max_depth) {
+            max_depth = depth;
+            res = node->val;
+        }
+        helper(node->left, depth + 1, max_depth, res);
+        helper(node->right, depth + 1, max_depth, res);
+    }
+};
+```
+2. 使用层序遍历二叉树，也就是BFS的思路，每次遍历到新的一层时，将第一个树节点，也就是当前层的最左节点的值记录下来
+直到层序遍历完毕，最后返回保存的值。
+```cpp
+class Solution {
+public:
+    int findBottomLeftValue(TreeNode* root) {
+        if (!root) return 0;
+        int res = 0;
+        queue<TreeNode*> q;
+        q.push(root);
+        while (!q.empty()) {
+            int n = q.size();
+            for (int i = 0; i < n; ++i) {
+                TreeNode *t = q.front(); q.pop();
+                if (i == 0) res = t->val;
+                if (t->left) q.push(t->left);
+                if (t->right) q.push(t->right);
+            }
+        }
+        return res;
+    }
+};
+```
+
+#### 515. Find Largest Value in Each Tree Row
+You need to find the largest value in each row of a binary tree.
+
+**解题思路**：  
+这题按BFS思路遍历每层元素然后，每层中最大的保存到结果中。
+
+```cpp
+class Solution {
+public:
+    vector<int> largestValues(TreeNode* root) {
+        //基本上，树的root节点在代码中都需要特殊对待，单独被判断。
+        if (!root) return {};
+        vector<int> res;
+        queue<TreeNode*> q;
+        q.push(root);
+        while (!q.empty()) {
+            int n = q.size(), mx = INT_MIN;
+            for (int i = 0; i < n; ++i) {
+                TreeNode *t = q.front(); q.pop();
+                mx = max(mx, t->val);
+                if (t->left) q.push(t->left);
+                if (t->right) q.push(t->right);
+            }
+            res.push_back(mx);
+        }
+        return res;
+    }
+};
+```
+
+#### 199. Binary Tree Right Side View
+Given a binary tree, imagine yourself standing on the right side of it, return the values of the nodes you can see ordered from top to bottom.
+
+**解题思路**：  
+* 这道题要求我们打印出二叉树每一行最右边的一个数字，实际上是求二叉树层序遍历的一种变形，我们只需要保存每一层最右边的数字即可。
+* 这道题需要用到数据结构队列queue，遍历每层的节点时,先取出当前层的最后一个节点(也就是queue的最后一个节点)，然后把下一层的节点都存入到queue中。
+* 每当开始新一层节点的遍历之前，先把新一层最后一个节点值存到结果中，代码如下：
+```cpp
+class Solution {
+public:
+    vector<int> rightSideView(TreeNode *root) {
+        vector<int> res;
+        if (!root) return res;
+        queue<TreeNode*> q;
+        q.push(root);
+        while (!q.empty()) {
+            res.push_back(q.back()->val);
+            int size = q.size();
+            for (int i = 0; i < size; ++i) {
+                TreeNode *node = q.front();
+                q.pop();
+                if (node->left) q.push(node->left);
+                if (node->right) q.push(node->right);
+            }
+        }
+        return res;
+    }
+};
+```
+
+#### 111. Minimum Depth of Binary Tree
+
+解题思路：  
+二叉树的经典问题之最小深度问题就是就最短路径的节点个数，还是用深度优先搜索DFS来完成。
+
+```cpp
+class Solution {
+public:
+    int minDepth(TreeNode *root) {
+        //判断根节点是否为空，如果为空直接返回0
+        if (root == NULL) return 0;
+        //判断当前节点是否是叶子节点，如果是则当前路径到尽头了，返回1让路径长度增加1；
+        if (root->left == NULL && root->right == NULL) return 1;
+
+        //当前节点有至少一个子节点时，当前节点就不是叶子节点
+        //此时递归判断左右子节点之后的路径
+        if (root->left == NULL) return minDepth(root->right) + 1;
+        else if (root->right == NULL) return minDepth(root->left) + 1;
+        else return 1 + min(minDepth(root->left), minDepth(root->right));
+    }
+
+};
+```
+如果要将先判定叶子结点改为后判定叶子结点来做minimun depth问题，应该这么写：
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    int minDepth(TreeNode* root) {
+        if (!root)
+        {
+            return 0;
+        }
+        int L, R;
+        L = minDepth(root->left);
+        R = minDepth(root->right);
+        if((L==0&&R==0) || (L!=0&&R!=0))
+        {
+            return 1+min(L,R);
+        }
+        else if (L!=0)
+        {
+
+            return 1+L;
+        }
+        else
+        {
+            return 1+R;
+        }
+    }
+};
+```
+
+#### 104. Maximum Depth of Binary Tree
+最深路径可以不考虑判定参与比较的路径是否有效（即路径是否深入到叶子结点），但是最浅路径就必须
+先判断是路径是否合法。否则直接用min判断会得到不合法的路径值。
+
+```cpp
+class Solution {
+public:
+    int maxDepth(TreeNode* root) {
+        //定义辅助变量
+        int L, R;
+
+        //定义向下访问到叶子结点是为递归的出口
+        if (!root)
+        {
+            return 0;
+        }
+
+        //递归调用
+        L = maxDepth(root->left);
+        R = maxDepth(root->right);
+        return 1 + max(L, R);
+    }
+};
+```

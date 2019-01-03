@@ -1,3 +1,5 @@
+https://zhuanlan.zhihu.com/p/24523433
+
 #### 028 字符串的排列
 
 题目描述  

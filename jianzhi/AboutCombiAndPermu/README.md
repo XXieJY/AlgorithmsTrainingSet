@@ -1,21 +1,9 @@
-## 排列组合的DFS
-### 概念
-* 排列和组合的区分：
-  * 看问题是否和顺序有关。有关就是排列，无关就是组合。
-  * 90%DFS的题, 要么是排列, 要么是组合。
+90%的排列，组合题目都用DFS解。
 
 
+#### Combination题目
 
-### 回溯法+DFS/BFS题型：
-LeetCode的：Permutaions, PermutationsII, Combination Sum, Conbination SumII;  
-**这几题解法中的for循环，不仅是为了递归拆解出可能的解，同时也使用pop_back()在每层递归上
-进行一定程度的回溯，这样结合才能解题**
-
-
-
-### 例题
-
-#### 39. Combination Sum（理解递归和DFS的优秀题目）
+1. Combination Sum（理解递归和DFS的优秀题目）
 Given a set of candidate numbers (C) (without duplicates) and a target number (T), find all unique combinations in C where the candidate numbers sums to T.
 
 The same repeated number may be chosen from C unlimited number of times.

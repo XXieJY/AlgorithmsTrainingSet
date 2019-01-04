@@ -33,7 +33,11 @@ DP的六种主流问题：
 4. 问题要求的最后答案是什么
 
 
+缺LCS题目 https://www.kancloud.cn/digest/pieces-algorithm/163624
+https://www.google.com/search?ei=9A8uXLCgBMit8QXh8ZToAg&q=LIS%E5%92%8CLCS&oq=LIS%E5%92%8CLCS&gs_l=psy-ab.3...1593.2962..3338...0.0..0.655.1791.0j1j4j5-1......0....1..gws-wiz.......0i71j0i203.1jm5kxfelOs
+以及LDS题目
 
+其中S可以是子串 或者 子序列
 ---
 
 ## 坐标和路径DP
@@ -72,7 +76,7 @@ public:
 };
 ```
 
-#### 300. Longest Increasing Subsequence
+#### 300. Longest Increasing Subsequence（LIS）
 Given an unsorted array of integers, find the length of longest increasing subsequence.
 
 For example,

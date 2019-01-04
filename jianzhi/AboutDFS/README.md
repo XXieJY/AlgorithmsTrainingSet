@@ -2,6 +2,21 @@
 1. 排列组合常用DFS解题。
 2. 树和图找路径相关问题也有用DFS解题
 
+## 排列组合的DFS
+### 概念
+* 排列和组合的区分：
+  * 看问题是否和顺序有关。有关就是排列，无关就是组合。
+  * 90%DFS的题, 要么是排列, 要么是组合。
+
+
+
+### 回溯法+DFS/BFS题型：
+LeetCode的：Permutaions, PermutationsII, Combination Sum, Conbination SumII;  
+**这几题解法中的for循环，不仅是为了递归拆解出可能的解，同时也使用pop_back()在每层递归上
+进行一定程度的回溯，这样结合才能解题**
+
+
+
 ## 常见DFS题型：  
 * 基于树的深度优先搜索 Tree-based DFS
 * 基于组合的深度优先搜索 Combination-based DFS

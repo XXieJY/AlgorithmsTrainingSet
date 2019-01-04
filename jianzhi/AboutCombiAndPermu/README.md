@@ -1,225 +1,223 @@
-90%的排列，组合题目都用DFS解。
+index90%的排列，组合题目都用DFS解。
 
 
 #### Combination题目
 
-1. Combination Sum（理解递归和DFS的优秀题目）
-Given a set of candidate numbers (C) (without duplicates) and a target number (T), find all unique combinations in C where the candidate numbers sums to T.
-
-The same repeated number may be chosen from C unlimited number of times.
+1. Combination Sum（理解递归和DFS的优秀题目）  
+给定一个组无重复数值和一个目标值，找到所有组合Combinations，加起来等于目标值。
+数组中的元素可以重复使用.
 
 解题思路：  
 **像这种结果要求返回所有符合要求解的题十有八九都是要利用到递归，而且解题的思路都大同小异。**
-* 都是需要另写一个递归函数，这里我们新加入三个变量，start记录当前的递归到的下标，out为一个解，res保存所有已经得到的解，每次调用新的递归函数时，此时的target要减去当前数组的的数。
-* **递归函数注意：递归接口的定义、出口的定义、递归拆解方式的思考。**  
+1. 都需要多写一个递归函数，这里我们新加入三个变量，start记录当前的递归到的下标，out为当前解，res保存所有已经得到的解。每次调用新的递归函数时，此时的target要减去当前数组的的数。
+2. **递归函数注意：递归接口的定义、出口的定义、递归拆解方式的思考。**   
+
+假设candidates=[1,7,4,15,9,6,3]此时dfs的搜索combinations的顺序会是:
+1. 开始是[3], [3,3], [3,3,3]...直至sum > target时返回上一层递归。
+2. 继续是[6],[6,3],[6,3,3]....直至sum > target时返回上一层递归。
+3. 然后继续[6,6],[6,6,3],[6,6,3,3]...直至sum > target时返回上一层递归。  
+
 具体看代码如下：
 
 ```cpp
 class Solution {
 public:
-    vector<vector<int> > combinationSum(vector<int> &candidates,
-                                        int target)
-    {
-        //递归相关辅助变量的声明
-        vector<vector<int> > res;
-        vector<int> out;
+    //像DFS,BFS这类需要在递归栈中共享遍量的，可以把变量声明为全局Public的
+    vector<vector<int>> ret;
+    vector<int> tmp;
 
-        //进入递归
-        sort(candidates.begin(), candidates.end());
-        dfs(candidates, target, 0, out, res);
-        return res;
+    vector<vector<int>> combinationSum(vector<int>& candidates, int target) {
+        dfs(0, 0, target, candidates);
+        return ret;
     }
-
-    void dfs(vector<int> &E, int T, int start, vector<int> &out,
-             vector<vector<int> > &res)
-    {
-        //出口1
-        if(T < 0)
-        {
+    //DFS接口定义参数index:=当前递归到的元素下标，sum:=当前元素combination的和，
+    //target:=目标和，candidates:=给定的一组无重复元素
+    void dfs(int index, int sum, int target, vector<int>& candidates) {
+        //注意这里下标是[0,candidates.size()-1]，而candidate.size == 7
+        //从出口条件可以分析递归是从底Index=candidates.size()-1;处bottom-up进行combination的;
+        if(index == candidates.size()) {
+            if(sum == target)
+                ret.push_back(tmp);
             return;
         }
-        //出口2
-        else if(T == 0)
-        {
-            res.push_back(out);
-            return;
-        }
-        else
-        {
-            //递归拆解过程
-            //for循环和传递进dfs的start参数，一起定义了每趟递归可选择的数据集的范围
-            //也就是每次搜索树分叉时可做的选择种类
-            for (int i = start; i < E.size(); ++i)
-            {
-                out.push_back(E[i]);
-                dfs(E, T-E[i], i, out, res);
-                out.pop_back();
+        else{
+            //这里的dfs调用的作用是把当前的sum结果直接推到递归出口去检验
+            //sum是否等于target
+            dfs(index+1, sum, target, candidates);
+            //这里的for循环和dfs调用直接负责combination sum的逻辑
+            int c = candidates[index];
+            for(; ;) {
+                sum += c;
+                tmp.push_back(c);
+                if(sum > target) break;
+                dfs(index+1, sum, target, candidates);
             }
+            //负责回溯已经用过现在已经没用的元素
+            while(tmp.size() && tmp[tmp.size() - 1] == c)
+                tmp.pop_back();
         }
     }
 };
 ```
 
-#### 从回溯的思路看LeetCode-Combination Sum:
-```cpp
-#include<iostream>  
-#include<vector>  
-#include<algorithm>  
-using namespace std;  
-
-void backTracking(vector<vector<int>> &res, vector<int> arr ,vector<int>candidate ,int start,int target )  
-{  
-    if (target == 0)//满足条件，输出结果  
-    {  
-        res.push_back(arr);  
-        return;  
-    }  
-    for (int i = start; i < candidate.size(); i++)//枚举所有可能的路径  
-    {  
-        if (candidate[i] <= target)//满足界限函数和约束条件  
-        {  
-            arr.push_back(candidate[i]);  
-            backTracking(res, arr, candidate, i, target - candidate[i]);  
-            arr.pop_back();//回溯清理工作  
-        }  
-    }  
-}  
-
-int main()  
-{  
-    vector<int> candidate = { 2, 3, 6, 7 };  
-    int target = 7;  
-    vector<vector<int>> res;  
-    vector<int> arr;  
-    sort(candidate.begin(), candidate.end());  
-    backTracking(res, arr, candidate, 0, target);  
-    for (int i = 0; i < res.size(); i++)  
-    {  
-        for (int j = 0; j < res[i].size(); j++)  
-        {  
-            cout << res[i][j] << " ";  
-        }  
-        cout << endl;  
-    }  
-    return 0;  
-}  
-```
 
 
 #### 40. Combination Sum II
-Given a collection of candidate numbers (C) and a target number (T), find all unique combinations in C where the candidate numbers sums to T.
+给定一个组无重复数值和一个目标值，找到所有组合Combinations，加起来等于目标值。  
+数组中的元素不可以重复使用.  
 
-Each number in C may only be used once in the combination.
-
-解题思路：
-* 此题要考虑解决在组合中去重复的方法：
-  * 首先在递归分叉时，传入下一个递归的数据集范围是[i+1 : end]
-  * 然后在负责递归拆解的for循环里进行剪枝：
-    * 加上if (i > start && num[i] == num[i - 1]) continue;
-    * 这样可以防止res中出现重复项，然后就在递归调用combinationSum2DFS里面的参数换成i+1，这样就不会重复使用数组中的数字了，代码如下：
+递归解法：
 
 ```cpp
 class Solution {
 public:
-    vector<vector<int> > combinationSum(vector<int> &candidates,
-                                        int target)
-    {
-        //递归相关辅助变量的声明
-        vector<vector<int> > res;
-        vector<int> out;
+    vector<vector<int>> ret;
+    vector<int> tmp;
 
-        //进入递归
-        sort(candidates.begin(), candidates.end());
-        dfs(candidates, target, 0, out, res);
-        return res;
+
+    vector<vector<int>> combinationSum2(vector<int>& candidates, int target) {
+        //combinationsum2必须先排序如[1,1,2,5,6,7,10]
+        sort(candidates.begin(), candidates.end());  
+        dfs(0, 0, target, candidates);
+        //combinationsum2的递归解还包含去重复步骤
+        //但是这一步超级耗费时间
+        set<vector<int>> ret_set(ret.begin(), ret.end());
+        ret.assign(ret_set.begin(), ret_set.end());
+        return ret;
     }
 
-    void dfs(vector<int> &E, int T, int start, vector<int> &out,
-             vector<vector<int> > &res)
-    {
-        //出口1
-        if(T < 0)
-        {
+    void dfs(int index, int sum, int target, vector<int>& candidates){
+        if(index == candidates.size()) {
+            if(sum == target)
+                ret.push_back(tmp);
             return;
         }
-        //出口2
-        else if(T == 0)
-        {
-            res.push_back(out);
+        else{
+            dfs(index+1, sum, target, candidates);
+
+            int c = candidates[index];
+            sum += c;
+            tmp.push_back(c);
+            if(sum <= target)
+                dfs(index+1, sum, target, candidates);
+            tmp.pop_back();
             return;
-        }
-        else
-        {
-            //递归拆解过程
-            //for循环和传递进dfs的start参数，一起定义了每趟递归可选择的数据集的范围
-            //也就是每次搜索树分叉时可做的选择种类
-            for (int i = start; i < E.size(); ++i)
-            {
-                if(i > start && E[i] == E[i-1]) continue;
-                out.push_back(E[i]);
-                dfs(E, T-E[i], i+1, out, res);
-                out.pop_back();
-            }
         }
     }
 };
 ```
 
+topdown递归解法：
+
+```cpp
+vector<vector<int>> combinationSum2(vector<int>& candidates, int target) {
+    vector<vector<int>> res;
+    vector<int> current;
+    sort(candidates.begin(),candidates.end());
+    backTracking(candidates.begin(),current,res,candidates,target);
+    return res;
+}
+
+void backTracking(vector<int>::iterator n, vector<int>& current,
+    vector<vector<int>>& res, const vector<int>& candidates, int target){
+    if(!target)
+        res.push_back(current);
+    else if(target>0){
+        for(; n!=candidates.end() && (*n)<=target; ++n){
+            current.push_back(*n);
+            backTracking(n+1, current, res, candidates, target-*n);
+            current.pop_back();
+            while(n+1!=candidates.end() && *(n+1)==*n)
+                ++n;
+        }
+    }
+}
+```
+
+
+#### combinations
+Given two integers n and k, return all possible combinations of k numbers out of 1 ... n.    
+Example:  
+Input: n = 4, k = 2  
+Output:
+[[2,4],[3,4],[2,3],[1,2],[1,3],[1,4],]
+
+
+```cpp
+class Solution {
+public:
+    vector<vector<int> >res;
+    vector<int> temp;
+    vector<vector<int> > combine(int n, int k) {
+        if(n < k)
+            return res;
+        combine(0,0,n,k);
+        return res;
+    }
+
+    void combine(int index, int tmpLen, int n, int k){
+        if(tmpLen == k){
+            res.push_back(temp);
+            return;
+        }
+        for(int i = index; i < n; i++){
+            temp.push_back(i + 1);
+            combine(i + 1, tmpLen + 1, n, k);
+            temp.pop_back();
+            }
+        }
+};
+```
+
+
 #### 46. Permutations
 Given a collection of distinct numbers, return all possible permutations.  
 > For example,[1,2,3] have the following permutations:  
-[  
-  [1,2,3],  
-  [1,3,2],  
-  [2,1,3],  
-  [2,3,1],  
-  [3,1,2],  
-  [3,2,1]  
-]  
+[  [1,2,3],  [1,3,2],  [2,1,3],  [2,3,1],  [3,1,2], [3,2,1] ]  
 
 解题思路：
-* 典型的组合题中不同的数字顺序只算一种。
-* 而此题使用DFS求全排列问题，**排列问题需要用到一个visited数组来标记某个数字是否访问过。**
-* **然后在DFS递归函数从的循环应从头开始，而不是从level开始，这是和Combinations组合项不同的地方**
+* 而此题使用DFS求全排列问题
+* **排列问题需要用到一个visited数组来标记某个数字是否访问过。**
+* **然后在DFS递归函数从的循环应从头开始**
 其余思路大体相同，代码如下：
 
 ```cpp
 class Solution {
 public:
-    vector<vector<int> > permute(vector<int> &num)
+    vector<vector<int> > permute(vector<int> &candidates)
     {
         //声明DFS求排列需要用到的变量
         vector<vector<int> > res;
-        vector<int> out;
-        vector<int> visited(num.size(), 0);
+        vector<int> tmp;
+        vector<int> visited(candidates.size(), 0);
 
         //进入DFS
-        dfs(num, 0, visited, out, res);
+        dfs(candidates, 0, visited, tmp, res);
         return res;
     }
-    void dfs(vector<int> &num, int level, vector<int> &visited,
-             vector<int> &out, vector<vector<int> > &res) {
-        if (level == num.size())
-        {
-            res.push_back(out);
-        }
+    void dfs(vector<int> &candidates, int index, vector<int> &visited,
+             vector<int> &tmp, vector<vector<int> > &res) {
+        //index指示当前tmp数组的长度，当index == candidates.size()时说明
+        //候选元素已经用完，tmp是一个完整的permutation答案，此时为递归出口
+        if (index == candidates.size())
+            res.push_back(tmp);
         else
         {
-            //排列DFS时，使用两个方法结合控制顺序：
-            //1.每个递归中的for循环都从头开始选择数据集
-            //2.使用visited数组标记已选择元素，再进入下层递归
-            //3.当前递归中，进行到第二个分叉时，注意要将第一次分叉的节点visited恢复
-            for (int i = 0; i < num.size(); ++i)
+            //i代表选取candidates的元素的下标
+            //i在tmp的每次递归中都是从0开始，这样permutation的规则
+            for (int i = 0; i < candidates.size(); ++i)
             {
                 //有序
                 if (visited[i] != 0)
-                {
                     continue;
-                }
+                //每次选取candidates的一个元素candidates[i]作为当前tmp的第index个
+                //元素，并标记visited[i]=1，然后进入第index+1个元素的递归
                 visited[i] = 1;
-                out.push_back(num[i]);
-                dfs(num, level + 1, visited, out, res);
-                out.pop_back();
+                tmp.push_back(candidates[i]);
+                dfs(candidates, index + 1, visited, tmp, res);
+                //为tmp的第index个元素去掉元素candidate[i] 并在后序的for循环中
+                //选择一个新的candidate[i]
+                tmp.pop_back();
                 visited[i] = 0;
             }
         }
@@ -228,7 +226,7 @@ public:
 ```
 
 #### 47. Permutations II
-Given a collection of numbers that might contain duplicates, return all possible unique permutations.
+候选元素包含重复数字的permutation问题。
 
 > For example,[1,1,2] have the following unique permutations:  
 [  
@@ -239,52 +237,48 @@ Given a collection of numbers that might contain duplicates, return all possible
 
 解题思路：
 * 本题是关于排列的DFS问题，需要使用visited标记，并且每个递归的拆解循环都要从待选数据集的开头开始选取
-* 由于待选数据集中有重复，所以要有排列组合的去重复算法：
+* 含重复元素的permutation题的解法：
   * 1.先对待选数据集排序
-  * 2.在递归函数中要判断前面一个数和当前的数是否相等，如果相等，前面的数必须已经使用了，即对应的visited中的值为1，当前的数字才能使用，否则需要跳过，这样就不会产生重复排列了，代码如下：
+  * 2.在递归中先判断当前的数和前一个相邻的数是否相等
+    * 如果相等，前面的数必须已经使用了，即对应的visited中的值为1，当前的数字才能使用
+    * 否则需要跳过，这样就不会产生重复排列了，代码如下：
 
 ```cpp
 class Solution {
 public:
-    vector<vector<int> > permuteUnique(vector<int> &num)
+    vector<vector<int> > permuteUnique(vector<int> &candidates)
     {
-        //声明排序dfs的辅助变量
         vector<vector<int> > res;
-        vector<int> out;
-        vector<int> visited(num.size(), 0);
+        vector<int> tmp;
+        vector<int> visited(candidates.size(), 0);
 
-        //进入递归
-        sort(num.begin(), num.end());
-        dfs(num, 0, visited, out, res);
+        sort(candidates.begin(), candidates.end());
+        dfs(candidates, 0, visited, tmp, res);
         return res;
     }
-    void dfs(vector<int> &num, int level, vector<int> &visited,
-             vector<int> &out, vector<vector<int> > &res)
+    void dfs(vector<int> &candidates, int level, vector<int> &visited,
+             vector<int> &tmp, vector<vector<int> > &res)
     {
         //出口
-        if (level >= num.size())
-        {
-          res.push_back(out);
-        }
+        if (level==candidates.size())
+          res.push_back(tmp);
         else
         {
-            for (int i = 0; i < num.size(); ++i)
+            for (int i=0; i<candidates.size(); ++i)
             {
-                //防止重复
-                //1.使用过的元素不再使用
-                //2.不可以跨过地方式使用相同的元素
                 if (visited[i] != 0)
-                {
-                  continue;
-                }
-                if (i > 0 && num[i] == num[i - 1] && visited[i - 1] == 0)
-                {
-                  continue;
-                }
+                    continue;
+                //如果当前元素candidates[i]等于其前一个元素candidates[i-1]
+                //则此时只有当前一个元素在当前permutation中用过了当前元素才能使用
+                if (i>0 && candidates[i]==candidates[i-1] &&
+                    visited[i-1]==0)
+                    continue;
+
+                //将元素推入tmp并标记visited[i] = 1;
+                tmp.push_back(candidates[i]);
                 visited[i] = 1;
-                out.push_back(num[i]);
-                dfs(num, level + 1, visited, out, res);
-                out.pop_back();
+                dfs(candidates, level + 1, visited, tmp, res);
+                tmp.pop_back();
                 visited[i] = 0;
             }
         }
@@ -292,109 +286,49 @@ public:
 };
 ```
 
-#### 526. Beautiful Arrangement**
-Suppose you have N integers from 1 to N. We define a beautiful arrangement as an array that is constructed by these N numbers successfully if one of the following is true for the ith position (1 ≤ i ≤ N) in this array:
 
-* The number at the ith position is divisible by i.
-* or i is divisible by the number at the ith position.
+#### 输出N个括号的全排列结果
 
-Now given N, how many beautiful arrangements can you construct?
-
->Example 1:  
-Input: 2   
-Output: 2  
-Explanation:  
-* The first beautiful arrangement is [1, 2]:  
-Number at the 1st position (i=1) is 1, and 1 is divisible by i (i=1).  
-Number at the 2nd position (i=2) is 2, and 2 is divisible by i (i=2).  
-* The second beautiful arrangement is [2, 1]:  
-Number at the 1st position (i=1) is 2, and 2 is divisible by i (i=1).  
-Number at the 2nd position (i=2) is 1, and i (i=2) is divisible by 1.  
-Note:  
-N is a positive integer and will not exceed 15.
-
-解题思路：  
-* 确定使用递归DFS解题：对于满足某种条件的解的求所有情况，这种问题通常要用递归来做。而递归方法等难点在于写递归函数，如何确定终止条件，还有for循环中变量的起始位置如何确定。
-* 有去重要求，要使用visited标记：那么这里我们需要一个visited数组来记录数字是否已经访问过，因为优美排列中不能有重复数字。
-* 我们用变量pos来标记已经生成的数字的个数，如果大于N了，说明已经找到了一组排列，结果res自增1。
-* 在for循环中，i应该从1开始，因为我们遍历1到N中的所有数字，如果该数字未被使用过，且满足和坐标之间的整除关系，那么我们标记该数字已被访问过，再调用下一个位置的递归函数，之后不要忘记了恢复初始状态，参见代码如下：
-
-```cpp
-class Solution {
-public:
-    int countArrangement(int N) {
-        //初始化递归需要的辅助变量
-        int res = 0;
-        vector<int> visited(N + 1, 0);
-        //进入递归
-        dfs(N, visited, 1, res);
-        return res;
-    }
-    void dfs(int N, vector<int>& visited, int pos, int& res) {
-        //递归的出口
-        if (pos > N)
-        {
-            ++res;
-            return;
-        }
-        //拆解递归的过程
-        //每层递归都从visited[1:N]中选取还未visited的数字，根据beautiful原则进行判断
-        //记得回溯时将当前选中数字i的visited重置。
-        for (int i = 1; i <= N; ++i)
-        {
-            if (visited[i] == 0 && (i % pos == 0 || pos % i == 0))
-            {
-                visited[i] = 1;
-                dfs(N, visited, pos + 1, res);
-                visited[i] = 0;
-            }
-        }
-    }
-};
-```
-
-#### 22. Generate Parentheses
-Given n pairs of parentheses, write a function to generate all combinations of well-formed parentheses.
 
 >For example, given n = 3, a solution set is:  
-[  
-  "((()))",  
-  "(()())",  
-  "(())()",  
-  "()(())",  
-  "()()()"  
-]
+[  "((()))",  "(()())",  "(())()",  "()(())",  "()()()"  ]
 
 解题思路：  
 * 输出括号的有效全排列，需要用到DFS递归。
 * 定义递归出口：
-  * 如果在某次递归时，左括号的个数大于右括号的个数，说明此时生成的字符串中右括号的个数大于左括号的个数，即会出现')('这样的非法串，所以这种情况直接返回，不继续处理。
-  * 如果left和right都为0，则说明此时生成的字符串已有3个左括号和3个右括号，且字符串合法，则存入结果中后返回。
+  1. 非法出口：如果在某次递归时左括号剩余的个数大于右括号剩余的个数，即最终会出现')('这样的非法串，所以这种情况直接返回，不继续处理。
+  * 有效出口：如果left和right都为0，则说明此时生成的字符串已有3个左括号和3个右括号，且字符串合法，则存入结果中后返回。
 * 如果以上两种情况都不满足，若此时left大于0，则调用递归函数，注意参数的更新，若right大于0，则调用递归函数，同样要更新参数。代码如下：
 
 ```cpp
 class Solution {
 public:
+    vector<string> res;
     vector<string> generateParenthesis(int n) {
-        vector<string> res;
-        dfs(n, n, "", res);
+
+        dfs(n, n, "");
         return res;
     }
-    void dfs(int left, int right, string out, vector<string> &res) {
-        if (left > right) return;
-        if (left == 0 && right == 0) res.push_back(out);
+    void dfs(int left, int right, string out) {
+        //当左括号剩余个数left>右括号剩余个数right，此时说明当前递归的括号全排列
+        //是非法序列，因此走非法递归出口直接返回上层
+        if (left > right)
+            return;
+        if (left == 0 && right == 0)
+            res.push_back(out);
         else {
-            if (left > 0)  dfs(left - 1, right, out + '(', res);
-            if (right > 0) dfs(left, right - 1, out + ')', res);
+            if (left > 0)  
+                dfs(left - 1, right, out + '(');
+            if (right > 0)
+                dfs(left, right - 1, out + ')');
         }
     }
 };
 ```
 
-#### 494. Target Sum
-You are given a list of non-negative integers, a1, a2, ..., an, and a target, S. Now you have 2 symbols + and -. For each integer, you should choose one from + and - as its new symbol.
-
-Find out how many ways to assign symbols to make sum of integers equal to target S.
+#### 494 加减的target的组合个数
+给一组数字和一个target值，对每个数字任意添加+或者-符号，求有多少种组合使得这组数字
+的和等于target。
 
 解题思路：  
 * 对于这种求多种情况的问题，首先要想到使用递归来做。
@@ -403,21 +337,23 @@ Find out how many ways to assign symbols to make sum of integers equal to target
 ```cpp
 class Solution {
 public:
-    int findTargetSumWays(vector<int>& nums, int S) {
-        //声明递归辅助数组
-        int res = 0;
-        helper(nums, S, 0, res);
+    int res = 0;
+    int findTargetSumWays(vector<int>& nums, int target) {
+        helper(nums, target, 0);
         return res;
     }
-    void helper(vector<int>& nums, int S, int start, int& res) {
+    void helper(vector<int>& nums, int target, int index) {
         //递归出口
-        if (start >= nums.size()) {
-            if (S == 0) ++res;
-            return;
+        if (index == nums.size()) {
+            if (target == 0)
+                ++res;
+            else
+                return;
         }
-        //当前递归开始分叉
-        helper(nums, S - nums[start], start + 1, res);
-        helper(nums, S + nums[start], start + 1, res);
+        //对于当前数组元素nums[index]只有+和-两种选择
+        //所以讲他们分别递归下去，符合当前问题的combination规则
+        helper(nums, target-nums[index], index+1);
+        helper(nums, target+nums[index], index+1);
     }
 };
 ```
@@ -533,6 +469,103 @@ public:
 
 
 
+####  Subsets 子集合
+Given a set of distinct integers, S, return all possible subsets.  
+
+Note:  
+
+Elements in a subset must be in non-descending order.  
+The solution set must not contain duplicate subsets.  
+
+
+For example,  
+If S = [1,2,3], a solution is:  
+
+[    
+  [3],  
+  [1],  
+  [2],  
+  [1,2,3],  
+  [1,3],  
+  [2,3],  
+  [1,2],  
+  []  
+]  
+
+解题思路：  
+这道求子集合的问题，由于其要列出所有结果。
+* 下面来看递归的解法，相当于一种深度优先搜索，参见网友JustDoIt的博客，由于原集合每一个数字只有两种状态，要么存在，要么不存在，那么在构造子集时就有选择和不选择两种情况，所以可以构造一棵二叉树，左子树表示选择该层处理的节点，右子树表示不选择，最终的叶节点就是所有子集合，树的结构如下：
+
+```cpp
+// Recursion
+class Solution {
+public:
+    vector<vector<int> > subsets(vector<int> &S) {
+        vector<vector<int> > res;
+        vector<int> out;
+        sort(S.begin(), S.end());
+        getSubsets(S, 0, out, res);
+        return res;
+    }
+    void getSubsets(vector<int> &S, int pos, vector<int> &out, vector<vector<int> > &res) {
+        res.push_back(out);
+        for (int i = pos; i < S.size(); ++i) {
+            out.push_back(S[i]);
+            getSubsets(S, i + 1, out, res);
+            out.pop_back();
+        }
+    }
+};
+```
+
+
+####  Subsets II 子集合之二
+Given a collection of integers that might contain duplicates, S, return all possible subsets.  
+
+Note:  
+
+Elements in a subset must be in non-descending order.  
+The solution set must not contain duplicate subsets.  
+
+
+For example,  
+If S = [1,2,2], a solution is:  
+
+[  
+  [2],  
+  [1],  
+  [1,2,2],  
+  [2,2],  
+  [1,2],  
+  []  
+]  
+
+解题思路：  
+对于递归的解法，根据之前 Subsets 子集合 里的构建树的方法，在处理到第二个2时，由于前面已经处理了一次2，这次我们只在添加过2的[2] 和 [1 2]后面添加2，其他的都不添加。  
+代码只需在原有的基础上增加一句话，while (S[i] == S[i + 1]) ++i; 这句话的作用是跳过树中为X的叶节点，因为它们是重复的子集，应被抛弃。代码如下：
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> subsetsWithDup(vector<int> &S) {
+        if (S.empty()) return {};
+        vector<vector<int>> res;
+        vector<int> out;
+        sort(S.begin(), S.end());
+        getSubsets(S, 0, out, res);
+        return res;
+    }
+    void getSubsets(vector<int> &S, int pos, vector<int> &out, vector<vector<int>> &res) {
+        res.push_back(out);
+        for (int i = pos; i < S.size(); ++i) {
+            out.push_back(S[i]);
+            getSubsets(S, i + 1, out, res);
+            out.pop_back();
+            while (i + 1 < S.size() && S[i] == S[i + 1]) ++i;
+        }
+    }
+};
+```
 
 
 

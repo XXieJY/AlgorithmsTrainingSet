@@ -1,19 +1,17 @@
 * 数组搜索问题，能用循环就不要用分治，分治会导致TLE.
 
-###179. Largest Number
-Given a list of non negative integers, arrange them such that they form the largest number.  
+###179. Largest Number  
+给一组数字，要求将这些数字组成一个数值最大的数字。
 For example, given [3, 30, 34, 5, 9], the largest formed number is 9534330.  
-Note: The result may be very large, so you need to return a string instead of an integer.   
+
 
 解题思路:  
 
-**一道字符串排序题目。因为，对于任意给定正整数的数组，Largest Number是唯一的，只有当每个元素都处在数组所有元素中的一个特定相对位置时才能得到那个Largest Number。所以，本题‘找到数组的Largest formed number’问题转化成‘按特定排序规则对数组正整数进行排序，得到Largest formed number’ 是合理的思路**
+**大数字题目即涉及字符串的问题。**  
+1. 对于任意给定正整数的数组，Largest Number是唯一的，只有当每个元素都处在数组所有元素中的一个特定相对位置时才能得到那个Largest Number。
+2. 所以，本题‘找到数组的Largest formed number’问题转化成‘按特定排序规则对数组正整数进行排序，得到Largest formed number’ 是合理的思路
 
-**在处理本题时所犯的错误：  
-1.拿到题目没有从抽象和整体的程度分析问题(没想到Largest formed Number抽象上对应的是数组各个元素具有特定相对位置)。  
-2.反而陷入具体的细节，比如：为什么34 要 排在 30前面，那么如果是340和30该怎么排，我该怎么穷举出所有的排序规则 然后解题。  
-所以，以后解题时：  
-牢记从整体和抽象的层次分析，不要轻易尝试穷举规则和规律，避免陷入细节（这也是我主要犯的问题）。**
+
 
 解题步骤:
 1. 将题目求Largest formed number 看成对数组元素按特定排序规则排序的题目，特定规则为: 如果 字符串组合 str1+str2 < str2+str1，此时应该将str2排在str1前面（可以看作是：str2 < str1）.  
@@ -21,47 +19,49 @@ Note: The result may be very large, so you need to return a string instead of an
 3. 排序后会得到这么一个vector<string> tmp，即: 对于tmp中的任两个元素 str1 和 str2 (str1位于str2之前), 都有 str1+str2 > str2+str1; 此时tmp组成的字符串满足nums的Largest formed number要求.  
 比如： [3, 30, 34, 5, 9] --排序后--> [9,5,34,3,30]; 此时 "95 > 59", "934 > 349", "93 > 39", "930 > 309"，说明9排在第一个位置时，数组组成的字符串才有可能是Largest formed number.  
 
-ps:本题还用到了c++11的两个新特性: (1) 新的for循环功能: for(auto i:nums); (2)lambda函数 ```cpp[捕获数据方式](参数列表){函数体}```
+ps:本题还用到了c++11的两个新特性: (1) 新的for循环功能: for(auto i:nums); (2)lambda函数  
 
 ```cpp
-//代码来自: LC的用户isaac7
 class Solution {
 public:
     string largestNumber(vector<int>& nums) {
+        //先将数字转为字符串然后放入vector<string>中
         vector<string> tmp;
         for(auto i:nums) {
             tmp.push_back(to_string(i));
         }
-        sort(begin(tmp), end(tmp), [](string& s1, string& s2){ return s1 + s2 > s2 + s1;});
+        //然后使用字符串大小比较的方式对vector<string>进行排序
+        // [捕获数据方式](参数列表){函数体}
+        sort(begin(tmp), end(tmp),
+            [](string& s1, string& s2){ return s1+s2 > s2+s1;});
+        //最后将tmp的字符串连起来形成一个largetst number
         string result;
         for(auto s:tmp)
             result+=s;
+        //并去掉前到导0
         while(result[0]=='0' && result.length()>1)
             result.erase(0,1);
         return result;
     }
 };
 ```
+
 ###324. Wiggle Sort II
-Given an unsorted array nums, reorder it such that nums[0] < nums[1] > nums[2] < nums[3]....  
+给一个无序数组，将其排列成nums[0] < nums[1] > nums[2] < nums[3]....  的规律。
 
-Example:  
-(1) Given nums = [1, 5, 1, 1, 6, 4], one possible answer is [1, 4, 1, 5, 1, 6].   
-(2) Given nums = [1, 3, 2, 2, 3, 1], one possible answer is [2, 3, 1, 3, 1, 2].  
+Example:    
+(1) Given nums = [1, 5, 1, 1, 6, 4], one possible answer is [1, 4, 1, 5, 1, 6].     
+(2) Given nums = [1, 3, 2, 2, 3, 1], one possible answer is [2, 3, 1, 3, 1, 2].    
 
-Note:  
-You may assume all input has valid answer.  
-
-Follow Up:  
-Can you do it in O(n) time and/or in-place with O(1) extra space?    
 
 解题思路:  
 
 给定一个整数序列，需要得到一个wiggle sort序列，其中：任意奇数位置的元素都大于其左右相邻偶数位置的元素。  
 
 可以先:  
-1. 对整组序列按递减排序，然后找到序列的中间数m，那么位于中间数之前的元素就都大于位于中间数之后的元素。
-2. 使用插空法的方式，将中间数之后的元素插到到中间数之前的序列的奇数位置上。
+1. 对整组序列按递减排序。
+2. 然后找到序列的中间数m，那么位于中间数之前的元素就都大于位于中间数之后的元素。
+3. 使用插空法的方式，将中间数之后的元素插到到中间数之前的序列的奇数位置上。
 
 如:
 origin: [1,5,1,1,6,4]  
@@ -121,13 +121,12 @@ public:
 		if (i <= median) {
 			*iter = tmp[i];
 		}
-
-
 	}
 
 };
 ```
-###524. Longest Word in Dictionary through Deleting
+
+### 524. Longest Word in Dictionary through Deleting
 Given a string and a string dictionary, find the longest string in the dictionary that can be formed by deleting some characters of the given string. If there are more than one possible results, return the longest word with the smallest lexicographical order. If there is no possible result, return the empty string.  
 
 Example 1:  
@@ -280,6 +279,7 @@ public:
 
 };
 ```
+
 ###349. Intersection of Two Arrays  
 Given two arrays, write a function to compute their intersection.
 
@@ -1342,6 +1342,7 @@ public:
     }
 };
 ```
+
 #### *051 数组中重复的数字
 
 **题目描述**  
@@ -1509,128 +1510,6 @@ public class Solution {
 }
 ```
 
----
-
-数组和DP
-
-#### Climbing Stairs 爬梯子问题
-
-解题思路：  
-假设梯子有n层，那么如何爬到第n层呢，因为每次只能爬1或2步，那么爬到第n层的方法要么是从第n-1层一步上来的，要不就是从n-2层2步上来的，所以递推公式非常容易的就得出了：dp[n] = dp[n-1] + dp[n-2]。 由于斐波那契额数列的求解可以用递归，所以我最先尝试了递归，拿到OJ上运行，显示Time Limit Exceeded，就是说运行时间超了，因为递归计算了很多分支，效率很低，这里需要用动态规划 (Dynamic Programming) 来提高效率，代码如下：
-
-```cpp
-class Solution {
-public:
-    int climbStairs(int n) {
-        if (n <= 1) return 1;
-        vector<int> dp(n);
-        dp[0] = 1; dp[1] = 2;
-        for (int i = 2; i < n; ++i) {
-            dp[i] = dp[i - 1] + dp[i - 2];
-        }
-        return dp.back();
-    }
-};
-```
-
-#### Min Cost Climbing Stairs 爬楼梯的最小损失
-
-解题思路：  
-还是用动态规划Dynamic Programming来做。这里我们定义一个一维的dp数组，其中dp[i]表示爬到第i层的最小cost，然后我们来想dp[i]如何推导。我们来思考一下如何才能到第i层呢？是不是只有两种可能性，一个是从第i-2层上直接跳上来，一个是从第i-1层上跳上来。不会再有别的方法，所以我们的dp[i]只和前两层有关系，所以可以写做如下：  
-
-dp[i] = min(dp[i- 2] + cost[i - 2], dp[i - 1] + cost[i - 1])  
-
-最后我们返回最后一个数字dp[n]即可，参见代码如下：  
-
-```cpp
-class Solution {
-public:
-    int minCostClimbingStairs(vector<int>& cost) {
-        int n = cost.size();
-        vector<int> dp(n + 1, 0);
-        for (int i = 2; i < n + 1; ++i) {
-            dp[i] = min(dp[i- 2] + cost[i - 2], dp[i - 1] + cost[i - 1]);
-        }
-        return dp.back();
-    }
-};
-```
-
-####  Longest Increasing Subsequence 最长递增子序列 LIS
-
-解题思路*：  
-* 一种动态规划Dynamic Programming的解法，这种解法的时间复杂度为O(n2)，类似brute force的解法。
-* 我们维护一个一维dp数组，其中dp[i]表示以nums[i]为结尾的最长递增子串的长度。
-* 对于每一个nums[i]，我们从第一个数再搜索到i，如果发现某个数小于nums[i]，我们更新dp[i]，更新方法为dp[i] = max(dp[i], dp[j] + 1)，即比较当前dp[i]的值和那个小于num[i]的数的dp值加1的大小，我们就这样不断的更新dp数组，到最后dp数组中最大的值就是我们要返回的LIS的长度，参见代码如下：
-
-```cpp
-class Solution {
-public:
-    int lengthOfLIS(vector<int>& nums) {
-        vector<int> dp(nums.size(), 1);
-        int res = 0;
-        for (int i = 0; i < nums.size(); ++i) {
-            for (int j = 0; j < i; ++j) {
-                if (nums[i] > nums[j]) {
-                    dp[i] = max(dp[i], dp[j] + 1);
-                }
-            }
-            res = max(res, dp[i]);
-        }
-        return res;
-    }
-};
-```
-
-下面我们来看一种优化时间复杂度到O(nlgn)的解法，这里用到了二分查找法，所以才能加快运行时间哇。思路是，我们先建立一个数组ends，把首元素放进去，然后比较之后的元素，如果遍历到的新元素比ends数组中的首元素小的话，替换首元素为此新元素，如果遍历到的新元素比ends数组中的末尾元素还大的话，将此新元素添加到ends数组末尾(注意不覆盖原末尾元素)。如果遍历到的新元素比ends数组首元素大，比尾元素小时，此时用二分查找法找到第一个不小于此新元素的位置，覆盖掉位置的原来的数字，以此类推直至遍历完整个nums数组，此时ends数组的长度就是我们要求的LIS的长度，特别注意的是ends数组的值可能不是一个真实的LIS，比如若输入数组nums为{4, 2， 4， 5， 3， 7}，那么算完后的ends数组为{2， 3， 5， 7}，可以发现它不是一个原数组的LIS，只是长度相等而已，千万要注意这点。参见代码如下：
-
-```cpp
-class Solution {
-public:
-    int lengthOfLIS(vector<int>& nums) {
-        if (nums.empty()) return 0;
-        vector<int> ends{nums[0]};
-        for (auto a : nums) {
-            if (a < ends[0]) ends[0] = a;
-            else if (a > ends.back()) ends.push_back(a);
-            else {
-                int left = 0, right = ends.size();
-                while (left < right) {
-                    int mid = left + (right - left) / 2;
-                    if (ends[mid] < a) left = mid + 1;
-                    else right = mid;
-                }
-                ends[right] = a;
-            }
-        }
-        return ends.size();
-    }
-};
-```
-
-
-#### 674. Longest Continuous Increasing Subsequence(最长连续递增子序列LCIS)
-
-解题思路*：  
-* 由于有了连续这个条件，跟之前那道Number of Longest Increasing Subsequence比起来，其实难度就降低了很多。
-* 我们可以使用一个计数器，如果遇到大的数字，计数器自增1；如果是一个小的数字，则计数器重置为1。
-* 我们用一个变量cur来表示前一个数字，初始化为整型最大值，当前遍历到的数字num就和cur比较就行了，每次用cnt来更新结果res，参见代码如下：
-
-```cpp
-class Solution {
-public:
-    int findLengthOfLCIS(vector<int>& nums) {
-        int res = 0, cnt = 0, cur = INT_MAX;
-        for (int num : nums) {
-            if (num > cur) ++cnt;
-            else cnt = 1;
-            res = max(res, cnt);
-            cur = num;
-        }
-        return res;
-    }
-};
-```
 
 ### 子数组的和的相关问题
 计算子数组之和的常用方法应该是建立累加数组，然后我们可以快速计算出任意一个长度为k的子数组，用来更新结果res。
@@ -1655,29 +1534,7 @@ public:
 };
 ```
 
-#### Maximum Product Subarray 求最大子数组乘积
 
-解题思路：  
-* 这道题最直接的方法就是用DP来做，而且要用两个dp数组，其中f[i]表示子数组[0, i]范围内的最大子数组乘积，g[i]表示子数组[0, i]范围内的最小子数组乘积，初始化时f[0]和g[0]都初始化为nums[0]，其余都初始化为0。
-* 那么从数组的第二个数字开始遍历，那么此时的最大值和最小值只会在这三个数字之间产生，即f[i-1]*nums[i]，g[i-1]*nums[i]，和nums[i]。所以我们用三者中的最大值来更新f[i]，用最小值来更新g[i]，然后用f[i]来更新结果res即可，参见代码如下：
-
-```cpp
-class Solution {
-public:
-    int maxProduct(vector<int>& nums) {
-        int res = nums[0], n = nums.size();
-        vector<int> f(n, 0), g(n, 0);
-        f[0] = nums[0];
-        g[0] = nums[0];
-        for (int i = 1; i < n; ++i) {
-            f[i] = max(max(f[i - 1] * nums[i], g[i - 1] * nums[i]), nums[i]);
-            g[i] = min(min(f[i - 1] * nums[i], g[i - 1] * nums[i]), nums[i]);
-            res = max(res, f[i]);
-        }
-        return res;
-    }
-};
-```
 
 
 ### 数组排列组合+DFS
@@ -1715,416 +1572,6 @@ public:
 };
 ```
 
-
-#### Combinations 组合项
-Given two integers n and k, return all possible combinations of k numbers out of 1 ... n.  
-
-For example,    
-If n = 4 and k = 2, a solution is:    
-
-[  
-  [2,4],  
-  [3,4],  
-  [2,3],  
-  [1,2],  
-  [1,3],  
-  [1,4],  
-]  
-
-解题思路：  
-这道题让求1到n共n个数字里k个数的组合数的所有情况，还是要用深度优先搜索DFS来解，根据以往的经验，像这种要求出所有结果的集合，一般都是用DFS调用递归来解。那么我们建立一个保存最终结果的大集合res，还要定义一个保存每一个组合的小集合out，每次放一个数到out里，如果out里数个数到了k个，则把out保存到最终结果中，否则在下一层中继续调用递归。网友u010500263的博客里有一张图很好的说明了递归调用的顺序，请点击这里。根据上面分析，可写出代码如下：
-
-```cpp
-class Solution {
-public:
-    vector<vector<int>> combine(int n, int k) {
-        vector<vector<int>> res;
-        vector<int> out;
-        helper(n, k, 1, out, res);
-        return res;
-    }
-    void helper(int n, int k, int level, vector<int>& out, vector<vector<int>>& res) {
-        if (out.size() == k) res.push_back(out);
-        for (int i = level; i <= n; ++i) {
-            out.push_back(i);
-            helper(n, k, i + 1, out, res);
-            out.pop_back();
-        }
-    }
-};
-```
-
-
-####  Combination Sum 组合之和
-For example, given candidate set 2,3,6,7 and target 7,   
-A solution set is:   
-[7]   
-[2, 2, 3]   
-
-解题思路：  
-像这种结果要求返回所有符合要求解的题十有八九都是要利用到递归，而且解题的思路都大同小异，如果仔细研究这些题目发现都是一个套路，都是需要另写一个递归函数，这里我们新加入三个变量，start记录当前的递归到的下标，out为一个解，res保存所有已经得到的解，每次调用新的递归函数时，此时的target要减去当前数组的的数，具体看代码如下：
-
-```cpp
-class Solution {
-public:
-    vector<vector<int> > combinationSum(vector<int> &candidates,
-                                        int target)
-    {
-        //递归相关辅助变量的声明
-        vector<vector<int> > res;
-        vector<int> out;
-
-        //进入递归
-        sort(candidates.begin(), candidates.end());
-        dfs(candidates, target, 0, out, res);
-        return res;
-    }
-
-    void dfs(vector<int> &E, int T, int start, vector<int> &out,
-             vector<vector<int> > &res)
-    {
-        //出口1
-        if(T < 0)
-        {
-            return;
-        }
-        //出口2
-        else if(T == 0)
-        {
-            res.push_back(out);
-            return;
-        }
-        else
-        {
-            //递归拆解过程
-            //for循环和传递进dfs的start参数，一起定义了每趟递归可选择的数据集的范围
-            //也就是每次搜索树分叉时可做的选择种类
-            for (int i = start; i < E.size(); ++i)
-            {
-                out.push_back(E[i]);
-                dfs(E, T-E[i], i, out, res);
-                out.pop_back();
-            }
-        }
-    }
-};
-```
-
-#### Combination Sum II 组合之和之二
-Given a collection of candidate numbers (C) and a target number (T), find all unique combinations in C where the candidate numbers sums to T.  
-
-Each number in C may only be used once in the combination.  
-
-Note:  
-
-All numbers (including target) will be positive integers.  
-Elements in a combination (a1, a2, … , ak) must be in non-descending order. (ie, a1 ≤ a2 ≤ … ≤ ak).  
-The solution set must not contain duplicate combinations.  
-
-
-For example, given candidate set 10,1,2,7,6,1,5 and target 8,   
-A solution set is:   
-[1, 7]   
-[1, 2, 5]   
-[2, 6]   
-[1, 1, 6]   
-
-解题思路：  
-这道题跟之前那道 Combination Sum 组合之和 本质没有区别，只需要改动一点点即可。
-* 之前那道题给定数组中的数字可以重复使用，而这道题不能重复使用，只需要在之前的基础上修改两个地方即可，首先在递归的for循环里加上if (i > start && num[i] == num[i - 1]) continue; 这样可以防止res中出现重复项。
-* 然后就在递归调用combinationSum2DFS里面的参数换成i+1，这样就不会重复使用数组中的数字了，代码如下：
-
-```cpp
-class Solution {
-public:
-    vector<vector<int> > combinationSum2(vector<int> &num, int target) {
-        vector<vector<int> > res;
-        vector<int> out;
-        sort(num.begin(), num.end());
-        combinationSum2DFS(num, target, 0, out, res);
-        return res;
-    }
-    void combinationSum2DFS(vector<int> &num, int target, int start, vector<int> &out, vector<vector<int> > &res) {
-        if (target < 0) return;
-        else if (target == 0) res.push_back(out);
-        else {
-            for (int i = start; i < num.size(); ++i) {
-                if (i > start && num[i] == num[i - 1]) continue;
-                out.push_back(num[i]);
-                combinationSum2DFS(num, target - num[i], i + 1, out, res);
-                out.pop_back();
-            }
-        }
-    }
-};
-```
-
-
-#### Combination Sum III 组合之和之三
-Find all possible combinations of k numbers that add up to a number n, given that only numbers from 1 to 9 can be used and each combination should be a unique set of numbers.  
-
-Ensure that numbers within the set are sorted in ascending order.  
-
-
-Example 1:  
-
-Input: k = 3, n = 7  
-
-Output:  
-
-[[1,2,4]]  
-
-Example 2:  
-
-Input: k = 3, n = 9  
-
-Output:  
-
-[[1,2,6], [1,3,5], [2,3,4]]  
-Credits:  
-Special thanks to @mithmatt for adding this problem and creating all test cases.  
-
-解题思路：  
-这道题题是组合之和系列的第三道题，跟之前两道Combination Sum 组合之和，Combination Sum II 组合之和之二都不太一样，那两道的联系比较紧密，变化不大，而这道跟它们最显著的不同就是这道题的个数是固定的，为k。个人认为这道题跟那道Combinations 组合项更相似一些，但是那道题只是排序，对k个数字之和又没有要求。所以实际上这道题是它们的综合体，两者杂糅到一起就是这道题的解法了。
-* n是k个数字之和，如果n小于0，则直接返回，如果n正好等于0，而且此时out中数字的个数正好为k，说明此时是一个正确解，将其存入结果res中，具体实现参见代码入下：
-
-```cpp
-class Solution {
-public:
-    vector<vector<int> > combinationSum3(int k, int n) {
-        vector<vector<int> > res;
-        vector<int> out;
-        combinationSum3DFS(k, n, 1, out, res);
-        return res;
-    }
-    void combinationSum3DFS(int k, int n, int level, vector<int> &out, vector<vector<int> > &res) {
-        if (n < 0) return;
-        if (n == 0 && out.size() == k) res.push_back(out);
-        for (int i = level; i <= 9; ++i) {
-            out.push_back(i);
-            combinationSum3DFS(k, n - i, i + 1, out, res);
-            out.pop_back();
-        }
-    }
-};
-```
-
-####  Permutations 全排列
-Given a collection of numbers, return all possible permutations.  
-
-For example,  
-[1,2,3] have the following permutations:  
-[1,2,3], [1,3,2], [2,1,3], [2,3,1], [3,1,2], and [3,2,1].  
-
-解题思路：  
-这道题是求全排列问题，给的输入数组没有重复项，这跟之前的那道 Combinations 组合项 和类似，解法基本相同，但是不同点在于那道不同的数字顺序只算一种，是一道典型的组合题，而此题是求全排列问题，还是用递归DFS来求解。这里我们需要用到一个visited数组来标记某个数字是否访问过，然后在DFS递归函数从的循环应从头开始，而不是从level开始，这是和 Combinations 组合项 不同的地方，其余思路大体相同，代码如下：
-
-```cpp
-class Solution {
-public:
-    vector<vector<int> > permute(vector<int> &num) {
-        vector<vector<int> > res;
-        vector<int> out;
-        vector<int> visited(num.size(), 0);
-        permuteDFS(num, 0, visited, out, res);
-        return res;
-    }
-    void permuteDFS(vector<int> &num, int level, vector<int> &visited, vector<int> &out, vector<vector<int> > &res) {
-        if (level == num.size()) res.push_back(out);
-        else {
-            for (int i = 0; i < num.size(); ++i) {
-                if (visited[i] == 0) {
-                    visited[i] = 1;
-                    out.push_back(num[i]);
-                    permuteDFS(num, level + 1, visited, out, res);
-                    out.pop_back();
-                    visited[i] = 0;
-                }
-            }
-        }
-    }
-};
-```
-
-#### Permutations II 全排列之二
-Given a collection of numbers that might contain duplicates, return all possible unique permutations.  
-
-For example,  
-[1,1,2] have the following unique permutations:  
-[1,1,2], [1,2,1], and [2,1,1].  
-
-解题思路：  
-这道题是之前那道 Permutations 全排列的延伸，由于输入数组有可能出现重复数字，如果按照之前的算法运算，会有重复排列产生，我们要避免重复的产生，在递归函数中要判断前面一个数和当前的数是否相等，如果相等，前面的数必须已经使用了，即对应的visited中的值为1，当前的数字才能使用，否则需要跳过，这样就不会产生重复排列了，代码如下：
-
-```cpp
-class Solution {
-public:
-    vector<vector<int> > permuteUnique(vector<int> &num) {
-        vector<vector<int> > res;
-        vector<int> out;
-        vector<int> visited(num.size(), 0);
-        sort(num.begin(), num.end());
-        permuteUniqueDFS(num, 0, visited, out, res);
-        return res;
-    }
-    void permuteUniqueDFS(vector<int> &num, int level, vector<int> &visited, vector<int> &out, vector<vector<int> > &res) {
-        if (level >= num.size()) res.push_back(out);
-        else {
-            for (int i = 0; i < num.size(); ++i) {
-                if (visited[i] == 0) {
-                    if (i > 0 && num[i] == num[i - 1] && visited[i - 1] == 0) continue;
-                    visited[i] = 1;
-                    out.push_back(num[i]);
-                    permuteUniqueDFS(num, level + 1, visited, out, res);
-                    out.pop_back();
-                    visited[i] = 0;
-                }
-            }
-        }
-    }
-};
-```
-
-#### Next Permutation 下一个排列
-这道题让我们求下一个排列顺序，有题目中给的例子可以看出来，如果给定数组是降序，则说明是全排列的最后一种情况，则下一个排列就是最初始情况，可以参见之前的博客 Permutations 全排列。我们再来看下面一个例子，有如下的一个数组  
-
-1　　2　　7　　4　　3　　1    
-
-下一个排列为：  
-
-1　　3　　1　　2　　4　　7  
-
-那么是如何得到的呢，我们通过观察原数组可以发现，如果从末尾往前看，数字逐渐变大，到了2时才减小的，然后我们再从后往前找第一个比2大的数字，是3，那么我们交换2和3，再把此时3后面的所有数字转置一下即可，步骤如下：  
-
-1　　2　　7　　4　　3　　1  
-
-1　　2　　7　　4　　3　　1  
-
-1　　3　　7　　4　　2　　1  
-
-1　　3　　1　　2　　4　　7  
-
-```cpp
-class Solution {
-public:
-    void nextPermutation(vector<int> &num) {
-        int i, j, n = num.size();
-        for (i = n - 2; i >= 0; --i) {
-            if (num[i + 1] > num[i]) {
-                for (j = n - 1; j > i; --j) {
-                    if (num[j] > num[i]) break;
-                }
-                swap(num[i], num[j]);
-                reverse(num.begin() + i + 1, num.end());
-                return;
-            }
-        }
-        reverse(num.begin(), num.end());
-    }
-};
-```
-
-
-
-
-####  Subsets 子集合
-Given a set of distinct integers, S, return all possible subsets.  
-
-Note:  
-
-Elements in a subset must be in non-descending order.  
-The solution set must not contain duplicate subsets.  
-
-
-For example,  
-If S = [1,2,3], a solution is:  
-
-[    
-  [3],  
-  [1],  
-  [2],  
-  [1,2,3],  
-  [1,3],  
-  [2,3],  
-  [1,2],  
-  []  
-]  
-
-解题思路：  
-这道求子集合的问题，由于其要列出所有结果。
-* 下面来看递归的解法，相当于一种深度优先搜索，参见网友JustDoIt的博客，由于原集合每一个数字只有两种状态，要么存在，要么不存在，那么在构造子集时就有选择和不选择两种情况，所以可以构造一棵二叉树，左子树表示选择该层处理的节点，右子树表示不选择，最终的叶节点就是所有子集合，树的结构如下：
-
-```cpp
-// Recursion
-class Solution {
-public:
-    vector<vector<int> > subsets(vector<int> &S) {
-        vector<vector<int> > res;
-        vector<int> out;
-        sort(S.begin(), S.end());
-        getSubsets(S, 0, out, res);
-        return res;
-    }
-    void getSubsets(vector<int> &S, int pos, vector<int> &out, vector<vector<int> > &res) {
-        res.push_back(out);
-        for (int i = pos; i < S.size(); ++i) {
-            out.push_back(S[i]);
-            getSubsets(S, i + 1, out, res);
-            out.pop_back();
-        }
-    }
-};
-```
-
-
-####  Subsets II 子集合之二
-Given a collection of integers that might contain duplicates, S, return all possible subsets.  
-
-Note:  
-
-Elements in a subset must be in non-descending order.  
-The solution set must not contain duplicate subsets.  
-
-
-For example,  
-If S = [1,2,2], a solution is:  
-
-[  
-  [2],  
-  [1],  
-  [1,2,2],  
-  [2,2],  
-  [1,2],  
-  []  
-]  
-
-解题思路：  
-对于递归的解法，根据之前 Subsets 子集合 里的构建树的方法，在处理到第二个2时，由于前面已经处理了一次2，这次我们只在添加过2的[2] 和 [1 2]后面添加2，其他的都不添加。  
-代码只需在原有的基础上增加一句话，while (S[i] == S[i + 1]) ++i; 这句话的作用是跳过树中为X的叶节点，因为它们是重复的子集，应被抛弃。代码如下：
-
-```cpp
-class Solution {
-public:
-    vector<vector<int>> subsetsWithDup(vector<int> &S) {
-        if (S.empty()) return {};
-        vector<vector<int>> res;
-        vector<int> out;
-        sort(S.begin(), S.end());
-        getSubsets(S, 0, out, res);
-        return res;
-    }
-    void getSubsets(vector<int> &S, int pos, vector<int> &out, vector<vector<int>> &res) {
-        res.push_back(out);
-        for (int i = pos; i < S.size(); ++i) {
-            out.push_back(S[i]);
-            getSubsets(S, i + 1, out, res);
-            out.pop_back();
-            while (i + 1 < S.size() && S[i] == S[i + 1]) ++i;
-        }
-    }
-};
-```
-
 ### 滑动窗口计算数组的子数组
 解题思路：  
 这道题给了我们一个数组，让我们求最短的无序连续子数组，根据题目中的例子也不难分析出来是让我们找出数组中的无序的部分。
@@ -2147,379 +1594,6 @@ public:
                 if (start == -1 || start > j) start = j;
                 res = max(res, i - start + 1);
             }
-        }
-        return res;
-    }
-};
-```
-
-## 堆相关题目
-
-常见题型有：
-* K-th问题: 最大kth应该使用最小堆构造、最小kth应该使用最大堆构造，c++使用priority_queue实现最大最小堆；
-
-* hash-set 应该使用 unordered_map；
-
----
-
-### k-th问题：
-
-#### 215. Kth Largest Element in an Array
-解题思路：  
-利用了priority_queue的自动排序的特性，跟上面的解法思路上没有什么区别，当然我们也可以换成multiset来做，一个道理，参见代码如下：
-```cpp
-class Solution {
-public:
-    int findKthLargest(vector<int>& nums, int k) {
-        priority_queue<int> q(nums.begin(), nums.end());
-        for (int i = 0; i < k - 1; ++i) {
-            q.pop();
-        }
-        return q.top();
-    }
-};
-```
-
-#### 378. Kth Smallest Element in a Sorted Matrix
-解题思路：  
-* kth最小问题，可以使用容积为k的小顶堆实现，也可以使用容积为k的大顶堆，每次进来第k+1个数时，去掉堆顶元素，这样遍历完留下来的堆顶元素必然是第k小的元素；
-* 我们使用一个最大堆，然后遍历数组每一个元素，将其加入堆，根据最大堆的性质，大的元素会排到最前面，然后我们看当前堆中的元素个数是否大于k，大于的话就将首元素去掉，循环结束后我们返回堆中的首元素即为所求:
-```cpp
-class Solution {
-public:
-    int kthSmallest(vector<vector<int>>& matrix, int k)
-    {
-        priority_queue<int> q;
-        for (int i = 0; i < matrix.size(); ++i)
-        {
-            for (int j = 0; j < matrix[i].size(); ++j)
-            {
-                q.emplace(matrix[i][j]);
-                if (q.size() > k)
-                {
-                   q.pop();
-                }
-            }
-        }
-        return q.top();
-    }
-};
-```
-
-### Top k频率问题：（hash表 + pair + heap）
-
-#### 347. Top K Frequent Elements
-解题思路：  
-这道题给了我们一个数组，让我们统计前k个高频的数字，那么对于这类的统计数字的问题，首先应该考虑用哈希表来做，建立数字和其出现次数的映射，然后再按照出现次数进行排序。我们可以用堆排序来做，使用一个最大堆来按照映射次数从大到小排列，在C++中使用priority_queue来实现，默认是最大堆，参见代码如下：
-```cpp
-class Solution {
-public:
-    vector<int> topKFrequent(vector<int>& nums, int k) {
-        //构建hashmap和最大堆priority_queue
-        unordered_map<int, int> m;
-        priority_queue<pair<int, int>> q;
-        vector<int> res;
-        for (auto a : nums)
-        {
-            ++m[a];
-        }
-        for (auto it : m)
-        {
-            q.push({it.second, it.first});
-        }
-        for (int i = 0; i < k; ++i)
-        {
-            res.push_back(q.top().second); q.pop();
-        }
-        return res;
-    }
-};
-```
-
-#### 692. Top K Frequent Words
-解题思路：  
-这道题让我们求前K个高频词，跟之前那道题Top K Frequent Elements极其类似，换了个数据类型就又是一道新题。唯一的不同就是之前那道题对于出现频率相同的数字，没有顺序要求。而这道题对于出现频率相同的单词，需要按照字母顺序来排。但是解法都一样，还是用最大堆和桶排序的方法。首先来看最大堆的方法，思路是先建立每个单词和其出现次数之间的映射，然后把单词和频率的pair放进最大堆，如果没有相同频率的单词排序要求，我们完全可以让频率当作pair的第一项，这样priority_queue默认是以pair的第一项为key进行从大到小的排序，而当第一项相等时，又会以第二项由大到小进行排序，这样就与题目要求的相同频率的单词要按字母顺序排列不相符，当然我们可以在存入结果res时对相同频率的词进行重新排序处理，也可以对priority_queue的排序机制进行自定义，这里我们采用第二种方法，我们自定义排序机制，我们让a.second > b.second，让小频率的词在第一位，然后当a.second == b.second时，我们让a.first < b.first，这是让字母顺序大的排在前面（这里博主需要强调一点的是，priority_queue的排序机制的写法和vector的sort的排序机制的写法正好顺序相反，同样的写法，用在sort里面就是频率小的在前面，不信的话可以自己试一下）。定义好最小堆后，我们首先统计单词的出现频率，然后组成pair排序最小堆之中，我们只保存k个pair，超过了就把队首的pair移除队列，最后我们把单词放入结果res中即可，参见代码如下：
-
-```cpp
-class Solution {
-public:
-    vector<string> topKFrequent(vector<string>& words, int k) {
-        vector<string> res(k);
-        unordered_map<string, int> freq;
-        auto cmp = [](pair<string, int>& a, pair<string, int>& b) {
-            return a.second > b.second || (a.second == b.second && a.first < b.first);
-        };
-        priority_queue<pair<string, int>, vector<pair<string, int>>, decltype(cmp) > q(cmp);
-        for (auto word : words) ++freq[word];
-        for (auto f : freq) {
-            q.push(f);
-            if (q.size() > k) q.pop();
-        }
-        for (int i = res.size() - 1; i >= 0; --i) {
-            res[i] = q.top().first; q.pop();
-        }
-        return res;
-    }
-};
-```
-
-#### 451. Sort Characters By Frequency
-* 给一个字符串按照字符出现的频率来排序，那么毫无疑问肯定要先统计出每个字符出现的个数。
-* 我们可以利用优先队列的自动排序的特点，先使用hashmap循环记录每个单词的出现次数。
-* 然后把个数和字符组成pair放到优先队列里排好序后，再取出来组成结果res即可，参见代码如下：
-
-```cpp
-class Solution {
-public:
-    string frequencySort(string s) {
-        string res = "";
-        priority_queue<pair<int, char>> q;
-        unordered_map<char, int> m;
-        for (char c : s)
-        {
-          ++m[c];
-        }
-        for (auto a : m)
-        {
-          q.push({a.second, a.first});
-        }
-        while (!q.empty())
-        {
-            auto t = q.top();
-            q.pop();
-            res.append(t.first, t.second);
-        }
-        return res;
-    }
-};
-```
-
-## Hash Table相关题目：
-
-* Hash经常和需要频繁查找的问题相关联：
-  * X-sum问题：如two sum, 3 sum, 4 sum; 这些问题需要先遍历一遍数组构造hash表，最后通过快速查找得到结果
-* Hash和String相关题目；
-
-
-#### 1. Two Sum
-解题思路：  
-O(n)的算法来实现，整个实现步骤为：
-* 先遍历一遍数组，建立map数据。
-* 然后再遍历一遍，开始查找，找到则记录index。代码如下：
-```cpp
-class Solution {
-public:
-    vector<int> twoSum(vector<int>& nums, int target) {
-        //声明辅助hash表和记录结果的数组
-        unordered_map<int, int> m;
-        vector<int> res;
-        //记录hash表：<value, pos>
-        for (int i = 0; i < nums.size(); ++i)
-        {
-            m[nums[i]] = i;
-        }
-        //根据剩余值t在hash表中查找
-        for (int i = 0; i < nums.size(); ++i)
-        {
-            int t = target - nums[i];
-            if (m.count(t) && m[t] != i)
-            {
-                res.push_back(i);
-                res.push_back(m[t]);
-                break;
-            }
-        }
-        return res;
-    }
-};
-```
-
-#### 599. Minimum Index Sum of Two Lists
-解题思路：  
-这道题给了我们两个字符串数组，让我们找到坐标位置之和最小的相同的字符串。
-* 那么对于这种数组项和其坐标之间关系的题，最先考虑到的就是要建立数据和其位置坐标之间的映射。我们建立list1的值和坐标的之间的映射，然后遍历list2.
-* 如果当前遍历到的字符串在list1中也出现了，那么我们计算两个的坐标之和，如果跟我们维护的最小坐标和mn相同，那么将这个字符串加入结果res中，如果比mn小，那么mn更新为这个较小值，然后将结果res清空并加入这个字符串，参见代码如下：
-```cpp
-class Solution {
-public:
-    vector<string> findRestaurant(vector<string>& list1, vector<string>& list2) {
-        vector<string> res;
-        unordered_map<string, int> m;
-        int mn = INT_MAX, n1 = list1.size(), n2 = list2.size();
-        for (int i = 0; i < n1; ++i) m[list1[i]] = i;
-        for (int i = 0; i < n2; ++i) {
-            if (m.count(list2[i])) {
-                int sum = i + m[list2[i]];
-                if (sum == mn) res.push_back(list2[i]);
-                else if (sum < mn) {
-                    mn = sum;
-                    res = {list2[i]};
-                }
-            }
-        }
-        return res;
-    }
-};
-```
-
-
-#### 500. Keyboard Row
-这道题给了我们一些单词，问哪些单词可以由键盘上的一行中的键符打出来，难度其实并不大。
-* 首先我们把键盘的三行字符分别保存到三个set中.
-* 然后遍历每个单词中的每个字符，分别看当前字符是否在三个集合中，如果在，对应的标识变量变为1，我们统计三个标识变量之和就知道有几个集合参与其中了，参见代码如下：
-
-```cpp
-class Solution {
-public:
-    vector<string> findWords(vector<string>& words) {
-        vector<string> res;
-        unordered_set<char> row1{'q','w','e','r','t','y','u','i','o','p'};
-        unordered_set<char> row2{'a','s','d','f','g','h','j','k','l'};
-        unordered_set<char> row3{'z','x','c','v','b','n','m'};
-        for (string word : words) {
-            //访问字符串中每个单词的每个英文字母在三个set的哪个；
-            int one = 0, two = 0, three = 0;
-            for (char c : word) {
-                if (c < 'a') c += 32;
-                if (row1.count(c)) one = 1;
-                if (row2.count(c)) two = 1;
-                if (row3.count(c)) three = 1;
-                if (one + two + three > 1) break;
-            }
-            if (one + two + three == 1)
-            {
-              res.push_back(word);
-            }
-        }
-        return res;
-    }
-};
-```
-
-#### 575. Distribute Candies
-这道题给我们一堆糖，每种糖的个数不定，分给两个人，让我们求其中一个人能拿到的最大的糖的种类数。
-* 那么我们想，如果总共有n个糖，平均分给两个人，每人得到n/2块糖。
-* （先平均分，然后让一个人从另一个人的n/2块中拿糖）那么能拿到的最大的糖的种类数也就是n/2种，不可能再多，只可能再少。
-* 那么我们要做的就是统计出总共的糖的种类数，如果糖的种类数小于n/2，说明拿不到n/2种糖，最多能拿到的种类数数就是当前糖的总种类数，明白了这点就很容易了，我们利用集合set的自动去重复特性来求出糖的种类数，然后跟n/2比较，取二者之中的较小值返回即可，参加代码如：
-
-```cpp
-class Solution {
-public:
-    int distributeCandies(vector<int>& candies) {
-        unordered_set<int> s;
-        for (int candy : candies) s.insert(candy);
-        return min(s.size(), candies.size() / 2);
-    }
-};
-```
-
-#### 645. Set Mismatch(这题比较偏记录额外信息，而不偏频繁查找。所以应该用记录数组而不是HashTable)
-解题思路：  
-* 这道题给了我们一个长度为n的数组，说里面的数字是从1到n，但是有一个数字重复出现了一次，从而造成了另一个数字的缺失，让我们找出重复的数字和缺失的数字。
-* 使用另外一个数组统计每个数字出现的次数了，然后再遍历次数数组，如果某个数字出现了两次就是重复数，如果出现了0次，就是缺失数，参见代码如下：
-
-```cpp
-class Solution {
-public:
-    vector<int> findErrorNums(vector<int>& nums)
-    {
-        //声明两个辅助数组：
-        //1.cnt记录每个数字的出现次数cnt[i]=times
-        //2.res记录重复数字和缺失数字
-        vector<int> res(2, 0), cnt(nums.size(), 0);
-        for (int num : nums)
-        {
-          ++cnt[num - 1];
-        }
-        for (int i = 0; i < cnt.size(); ++i)
-        {
-            if (res[0] != 0 && res[1] != 0)
-            {
-               return res;
-            }
-            if (cnt[i] == 2)
-            {
-              res[0] = i + 1;
-            }
-            else if (cnt[i] == 0)
-            {
-               res[1] = i + 1;
-            }
-        }
-        return res;
-    }
-};
-```
-
-#### 290. Word Pattern
-
-解题思路：  
-这道题给我们一个模式字符串，又给我们一个单词字符串，让我们求单词字符串中单词出现的规律是否符合模式字符串中的规律。
-* 用哈希表来做，建立模式字符串中每个字符和单词字符串每个单词之间的映射，而且这种映射必须是一对一关系的，不能'a‘和’b'同时对应‘dog'。
-* 所以我们在碰到一个新字符时，首先检查其是否在哈希表中出现。
-  * 若出现，其映射的单词若不是此时对应的单词，则返回false。
-  * 如果没有在哈希表中出现，我们还要遍历一遍哈希表，看新遇到的单词是否已经是哈希表中的映射。
-    * 如果没有，再跟新遇到的字符建立映射，参见代码如下：
-```cpp
-class Solution {
-public:
-    bool wordPattern(string pattern, string str) {
-        //使用<char, string>映射字符串中单词
-        //使用istringstream读取单词
-        unordered_map<char, string> m;
-        istringstream in(str);
-        int i = 0;
-        for (string word; in >> word; ++i) {
-            if (m.find(pattern[i]) != m.end()) {
-                if (m[pattern[i]] != word) return false;
-            } else {
-                for (unordered_map<char, string>::iterator it = m.begin(); it != m.end(); ++it) {
-                    if (it->second == word) return false;
-                }
-                m[pattern[i]] = word;
-            }
-        }
-        return i == pattern.size();
-    }
-};
-```
-
----
-
-
-
-### Hash和String相关题目
-
-
-#### 387. First Unique Character in a String
-解题思路：  
-* 只要用哈希表建立每个字符和其出现次数的映射<字符char, 出现次数int>。
-* 然后按顺序遍历字符串，找到第一个出现次数为1的字符，返回其位置即可，参见代码如下：
-
-
-#### 30. Substring with Concatenation of All Words
-
-解题思路：  
-这道题让我们求串联所有单词的子串，就是说给定一个长字符串，再给定几个长度相同的单词，让我们找出串联给定所有单词的子串的起始位置，还是蛮有难度的一道题。这道题我们需要用到两个哈希表，第一个哈希表先把所有的单词存进去，然后从开头开始一个个遍历，停止条件为当剩余字符个数小于单词集里所有字符的长度。这时候我们需要定义第二个哈希表，然后每次找出给定单词长度的子串，看其是否在第一个哈希表里，如果没有，则break，如果有，则加入第二个哈希表，但相同的词只能出现一次，如果多了，也break。如果正好匹配完给定单词集里所有的单词，则把i存入结果中，具体参见代码如下：
-```cpp
-class Solution {
-public:
-    vector<int> findSubstring(string s, vector<string>& words) {
-        vector<int> res;
-        if (s.empty() || words.empty()) return res;
-        int n = words.size(), m = words[0].size();
-        unordered_map<string, int> m1;
-        for (auto &a : words) ++m1[a];
-        for (int i = 0; i <= (int)s.size() - n * m; ++i) {
-            unordered_map<string, int> m2;
-            int j = 0;
-            for (j = 0; j < n; ++j) {
-                string t = s.substr(i + j * m, m);
-                if (m1.find(t) == m1.end()) break;
-                ++m2[t];
-                if (m2[t] > m1[t]) break;
-            }
-            if (j == n) res.push_back(i);
         }
         return res;
     }

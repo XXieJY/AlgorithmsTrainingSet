@@ -22,6 +22,44 @@ C++引入了ostringstream、istringstream、stringstream这三个类，要使用
 
 ---
 
+### Hash和String相关题目
+
+
+#### 387. First Unique Character in a String
+解题思路：  
+* 只要用哈希表建立每个字符和其出现次数的映射<字符char, 出现次数int>。
+* 然后按顺序遍历字符串，找到第一个出现次数为1的字符，返回其位置即可，参见代码如下：
+
+
+#### 30. Substring with Concatenation of All Words
+
+解题思路：  
+这道题让我们求串联所有单词的子串，就是说给定一个长字符串，再给定几个长度相同的单词，让我们找出串联给定所有单词的子串的起始位置，还是蛮有难度的一道题。这道题我们需要用到两个哈希表，第一个哈希表先把所有的单词存进去，然后从开头开始一个个遍历，停止条件为当剩余字符个数小于单词集里所有字符的长度。这时候我们需要定义第二个哈希表，然后每次找出给定单词长度的子串，看其是否在第一个哈希表里，如果没有，则break，如果有，则加入第二个哈希表，但相同的词只能出现一次，如果多了，也break。如果正好匹配完给定单词集里所有的单词，则把i存入结果中，具体参见代码如下：
+```cpp
+class Solution {
+public:
+    vector<int> findSubstring(string s, vector<string>& words) {
+        vector<int> res;
+        if (s.empty() || words.empty()) return res;
+        int n = words.size(), m = words[0].size();
+        unordered_map<string, int> m1;
+        for (auto &a : words) ++m1[a];
+        for (int i = 0; i <= (int)s.size() - n * m; ++i) {
+            unordered_map<string, int> m2;
+            int j = 0;
+            for (j = 0; j < n; ++j) {
+                string t = s.substr(i + j * m, m);
+                if (m1.find(t) == m1.end()) break;
+                ++m2[t];
+                if (m2[t] > m1[t]) break;
+            }
+            if (j == n) res.push_back(i);
+        }
+        return res;
+    }
+};
+```
+
 ### 用STL字符串库有geek解的题目
 
 #### 165. Compare Version Numbers（sstream拆分带'.'的字符串）

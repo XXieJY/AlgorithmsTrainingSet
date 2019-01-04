@@ -40,6 +40,107 @@ https://www.google.com/search?ei=9A8uXLCgBMit8QXh8ZToAg&q=LIS%E5%92%8CLCS&oq=LIS
 其中S可以是子串 或者 子序列
 ---
 
+#### Maximum Product Subarray 求最大子数组乘积
+
+解题思路：  
+* 这道题最直接的方法就是用DP来做，而且要用两个dp数组，其中f[i]表示子数组[0, i]范围内的最大子数组乘积，g[i]表示子数组[0, i]范围内的最小子数组乘积，初始化时f[0]和g[0]都初始化为nums[0]，其余都初始化为0。
+* 那么从数组的第二个数字开始遍历，那么此时的最大值和最小值只会在这三个数字之间产生，即f[i-1]*nums[i]，g[i-1]*nums[i]，和nums[i]。所以我们用三者中的最大值来更新f[i]，用最小值来更新g[i]，然后用f[i]来更新结果res即可，参见代码如下：
+
+```cpp
+class Solution {
+public:
+    int maxProduct(vector<int>& nums) {
+        int res = nums[0], n = nums.size();
+        vector<int> f(n, 0), g(n, 0);
+        f[0] = nums[0];
+        g[0] = nums[0];
+        for (int i = 1; i < n; ++i) {
+            f[i] = max(max(f[i - 1] * nums[i], g[i - 1] * nums[i]), nums[i]);
+            g[i] = min(min(f[i - 1] * nums[i], g[i - 1] * nums[i]), nums[i]);
+            res = max(res, f[i]);
+        }
+        return res;
+    }
+};
+```
+
+####  Longest Increasing Subsequence 最长递增子序列 LIS
+
+解题思路*：  
+* 一种动态规划Dynamic Programming的解法，这种解法的时间复杂度为O(n2)，类似brute force的解法。
+* 我们维护一个一维dp数组，其中dp[i]表示以nums[i]为结尾的最长递增子串的长度。
+* 对于每一个nums[i]，我们从第一个数再搜索到i，如果发现某个数小于nums[i]，我们更新dp[i]，更新方法为dp[i] = max(dp[i], dp[j] + 1)，即比较当前dp[i]的值和那个小于num[i]的数的dp值加1的大小，我们就这样不断的更新dp数组，到最后dp数组中最大的值就是我们要返回的LIS的长度，参见代码如下：
+
+```cpp
+class Solution {
+public:
+    int lengthOfLIS(vector<int>& nums) {
+        vector<int> dp(nums.size(), 1);
+        int res = 0;
+        for (int i = 0; i < nums.size(); ++i) {
+            for (int j = 0; j < i; ++j) {
+                if (nums[i] > nums[j]) {
+                    dp[i] = max(dp[i], dp[j] + 1);
+                }
+            }
+            res = max(res, dp[i]);
+        }
+        return res;
+    }
+};
+```
+
+下面我们来看一种优化时间复杂度到O(nlgn)的解法，这里用到了二分查找法，所以才能加快运行时间哇。思路是，我们先建立一个数组ends，把首元素放进去，然后比较之后的元素，如果遍历到的新元素比ends数组中的首元素小的话，替换首元素为此新元素，如果遍历到的新元素比ends数组中的末尾元素还大的话，将此新元素添加到ends数组末尾(注意不覆盖原末尾元素)。如果遍历到的新元素比ends数组首元素大，比尾元素小时，此时用二分查找法找到第一个不小于此新元素的位置，覆盖掉位置的原来的数字，以此类推直至遍历完整个nums数组，此时ends数组的长度就是我们要求的LIS的长度，特别注意的是ends数组的值可能不是一个真实的LIS，比如若输入数组nums为{4, 2， 4， 5， 3， 7}，那么算完后的ends数组为{2， 3， 5， 7}，可以发现它不是一个原数组的LIS，只是长度相等而已，千万要注意这点。参见代码如下：
+
+```cpp
+class Solution {
+public:
+    int lengthOfLIS(vector<int>& nums) {
+        if (nums.empty()) return 0;
+        vector<int> ends{nums[0]};
+        for (auto a : nums) {
+            if (a < ends[0]) ends[0] = a;
+            else if (a > ends.back()) ends.push_back(a);
+            else {
+                int left = 0, right = ends.size();
+                while (left < right) {
+                    int mid = left + (right - left) / 2;
+                    if (ends[mid] < a) left = mid + 1;
+                    else right = mid;
+                }
+                ends[right] = a;
+            }
+        }
+        return ends.size();
+    }
+};
+```
+
+
+#### 674. Longest Continuous Increasing Subsequence(最长连续递增子序列LCIS)
+
+解题思路*：  
+* 由于有了连续这个条件，跟之前那道Number of Longest Increasing Subsequence比起来，其实难度就降低了很多。
+* 我们可以使用一个计数器，如果遇到大的数字，计数器自增1；如果是一个小的数字，则计数器重置为1。
+* 我们用一个变量cur来表示前一个数字，初始化为整型最大值，当前遍历到的数字num就和cur比较就行了，每次用cnt来更新结果res，参见代码如下：
+
+```cpp
+class Solution {
+public:
+    int findLengthOfLCIS(vector<int>& nums) {
+        int res = 0, cnt = 0, cur = INT_MAX;
+        for (int num : nums) {
+            if (num > cur) ++cnt;
+            else cnt = 1;
+            res = max(res, cnt);
+            cur = num;
+        }
+        return res;
+    }
+};
+```
+
+
 ## 坐标和路径DP
 
 #### 55. Jump Game

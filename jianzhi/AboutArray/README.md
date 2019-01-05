@@ -1,16 +1,186 @@
-* 数组搜索问题，能用循环就不要用分治，分治会导致TLE.
+数组：
 
-###179. Largest Number  
+数组搜索问题：数组中所有非递减子序列、
+topK问题：找出（有序or无序）数组中第K大的数topk、从长序列中找出前K大的数字、
+数组变形问题：旋转数组的搜索操作、两个排序数组求交集、
+
+
+#### 求出数组所有元素的右边第一个比其大的数
+
+这个问题，从直觉上来讲，应当是一遍遍历，便可以解决问题。这类问题的特点是，一部分要详尽保留信息，另一部分呈现未解决问题的积累特性。具体到这个问题，创建一个数据结构保留未解决的子问题，根据特点选择栈。
+1. 栈里面保留是索引，而非元素，其实这是一个很关键的地方，索引的信息要比内容多，因为可以索引本身就可以确定内容。要牢记这一特点
+2. 初始栈，里面为第一个元素
+3. 如果栈不为空，而且当前处理元素比栈顶元素大，则栈顶元素对应的第一个比它大的值，就是该元素
+4. 弹出栈顶元素，继续处理栈里的元素，直至为空或当前处理元素不大于栈顶元素
+5. 将当前元素压入栈
+6. 循环3~5
+
+```cpp
+vector<int> get(vector<int> a, int len)
+{
+	vector<int> res(len, -1);
+	vector<int> temp(len);
+	int index = 0;
+	temp[0] = 0;
+	for (int i = 1; i < len; i++)
+	{
+		while (index>-1 && a[i] > a[(temp[index])])
+		{
+			res[(temp[index])] = a[i];
+			index--;
+		}
+		index++;
+		temp[index] = i;
+	}
+	return res;
+}
+ 
+vector<int> get2(vector<int> a, int len)
+{
+	vector<int> res(len, -1);
+	stack<int> sta;
+	sta.push(0);
+	for (int i = 1; i < len; i++)
+	{
+		while (!sta.empty() && a[i]>a[(sta.top())])
+		{
+			res[(sta.top())] = a[i];
+			sta.pop();
+		}
+		sta.push(i);
+	}
+	return res;
+}
+ 
+int main()
+{
+	vector<int> a = { 2, 5, 3, 7, 1, 2, 8 };
+	vector<int> b = get2(a, 7);
+	for (int i = 0; i < 7; i++)
+	{
+		cout << b[i] << " ";
+	}
+	system("pause");
+	return 0;
+}
+
+```
+
+#### 使用位运算找无序数组中第一个顺位缺失数字
+Xor异或：由于b^b=0(这里是进行位异或)，所以a^b^b=a^0=a.
+
+这里取a=0,依次与‘i’，‘nums[i]’进行异或运算.
+如：a = a^0^0^1^1…^k^…n^n = a^k = 0^k = k.
+```cpp
+class Solution {
+public:
+    int missingNumber(vector<int>& nums) {
+        int result = nums.size();
+        int i=0;
+        
+        for(int num:nums){
+            result ^= num;
+            result ^= i;
+            i++;
+        }
+        
+        return result;
+    }
+};
+```
+
+#### 求一个无序数组求中位数
+中位数在奇数个元素的数组中就是中间那个数，在偶数个元素的数组中就是中间两个数的平均值。
+```cpp
+排序，找到元素，计算中位数
+```
+
+
+#### 有序数组去多个重复
+Given nums = [1,1,2],
+
+Your function should return length = 2, with the first two elements of nums being 1 and 2 respectively.
+
+It doesn't matter what you leave beyond the returned length.
+```cpp
+int removeDuplicates(vector<int>& nums) {
+    int i = 0;
+    for (int n : nums)
+        if (!i || n > nums[i-1])
+            nums[i++] = n;
+    return i;
+}
+```
+
+#### 查找数组中唯一的一个重复元素
+给N个数的数组，数组元素取值范围只有[1,n-1],并保证数组有且仅有一个重复数字，找出他。  
+Input: [1,3,4,2,2]  
+Output: 2  
+
+```cpp
+class Solution {
+public:
+int findDuplicate(vector<int>& nums) {
+    int n=nums.size()-1;
+    int low=1;
+    int high=n;
+    int mid;
+    while(low<high){
+        mid=(low+high)/2;
+        int count=0;
+        for(int num:nums){
+            if(num<=mid) count++;
+        }
+        if(count>mid) high=mid;
+        else low=mid+1; 
+    }
+    return low;
+}
+};
+```
+
+#### 二分搜索
+
+```cpp
+int search(vector<int>& nums, int target) {
+    
+    int left = 0;
+    int right = nums.size()-1;
+    
+    while(left <= right) {
+        int mid = (left + right)/2;
+        if(nums[mid] < target) {
+            left = mid+1;
+        } else if(nums[mid] > target) {
+            right = mid-1;
+        } else {
+            return mid;
+        }
+    }
+    
+    return -1;
+}
+```
+
+
+
+
+
+
+
+### 数组变形相关
+
+
+#### 将数组元素组成一个数值最大的数字  
 给一组数字，要求将这些数字组成一个数值最大的数字。
 For example, given [3, 30, 34, 5, 9], the largest formed number is 9534330.  
 
 
 解题思路:  
 
-**大数字题目即涉及字符串的问题。**  
-1. 对于任意给定正整数的数组，Largest Number是唯一的，只有当每个元素都处在数组所有元素中的一个特定相对位置时才能得到那个Largest Number。
+1. 大数值题目记得使用字符串进行保存。 
+2. 对于任意给定正整数的数组，Largest Number是唯一的，只有当每个元素都处在数组所有元素中的一个特定相对位置时才能得到那个Largest Number。
 2. 所以，本题‘找到数组的Largest formed number’问题转化成‘按特定排序规则对数组正整数进行排序，得到Largest formed number’ 是合理的思路
-
 
 
 解题步骤:
@@ -18,8 +188,6 @@ For example, given [3, 30, 34, 5, 9], the largest formed number is 9534330.
 2. 把nums数组中所有正整数转化成字符串然后存到临时vector<string> tmp中。 将上述规则写成自定义函数，然后对tmp按规则排序.  
 3. 排序后会得到这么一个vector<string> tmp，即: 对于tmp中的任两个元素 str1 和 str2 (str1位于str2之前), 都有 str1+str2 > str2+str1; 此时tmp组成的字符串满足nums的Largest formed number要求.  
 比如： [3, 30, 34, 5, 9] --排序后--> [9,5,34,3,30]; 此时 "95 > 59", "934 > 349", "93 > 39", "930 > 309"，说明9排在第一个位置时，数组组成的字符串才有可能是Largest formed number.  
-
-ps:本题还用到了c++11的两个新特性: (1) 新的for循环功能: for(auto i:nums); (2)lambda函数  
 
 ```cpp
 class Solution {
@@ -46,7 +214,7 @@ public:
 };
 ```
 
-###324. Wiggle Sort II
+#### Wiggle Sort II
 给一个无序数组，将其排列成nums[0] < nums[1] > nums[2] < nums[3]....  的规律。
 
 Example:    
@@ -126,161 +294,11 @@ public:
 };
 ```
 
-### 524. Longest Word in Dictionary through Deleting
-Given a string and a string dictionary, find the longest string in the dictionary that can be formed by deleting some characters of the given string. If there are more than one possible results, return the longest word with the smallest lexicographical order. If there is no possible result, return the empty string.  
-
-Example 1:  
-Input:  
-s = "abpcplea", d = ["ale","apple","monkey","plea"]  
-
-Output:  
-"apple"  
-Example 2:  
-Input:  
-s = "abpcplea", d = ["a","b","c"]  
-
-Output:   
-"a"  
-Note:  
-All the strings in the input will only contain lower-case letters.  
-The size of the dictionary won't exceed 1,000.  
-The length of all the strings in the input won't exceed 1,000.  
-
-解题思路:  
-
-这题目前只想到了一种算得上是“优化过了的暴力解法”。 除此之外，想不到另外的方法能够不通过逐个比对的方式得到结果(比如索引的方式？或者用树形结构或者其它数据结构？)
-
-具体解题步骤如下:
-
-根据题目要求，我们可以知道 vector<string>里至少有一个及以上的string能够按字符串s的deleting匹配的方式得到自身.  
-但我们需要的结果是Longest word并且，如果有多个等长的Longest word则需要的是字典序最小的.  
-
-所以我们可以:
-	1. 按照word长度升序和字典降序的方式对d进行排序，比如: d=["ale","aae","atee","acee","abcdef"]
-	2. 然后从d的最后一个word开始匹配，匹配到的第一个word就是结果
-
-代码如下：（值得注意的就是使用c++11的lambda函数简洁地自定义sort函数）
-
-```cpp
-class Solution {
-public:
-	bool okDelete(const string s,const string t) {
-		int ss = s.length(), ts = t.length(), si = 0, st = 0;
-		while (si < ss && st < ts) {
-			if (s[si] == t[st]) ++st;
-			++si;
-		}
-		if (st == ts) return true;
-		else return false;
-	}
-	string findLongestWord(string s, vector<string>& d) {
-		sort(begin(d), end(d)
-		, [](string& s1, string& s2) {return s1.length() < s2.length() ? 1
-		: s1.length() != s2.length() ?  0
-		: s1 < s2 ? 0 : 1; });
-		string result("");
-		for (vector<string>::reverse_iterator rb = d.rbegin(), re = d.rend(); rb != re; ++rb) {
-			if (okDelete(s, *rb)) {
-				result = *rb;
-				return result;
-			}
-			else {
-				//do nothing
-			}
-		}
-        return result;
-	}
-};
-```
 
 
-###56. Merge Intervals  
-Given a collection of intervals, merge all overlapping intervals.
-
-For example,  
-Given [1,3],[2,6],[8,10],[15,18],  
-return [1,6],[8,10],[15,18].
-
-**区间的题目，注意不能将所有区间列举出来 然后在计算， 这样会出现很多细节性的错误。**
-比如： [1, 4] [5, 6]的输出应该是 [1, 4] [5, 6] ，如果列举区间 则会有 {1,2,3,4,5,6}， 此时两个区间就融在一起了，不好判断。
-
-解题思路ver0.1:
-
-1. 先判断intervals.size() == 0, If true, then return intervals and exit;
-2. 将intervals里的区间降序排序， 排序规则是:  
-If Interval1.start < Interval2.start, then Interval1 < Interval2;  
-Else if Interval1.start == Interval2.start && Interval1.end < Interval2.end, then Interval1 < Interval2;
-Else Interval1 > Interval2;  
-3. 创建一个辅助空间: vector<Interval> temp; 将intervals的第一个Interval元素直接放入temp, 设置i = 1 指向当前在进行merge操作区间。此时temp初始化完毕。
-4. 从intervals第二个元素(设j=2)开始按逐个元素遍历intervals。遍历规则如下:  
-  * If (intervals[j].start < temp[i].end && intervals[j].end < temp[i].end), then temp[i].end = intervals[j].end;
-  * Else if (intervals[j].start > temp[i].end), then temp.push_back(intervals[i]);
-  * Else do nothing;
-5. 返回temp作为结果。
-
-```cpp
-/**
- * Definition for an interval.
- * struct Interval {
- *     int start;
- *     int end;
- *     Interval() : start(0), end(0) {}
- *     Interval(int s, int e) : start(s), end(e) {}
- * };
- */
-class Solution {
-private:
-	void quickSort(vector<Interval> &v, int l, int h){
-		if (l < h) {
-			int p = partition(v, l, h);
-			quickSort(v, l, p - 1);
-			quickSort(v, p + 1, h);
-		}
-	}
-	int partition(vector<Interval> &v, int l, int h){
-		Interval pivot = v[h];
-		int i = l - 1;
-		for (int j = l; j < h; j++) {
-			if (v[j].start < pivot.start) {
-				swap(v[++i], v[j]);
-			} else if (v[j].start == pivot.start && v[j].end < pivot.end) {
-				swap(v[++i], v[j]);
-			} else {
-				//do nothing;
-			}
-		}
-		swap(v[++i], v[h]);
-		return i;
-	}
 
 
-public:
-	vector<Interval> merge(vector<Interval>& intervals) {
-		if (intervals.size() == 0) return intervals;
-		quickSort(intervals, 0, (int)(intervals.size() - 1));
-		vector<Interval> r;
-		r.push_back(intervals[0]);
-		int b2 = 0;
-		int size = (int)intervals.size();
-		int i = 1;
-		while (i < size) {
-			if(intervals[i].start < r[b2].end) {
-				if (intervals[i].end > r[b2].end) r[b2].end = intervals[i].end;
-			} else if(intervals[i].start == r[b2].end) {
-				r[b2].end = intervals[i].end;
-			} else {
-				r.push_back(intervals[i]);
-				++b2;
-			}
-			++i;
-		}
-		return r;
-	}
-
-};
-```
-
-###349. Intersection of Two Arrays  
+#### Intersection of Two Arrays  
 Given two arrays, write a function to compute their intersection.
 
 Example:
@@ -295,10 +313,8 @@ The result can be in any order.
 解题思路ver0.1:
 
 1. 先对两个集合A,B进行排序和去重，减少后面判断intersection时的麻烦。  
-比如:  
-* 如果是两个无序的集合：则判断交集时，需要为A集合（假设A={2,1,4,3}）里的每个元素都去遍历一趟B集合中的元素（假设B={1，7，2}）,才能确认A的当前元素是否也在B中（也就是是否有交集）。因此，使用两个无序集合判断intersection的时间复杂度至少在O(n^2); 排序的时间复杂度是O(nlogn)，因此我们经过排序就把本题的时间复杂度降到了至少O(nlogn)。
-* 如果是两个含重复元素的集合：则判断交集时，为了保证结果和题目要求的一样，result must be unique。则还需要额外判断一次，现在的交集是否存在于结果数组中，那么就是O(n^2)的复杂度（因为O(nlogn\*n)); **因此我们需要进行集合排序去重来降低算法的时间复杂度和问题的麻烦程度**
-* 再对两个有序去重集合A,B进行遍历，具体思路参照归并排序时的merge方法:  
+
+2. 再对两个有序去重集合A,B进行遍历，具体思路参照归并排序时的merge方法:  
 	* (1)如果两个序列都没遍历完，则继续遍历.  
 	* (2)如果当前指向A的元素小于当前B的元素，那么根据有序的情况可知当前A元素不会与B有交集，因此指向A的指针++，B指针不动
 

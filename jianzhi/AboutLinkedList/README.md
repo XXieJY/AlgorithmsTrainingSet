@@ -1,61 +1,117 @@
 ## 链表
 
 ### 常见考点
-**（其中双指针分为先后指针和快慢指针两种，先后指针主要解决倒数第k个节点相关问题，快慢指针主要解决环的问题）**
-
-* 链表排序算法：主要记住基于链表的归并排序（链表的递归）
-
-* 逆向查找/打印相关： 使用栈、先后指针、头插法；
-
-* 链表变形相关：使用指针遍历；经常用到头结点统一遍历操作；快慢指针找中间节点、头插法、隔空插法；（合并两个链表；链表去重；）
-
-* 链表环相关：快慢指针找入口节点；
+1. 双指针: 双指针分为先后指针和快慢指针两种。
+    * 先后指针主要解决：倒数第k个节点、逆向查找单向链表的相关问题。
+    * 快慢指针主要解决：单个链表存在环的问题、找链表的中间节点；
+2. 栈和递归：解决逆向查找单向链表的相关问题。
+3. 头插法：可以反转链表。
 
 
----
 
-
-###147. Insertion Sort List
-Sort a linked list using insertion sort.
+#### 判断链表是否有环
 
 解题思路：
-
-**一道关于链表排序的题目，一般来说 使用链表进行排序不能够随机读数据，也就是说在排序的时候，不能再像数组那样从后往前倒。我们需要为链表维护一个
-表头元素，每次排序时都从表头开始遍历整个链表（PS.这是链表排序比数组排序耗时大的地方）**
-
-1.链表插入排序思路和一般插入排序思路相同，首先维护一个游标cur指向左侧有序子链表的最后一个节点。不同的是，我们还需要维护一个pre指针，
-初始化时指向链表表头节点new_head，其作用是：每次需要将右侧无序元素插入到左侧在子链表时，都使用pre指针从new_head位置开始遍历有序子链表
-直至找到合适的插入位置，此时pre -> next -> val >= cur -> next -> val;
-2.在pre指针找到当前无序元素正确插入位置时，就可以执行链表节点的插入操作，如图所示：
-![](https://coding.net/u/jxie0001/p/config/git/raw/master/InsertionSort.png)
-
-参考资料：
-http://blog.csdn.net/feixiaoxing/article/details/6905260/
-http://www.cnblogs.com/TenosDoIt/p/3666585.html
+这道题是快慢指针的经典应用。只需要设两个指针，一个每次走一步的慢指针和一个每次走两步的快指针，如果链表里有环的话，两个指针最终肯定会相遇。代码如下：
 
 ```cpp
-//代码来自: LC的用户jianchao.li.fighter
+class Solution {
+public:
+    bool hasCycle(ListNode *head) {
+        ListNode *slow = head, *fast = head;
+        //注意快慢指针循环的判断条件是：
+        //快指针本身非空且快指针的下一个节点也非空
+        while (fast && fast->next) {
+            slow = slow->next;
+            fast = fast->next->next;
+            if (slow == fast) return true;
+        }
+        return false;
+    }
+};
+```
+
+
+
+
+#### 056 链表中环的入口结点
+
+题目描述
+
+一个链表中包含环，请找出该链表的环的入口结点。
+
+
+解题思路：  
+设快慢指针，不过这次要记录两个指针相遇的位置，当两个指针相遇了后，让其一指针从链表头开始，此时再相遇的位置就是链表中环的起始位置。代码如下
+
+```cpp
+class Solution {
+public:
+    ListNode *detectCycle(ListNode *head) {
+        ListNode *slow = head, *fast = head;
+        while (fast && fast->next) {
+            slow = slow->next;
+            fast = fast->next->next;
+            if (slow == fast) break;
+        }
+        if (!fast || !fast->next) return NULL;
+        slow = head;
+        while (slow != fast) {
+            slow = slow->next;
+            fast = fast->next;
+        }
+        return fast;
+    }
+};
+```
+
+
+#### 链表排序相关  
+
+
+##### 使用插入排序为单链表排序
+
+解题思路：
+1. 链表插入排序思路和一般插入排序思路大致相同，首先维护一个游标cur指向左侧有序子链表的最后一个节点。
+2. 不同的是，我们还需要维护一个pre指针，初始化时指向链表表头节点new_head，其作用是：每次需要将右侧无序元素插入到左侧在子链表时，都使用pre指针从new_head位置开始遍历有序子链表，直至找到正确插入位置即cur的后一个节点，此时有pre -> next -> val >= cur -> next -> val;
+3. 在pre指针找到当前无序元素正确插入位置时，就可以执行链表节点的插入操作，如图所示：
+![](https://coding.net/u/jxie0001/p/config/git/raw/master/InsertionSort.png)
+
+
+```cpp
 class Solution {
 public:
     ListNode* insertionSortList(ListNode* head) {
+        //链表操作提前制造一个blank head可以统一并简化遍历操作
         ListNode* new_head = new ListNode(0);
         new_head -> next = head;
+        //pre始终指向blank head，哨兵cur指向链表当前有序部分的最后一个节点
         ListNode* pre = new_head;
         ListNode* cur = head;
         while (cur) {
-            if (cur -> next && cur -> next -> val < cur -> val) {
-                while (pre -> next && pre -> next -> val < cur -> next -> val)
+            //如果哨兵cur的下一个节点非空，且下一个节点值小于当前节点值。
+            //则进入插入阶段
+            if (cur->next && cur->next->val < cur->val) {
+                //使用pre指针从头结点开始为cur的下一个节点在链表的
+                //有序部分找到合适的插入位置，因为cur->next->val < cur->val
+                //所以一定能够找到cur->next的合适插入位置
+                while (pre->next && pre->next->val < cur->next->val)
                     pre = pre -> next;
-                /* Insert cur -> next after pre.*/
-                ListNode* temp = pre -> next;
-                pre -> next = cur -> next;
-                cur -> next = cur -> next -> next;
-                pre -> next -> next = temp;
-                /* Move pre back to new_head. */
+                //pre指向cur->next合适位置的前一节点
+                //tmp指向cur->next合适位置的后一个节点
+                ListNode* temp = pre->next;
+                pre->next = cur->next;
+                cur->next = cur->next->next;
+                pre->next->next = temp;
+                //将pre重置到Blank head
                 pre = new_head;
             }
-            else cur = cur -> next;
+            //如果cur->next为空则cur=cur->next后会在下一个循环退出while
+            //或者cur->next->val > cur->val，则当前节点直接加入尾部即有序
+            else
+                cur = cur->next;
         }
+        //去掉blank head并返回即可
         ListNode* res = new_head -> next;
         delete new_head;
         return res;
@@ -63,9 +119,8 @@ public:
 };
 ```
 
-### 链表排序相关
 
-#### 148. Sort List
+##### 归并排序单项链表
 
 常见排序方法有很多，插入排序，选择排序，堆排序，快速排序，冒泡排序，归并排序，桶排序等等。。它们的时间复杂度不尽相同，而这里题目限定了时间必须为O(nlgn)，符合要求只有快速排序，归并排序，堆排序，而根据单链表的特点，最适于用归并排序。代码如下：
 
@@ -106,18 +161,15 @@ public:
 
 ---
 
-### 逆向查找/打印
+#### 逆向查找/打印
+##### 从尾到头打印链表  
 
-#### 005 从尾到头打印链表
-题目描述
-输入一个链表，从尾到头打印链表每个节点的值。
+本题有三种解法：
+  1. 单向链表的头插法可以使得单向链表轻松倒序。
+  2. 递归在本质上就是一个栈结构，使用递归可以模拟栈的先进后出特性。
+  3. 顺序遍历单链表并入栈，然后出栈即逆序。
 
-#####解题思路：  
-* 本题考察两个方向：
-  * 单向链表的头插法可以使得单向链表轻松倒序
-  * 递归在本质上就是一个栈结构，使用递归可以模拟栈的先进后出特性。
 
-* 题解1：  
 使用递归访问单项链表，直到node->next==null; 然后开始从后往前遍历单向链表。
 
 ```cpp
@@ -137,14 +189,14 @@ class Solution {
 };
 ```
 
-**快指针走K-1步时，慢指针最终指向倒数第K个节点；快指针走K步时，慢指针最终指向倒数第K+1个节点；**
 
-#### 015 链表中倒数第k个结点
+
+##### 链表中倒数第k个结点
 题目描述
 输入一个链表，输出该链表中倒数第k个结点。
 
-#####解题思路：
-对于这种单链表的倒数第N个节点，就是前后差异指针方法。
+
+使用前后指针，前指针先走k-1步然后前后指针一起走，当前指针走到最后一个节点时，后指针刚好走到倒数第k个节点。
 
 然后关于指定第k个节点的问题，都会需要注意类似：
   * 链表可能为NULL  
@@ -152,20 +204,10 @@ class Solution {
 的边界问题。  
 
 ```cpp
-/// 1 -> 2 -> 3 -> 4 -> 5
-/// 比如要走倒数第3个节点
-/// 那么right先走到第3 - 1个节点&[2]
-/// 那么right指针向前走到其下一个节点为NULL时, left节点既是倒数第K个节点
-/// 此时两个指针相差为K - 1
-/// 因此right需要走到链表尾部前一个结点
-
-
-/// 1 -> 2 -> 3 -> 4 -> 5
-/// 比如要走倒数第3个节点
-/// 那么right先走到第3个节点&[2]
-/// 那么right指针向前走到链表尾部为NULL时, left节点既是倒数第K个节点
-/// 此时两个指针相差为K
-/// 因此right需要走到链表尾部前
+// 1 -> 2 -> 3 -> 4 -> 5
+// 比如要走倒数第3个节点，那么right先走到第3 - 1个节点&[2]
+// 那么right指针走到链表的最后一个节点5时,此时两个指针距离（tail, head]为k-1,
+//而总长度[tail, head]刚好为k此时left节点是倒数第K个节点.
 
 class Solution
 {
@@ -173,55 +215,59 @@ public:
     ListNode* FindKthToTail(ListNode* pListHead, unsigned int k)
     {
         if(pListHead == NULL)
-        {
             return NULL;
+        //先计算链表长度处理倒数第K个节点计算时的边界情况
+        int length = 0;
+        ListNode *cur = pListHead;
+        while(cur->next != NULL){
+            cur = cur->next;
+            ++length;
         }
-        unsigned int i = 0;
+        if(length < K)
+            return NULL;
+        //注意right left指针都是从头结点开始计算走路步数
+        //i从0开始循环1、2共两步，此时right也只走了两步
+        int i = 0;
         ListNode *right = pListHead;
-
-        //  left指针先向前走K - 1步
-        while(i < k - 1 && right != NULL)
+        while(i<k-1)
         {
-            debug <<"index  = " <<i <<", value = " <<right->val <<endl;
             right = right->next;
             i++;
         }
-
-        if(right == NULL)
-        {
-            cout <<"the list length = " <<i <<" < " <<k <<endl;
-            return NULL;
-        }
-
         ListNode *left = pListHead;
         while(right->next != NULL)
-        {
-            debug <<"index  = " <<i++ <<", value = " <<right->val <<endl;
-
+        {            
             left = left->next;
             right = right->next;
         }
-
         return left;
-
     }
 };
 ```
 
 #### 19. Remove Nth Node From End of List
-
 解题思路：  
-用两个指针来帮助我们解题，pre和cur指针。
-* 首先cur指针先向前走N步，如果此时cur指向空，说明N为链表的长度，则需要移除的为首元素，那么此时我们返回head->next即可.
-* 如果cur存在，我们再继续往下走，此时pre指针也跟着走，直到cur为最后一个元素时停止，**此时pre指向要移除元素的前一个元素**，我们再修改指针跳过需要移除的元素即可。代码如下：
+使用前后指针解决倒数第k相关问题：
+* right先走k-1步，left可以走到倒数第k个节点
+* right先走k步，left可以走到倒数第k+1个节点
+因此只需要先走k步  
+
+代码如下：
 ```cpp
 class Solution {
 public:
     ListNode* removeNthFromEnd(ListNode* head, int n) {
-        if (!head->next) return NULL;
+        //如果是空链表则直接返回NULL
+        if (!head->next) 
+            return NULL;
+        //cur先移动k步，然后cur pre一起移动到最后pre就能在
+        //倒数第k个节点的前一个节点停下
         ListNode *pre = head, *cur = head;
-        for (int i = 0; i < n; ++i) cur = cur->next;
-        if (!cur) return head->next;
+        for (int i=0; i<n; ++i) 
+            cur = cur->next;
+        //如果cur是空节点则返回第一个节点
+        if (!cur) 
+            return head->next;
         while (cur->next) {
             cur = cur->next;
             pre = pre->next;
@@ -233,116 +279,117 @@ public:
 ```
 
 
-#### 016 反转链表
-题目描述  
-输入一个链表，反转链表后，输出链表的所有元素。  
+#### 反转链表
+ 
 
-#####解题思路：  
-反转单向链表使用头插法就行：如果每次插入元素的时候都是在头结点的前一个位置插入，那么链表元素的顺序正好跟插入的顺序相反，然后也是要注意每次保存next的位置防止丢失。  
+反转链表的非递归解法即用头插法：
+1. 先制造一个Blan head用于统一链表的操作。
+2. 然后也是要注意每次保存next的位置防止丢失。  
 
 ```cpp
 class Solution
 {
 public:
-    ListNode* ReverseList(ListNode* L)
+    ListNode* reverseList(ListNode* head)
     {
-        if(L == NULL)
+        if(head == NULL)
         {
             return NULL;
         }
-
-        ListNode *B;
-        ListNode *A;
-        ListNode *TMP;
-
-        //  由于链表不带头节点，因此第一个元素的插入需要特殊处理
-        A = L;
-        B = A->next;
-        TMP = NULL;         
-        A->next = NULL;
-
-        //  首先构建原链表的头结点为新链表的尾节点(也就是第一个被插入节点)
-        while(B != NULL)
-        {
-            TMP = B->next;        
-            B->next = A;
-
-            A = B;
-            B = TMP;          
+        //如果没有blank head头节点则制造一个
+        ListNode *blankHead = new ListNode(-1);
+        blankHead->next = head;
+        ListNode *cur = head;
+        while (cur->next) {
+            ListNode *tmp = cur->next;
+            cur->next = tmp->next;
+            tmp->next = blankHead->next;
+            blankHead->next = tmp;
         }
-        return A;
+        return blankHead->next;
+    }
     }
 };
 ```
+
+#### 按顺序交换链表相邻节点
+
+```cpp
+class Solution {
+public:
+    ListNode* swapPairs(ListNode* head){
+        //建立blankHead节点
+        ListNode *blankHead = new ListNode(-1);
+        blankHead->next = head;
+
+        for(ListNode* pre = blankHead; pre->next && 
+            pre->next->next; ){
+            
+            ListNode *left = pre->next;
+            ListNode *right = pre->next->next;
+            left->next = right->next;
+            right->next = left;
+            pre->next = right;
+            pre=right->next;
+        }
+        return blankHead->next;
+    }
+};
+```
+
+#### 按区间k翻转链表节点
+
+```cpp
+class Solution {
+public:
+    ListNode *reverseKGroup(ListNode *head, int k) {
+        if(head==NULL||k==1) 
+            return head;
+        
+        ListNode *preheader = new ListNode(-1);
+        preheader->next = head;
+        //声明三个辅助变量cur, nex, pre
+        ListNode *cur = preheader, *nex, *pre = preheader;
+        int num=0;
+        //统计一下链表长度
+        while(cur = cur->next) 
+            num++;
+        while(num>=k) {
+            //每次翻转链表区间时进行cur,nex指针初始化操作
+            //pre指向想象上的blankHead节点
+            //cur作为当前链表区间已翻转区段的最后的哨兵
+            //nex作为当前需要被头插法翻转的节点
+            cur = pre->next;
+            nex = cur->next;
+            //完全翻转k个链表节点只需要进行k-1次翻转
+            for(int i=1;i<k;++i) {
+                cur->next=nex->next;
+                nex->next=pre->next;
+                pre->next=nex;
+                nex=cur->next;
+            }
+            //重置pre到上一个已翻转链表区间的
+            //最后一个节点作为下一次的blankHead
+            pre = cur;
+            num-=k;
+        }
+        return preheader->next;
+    }
+};
+```
+
 
 #### 037 两个链表的第一个公共结点
 **题目描述**  
 输入两个链表，找出它们的第一个公共结点。
 
 解题思路：  
-这一题主要是两种方式：
- * 利用栈从后往前比较找到第一个不相同的点，这个点就是第一个公共节点的前一个节点。
- * 利用快慢指针的方式，链表长的先走，链表短的后走。然后这里计算快慢指针的k步有一种比较geek的方法把：
-    * 先同时遍历两个链表，如果长度不一致则比然有一个链表先到头，此时没到头的链表的剩余节点数就是快慢指针需要的差距，这时候再交换链表指向，将原本指向短链表的指针指向长链表，再继续同时遍历，最后就能够取得快慢指针的效果。
+利用快慢指针的方式，链表长的先走，链表短的后走。然后这里计算快慢指针的k步有一种比较geek的方法把：  
+* 先同时遍历两个链表，如果长度不一致则比然有一个链表先到NULL，此时没到NULL的链表的剩余节点数就是快慢指针需要的差距.
+* 这时候将到头的节点交换到另一条链表上，即将原本指向短链表的指针指向长链表，再继续遍历等待另一个指针也到NULL。
+* 再将这个指针也交换到对面那个链表头。
+* 这个过程中一直再往前走，直至p1==p2这个时候就是第一个交点了。
 
-解法一利用栈的先入后出逆转链表：
-```cpp
-class Solution
-{
-public:
-    ListNode* FindFirstCommonNode(ListNode *leftHead, ListNode *rightHead)
-    {
-        ListNode *left = leftHead;
-        ListNode *right = rightHead;
-
-        stack<ListNode *> leftStack;
-        stack<ListNode *> rightStack;
-
-        /// 结点依次入栈
-        while(left != NULL)
-        {
-            leftStack.push(left);
-            left = left->next;
-        }
-
-        while(right != NULL)
-        {
-            rightStack.push(right);
-            right = right->next;
-        }
-
-        ///  开始同步弹出元素
-        while(leftStack.empty( ) != true
-           && rightStack.empty( ) != true)
-        {
-            left = leftStack.top( );
-            right = rightStack.top( );
-
-            ///  不相同的元素就是合并的前一个结点
-            if(left != right)
-            {
-                break;
-            }
-            leftStack.pop( );
-            rightStack.pop( );
-        }
-
-        ///  不相同元素的下一个结点就是共同结点
-        if(left != right)
-        {
-            return left->next;
-        }
-        else
-        {
-            return NULL;
-        }
-    }
-};
-```
-
-
-
-解法二利用快慢指针：
 ```cpp
 class Solution {
 public:
@@ -360,133 +407,115 @@ public:
 
 ---
 
-### 链表变形相关*
+### 链表变形相关
 
-**链表变形相关记住要设置头结点（又叫dummy节点），统一整个算法操作**
+1. 链表变形相关记住要设置头结点（又叫dummy节点），统一整个算法操作
+2. 使用快慢指针可以快速找到链表中间节点
 
-**使用快慢指针可以快速找到链表中间节点**
+#### 删除链表中的节点
 
-#### 203. Remove Linked List Elements(遍历并删除链表中的节点，需要依赖dummy节点和pre指针)
+解题思路：
+1. 首先链表需要加上一个Blank head 如果没有则自己加上
+2. 使用pre指针，在链表中找到pre->next == target。
 
 ```cpp
 class Solution {
 public:
-    ListNode* removeElements(ListNode* head, int val) {
-        //创建dummy节点
-        ListNode *dummy = new ListNode(-1), *pre = dummy;
-        dummy->next = head;
+    ListNode* removeElements(ListNode* head, int target) {
+        ListNode *blankNode = new ListNode(-1);
+        blankNode->next = head;
         //使用pre指针，每次pre要处理的是pre->next的那个节点
-        //因此pre可以保证不要链表越界遍历，并且可以提前处理终点节点的问题。
-        while (pre->next) {
-            if (pre->next->val == val) {
-                ListNode *t = pre->next;
-                pre->next = t->next;
-                t->next = NULL;
-                delete t;
-            } else {
-                pre = pre->next;
-            }
+        for(ListNode* pre=blankNode; pre->next!=NULL; 
+            pre=pre->next){
+            if(pre->next->val != target)
+                continue;
+            ListNode *tmp = pre->next;
+            pre->next = tmp->next;
+            delete tmp;           
         }
-        return dummy->next;
+        return blankNode->next;
+    }
+};
+```
+
+#### 将链表去重但是保留所有出现过的元素一次
+如：1->2->3->3->4->4->5处理后为1->2->3->4->5。而不是1->2->5
+
+```cpp
+class Solution {
+public:
+    ListNode* deleteDuplicates(ListNode *head) {
+        //cur用于遍历所有节点，每当遇到cur->val==cur->next->val时
+        //都将cur->next=cur->next->next并继续循环检测是否还在重复
+        //直至cur->val!=cur->next->val时，cur进入下一个元素的检测
+        ListNode* cur = head;
+        while (cur) {
+            while (cur->next != NULL && cur->val == cur->next->val)
+                cur->next = cur->next->next;
+            cur = cur->next;
+        }
+        return head;
     }
 };
 ```
 
 
+#### 删除链表中重复的结点
+**题目描述**
 
+在一个排序的链表中，存在重复的结点，请删除该链表中重复的结点，重复的结点不保留，返回链表头指针。  
+> 例如，链表1->2->3->3->4->4->5  
+处理后为 1->2->5
 
-#### 24. Swap Nodes in Pairs
-解题思路：  
-对于迭代实现，还是需要建立dummy节点，注意在连接节点的时候，最好画个图，以免把自己搞晕了，参见代码如下：
+* 从头到尾判定每个结点是否是重复结点
+* 如果不是重复结点：则尾部指针向后移动到这个结点，然后继续判定下一个结点的重复性。
+* 如果是重复结点：那么修改当前尾部指针指向结点的next值，时尾部结点的next指针指向下一个非重复结点上。
+
 ```cpp
-class Solution {
+class Solution
+{
 public:
-    ListNode* swapPairs(ListNode* head) {
-        //建立dummy节点
-        ListNode *dummy = new ListNode(-1), *pre = dummy;
-        dummy->next = head;
+    ListNode* deleteDuplication(ListNode* pHead)
+    {
+        //设置一个trick, 作为头指针, 这样我们无需单独考虑第一个元素
+        ListNode *blankHead = new ListNode(-1);
+        blankHead->next = pHead;
 
-        while (pre->next && pre->next->next) {
-            ListNode *t = pre->next->next;
-            pre->next->next = t->next;
-            t->next = pre->next;
-            pre->next = t;
-            pre = t->next;
-        }
-        return dummy->next;
-    }
-};
-```
-
-#### 25. Reverse Nodes in k-Group
-解题思路**：   
-* 这道题让我们以每k个为一组来翻转链表，实际上是把原链表分成若干小段，然后分别对其进行翻转，那么肯定总共需要两个函数，一个是用来分段的，一个是用来翻转的。
-* 加入dummy node后的链表变为-1->1->2->3->4->5，如果k为3的话，我们的目标是将1,2,3翻转一下，那么我们需要一些指针，[pre, cur->next]将当前分段区间框起来。然后翻转后pre的位置更新到如下新的位置：
-```cpp
-class Solution {
-public:
-    ListNode *reverseKGroup(ListNode *head, int k) {
-        //判断边界条件
-        if (!head || k == 1)
+        //right相当于哨兵用于标记当前链表的无重复节点的最后一个
+        //left用来遍历链表的元素并检查出重复节点
+        ListNode *left = pHead;
+        ListNode *right = blankHead;
+        while (left!=NULL && left->next!=NULL)
         {
-            return head;
-        }
-        //创建dummy节点
-        ListNode *dummy = new ListNode(-1);
-        ListNode *pre = dummy, *cur = head;
-        dummy->next = head;
-        //循环分段地reverse链表
-        int i = 0;
-        while (cur)
-        {
-            ++i;
-            //如果[pre,cur->next]构成k的长度的段，对段进行reverse；
-            if (i % k == 0)
+            //如果有元素重复就跳过所有重复的数字
+            if (left->val == left->next->val)
             {
-                pre = reverseOneGroup(pre, cur->next);
-                cur = pre->next;
+                int val = left->val;
+                while (left!=NULL && left->val==val)
+                    left = left->next;
+                //此时left指向了可能的一个非重复元素，我们设置right->next=left
+                //但是此时left-val也可能是重复的,
+                //因此我们不可以设置right=left
+                //而是重新进入循环
+                right->next = left;
             }
             else
             {
-                cur = cur->next;
+                right = left;
+                left = left->next;
             }
         }
-        return dummy->next;
-    }
-
-    ListNode *reverseOneGroup(ListNode *pre, ListNode *next)
-    {
-        ListNode *last = pre->next;
-        ListNode *cur = last->next;
-        while(cur != next)
-        {
-            last->next = cur->next;
-            cur->next = pre->next;
-            pre->next = cur;
-            cur = last->next;
-        }
-        return last;
+        return blankHead->next;
     }
 };
 ```
 
-#### 017 合并两个排序的链表
 
-题目描述  
-输入两个单调递增的链表，输出两个链表合成后的链表，当然我们需要合成后的链表满足单调不减规则。
 
-> 样例输入  
-1 3 5 7 9 2 4  
+#### 合并两个有序的链表
 
-> 样例输出  
-1 2 3 4 5 7 9
-
-#####解题思路：
-合并多个链表，多个数组的题目都算作一类题目。这类题目可以使用while循环，每次挑出当前
-最小节点然后进行合并。也可以使用递归实现：
-
-while循环解法：正常while循环，就是在while处进行链表为空的判断。最后哪个链表还剩下的，
-就让其全部接上去。
+1. 合并两个及多个可以使用while循环，每次挑出当前最小节点然后进行合并。
+2. 最后哪个链表还剩下的，就让其全部接上去。
 
 ```cpp
 class Solution
@@ -496,33 +525,15 @@ public:
     {
 
         if(pLeft == NULL)
-        {
             return pRight;
-        }
-        else if(pRight == NULL)
-        {
+        if(pRight == NULL)
             return pLeft;
-        }
 
+        //生成辅助指针和新链表的头结点
         ListNode *left = pLeft;
         ListNode *right = pRight;
-
-        //  先生成头结点
         ListNode *head = NULL;
-        if(left->val < right->val)
-        {
-            head = left;
-            left = left->next;
-        }
-        else
-        {
-            head = right;
-            right = right->next;
-        }
-
-        //  遍历两个链表
         ListNode *curr = head;
-
         while(left != NULL && right != NULL)
         {
             //  每次找到一个小的加入新的链表
@@ -530,27 +541,20 @@ public:
             {
                 curr->next = left;
                 curr = curr->next;
-
                 left = left->next;
             }
             else
             {
                 curr->next = right;
                 curr = curr->next;
-
                 right = right->next;
             }
         }
-
         //  处理较长链表的剩余部分
         if(left != NULL)
-        {
             curr->next = left;
-        }
         else
-        {
             curr->next = right;
-        }
         return head;
 
     }
@@ -569,7 +573,11 @@ public:
 class Solution {
 public:
     ListNode *mergeKLists(vector<ListNode *> &lists) {
-        if (lists.size() == 0) return NULL;
+        if (lists.size() == 0) 
+            return NULL;
+        //记住这种迭代的divide&conquer计数法
+        //首先取k=(n+1)/2, 然后i=0,i<n/2,i++
+        //最后让i与i+k做divide&conquer
         int n = lists.size();
         while (n > 1) {
             int k = (n + 1) / 2;
@@ -602,59 +610,7 @@ public:
 ```
 
 
-#### 057 删除链表中重复的结点
-**题目描述**
 
-在一个排序的链表中，存在重复的结点，请删除该链表中重复的结点，重复的结点不保留，返回链表头指针。  
-> 例如，链表1->2->3->3->4->4->5  
-处理后为 1->2->5
-
-* 从头到尾判定每个结点是否是重复结点
-    * 如果不是重复结点则尾部指针向后移动到这个结点，然后继续判定下一个结点的重复性。
-    * 如果是重复结点，那么修改当前尾部指针指向结点的next值，时尾部结点的next指针指向下一个非重复结点上。
-
-```cpp
-class Solution
-{
-public:
-    ListNode* deleteDuplication(ListNode* pHead)
-    {
-        //设置一个trick, 作为头指针, 这样我们无需单独考虑第一个元素
-        ListNode *first = new ListNode(-1);
-        first->next = pHead;
-
-        ListNode *p = pHead;
-        ListNode *last = first;
-
-        while (p != NULL && p->next != NULL)
-        {
-            //  如果有元素重复
-            if (p->val == p->next->val)
-            {
-                //  就跳过所有重复的数字
-                int val = p->val;
-                while (p != NULL && p->val == val)
-                {
-                    p = p->next;
-                }
-
-                //  此时p指向了非重复的第一个元素
-                //  我们设置last->next = p
-                //  但是此时p-val也可能是重复的,
-                //  因此我们不可以设置last = p
-                //  而是重新进入循环
-                last->next = p;
-            }
-            else
-            {
-                last = p;
-                p = p->next;
-            }
-        }
-        return first->next;
-    }
-};
-```
 
 #### 61. Rotate List
 解题思路**：
@@ -674,28 +630,22 @@ class Solution {
 public:
     ListNode* rotateRight(ListNode* head, int k) {
         if (!head || !(head->next) || k == 0)
-        {
             return head;
-        }
 
         int S = 0;
         for (ListNode* i = head; i; i = i->next)
-        {
             ++S;
-        }
+
         if (k == S)
-        {
             return head;
-        }
         else
         {
             int remain = k % S;
             ListNode* pre = head;
             ListNode* cur = head;
             for (; remain > 0; --remain)
-            {
                 cur = cur->next;
-            }
+
             while(cur->next)
             {
                 pre = pre->next;
@@ -755,99 +705,7 @@ public:
 
 
 
----
-
-### 链表环相关
-
-
-
-#### 141. Linked List Cycle 判断链表是否有环
-
-解题思路：
-这道题是快慢指针的经典应用。只需要设两个指针，一个每次走一步的慢指针和一个每次走两步的快指针，如果链表里有环的话，两个指针最终肯定会相遇。代码如下：
-
-```cpp
-class Solution {
-public:
-    bool hasCycle(ListNode *head) {
-        ListNode *slow = head, *fast = head;
-        //注意快慢指针循环的判断条件是：
-        //快指针本身非空且快指针的下一个节点也非空
-        while (fast && fast->next) {
-            slow = slow->next;
-            fast = fast->next->next;
-            if (slow == fast) return true;
-        }
-        return false;
-    }
-};
-```
 
 
 
 
-#### 056 链表中环的入口结点
-
-题目描述
-
-一个链表中包含环，请找出该链表的环的入口结点。
-
-
-解题思路：  
-设快慢指针，不过这次要记录两个指针相遇的位置，当两个指针相遇了后，让其一指针从链表头开始，此时再相遇的位置就是链表中环的起始位置。代码如下
-
-```cpp
-class Solution {
-public:
-    ListNode *detectCycle(ListNode *head) {
-        ListNode *slow = head, *fast = head;
-        while (fast && fast->next) {
-            slow = slow->next;
-            fast = fast->next->next;
-            if (slow == fast) break;
-        }
-        if (!fast || !fast->next) return NULL;
-        slow = head;
-        while (slow != fast) {
-            slow = slow->next;
-            fast = fast->next;
-        }
-        return fast;
-    }
-};
-```
-
-### 链表和树的转化相关***
-
-这类题型包括：链表转为树，树转为链表；主要就是考察在链式结构中对递归的应用。
-
-#### 109. Convert Sorted List to Binary Search Tree
-* 这道题是要求把有序链表转为二叉搜索树。
-* 数组方便就方便在可以通过index直接访问任意一个元素，而链表不行。**由于二分查找法每次需要找到中点，而链表的查找中间点可以通过快慢指针来操作。**
-* 找到中点后，要以中点的值建立一个数的根节点，然后需要把原链表断开，分为前后两个链表，都不能包含原中节点，然后再分别对这两个链表递归调用原函数，分别连上左右子节点即可。代码如下：
-
-```cpp
-class Solution {
-public:
-    TreeNode *sortedListToBST(ListNode *head) {
-        if (!head) return NULL;
-        if (!head->next) return new TreeNode(head->val);
-        ListNode *slow = head;
-        ListNode *fast = head;
-        ListNode *last = slow;
-        while (fast->next && fast->next->next) {
-            last = slow;
-            slow = slow->next;
-            fast = fast->next->next;
-        }
-        fast = slow->next;
-        last->next = NULL;
-        TreeNode *cur = new TreeNode(slow->val);
-        if (head != slow) cur->left = sortedListToBST(head);
-        cur->right = sortedListToBST(fast);
-        return cur;
-    }
-};
-```
-
----

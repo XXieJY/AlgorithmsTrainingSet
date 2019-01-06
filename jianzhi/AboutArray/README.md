@@ -6,64 +6,34 @@ topK问题：找出（有序or无序）数组中第K大的数topk、从长序列
 
 
 #### 求出数组所有元素的右边第一个比其大的数
+* 这个问题，从直觉上来讲，应当是一遍遍历，便可以解决问题。
+* 这类问题的特点是: 既要详尽保留信息，又要呈现未解决问题的积累特性。
+* 具体到这个问题，选栈来保留未解决的子问题。
 
-这个问题，从直觉上来讲，应当是一遍遍历，便可以解决问题。这类问题的特点是，一部分要详尽保留信息，另一部分呈现未解决问题的积累特性。具体到这个问题，创建一个数据结构保留未解决的子问题，根据特点选择栈。
-1. 栈里面保留是索引，而非元素，其实这是一个很关键的地方，索引的信息要比内容多，因为可以索引本身就可以确定内容。要牢记这一特点
-2. 初始栈，里面为第一个元素
-3. 如果栈不为空，而且当前处理元素比栈顶元素大，则栈顶元素对应的第一个比它大的值，就是该元素
-4. 弹出栈顶元素，继续处理栈里的元素，直至为空或当前处理元素不大于栈顶元素
-5. 将当前元素压入栈
-6. 循环3~5
+具体做法：
+1. 栈里面保留元素的索引：因为索引的信息要比内容多，索引既可以确定元素的内容还可以确定元素的位置。
+2. 初始栈，里面为第一个元素的索引。
+3. 如果栈不为空，而且当前处理元素的值比栈顶索引代表的元素的值大，则栈顶元素的右边第一个比其大的值就是当前访问的元素。
+4. 弹出栈顶元素，继续处理栈里的元素，直至为空或当前处理元素不大于栈顶元素。
+5. 将当前元素压入栈。
+6. 循环3~5。
 
-```cpp
-vector<int> get(vector<int> a, int len)
-{
-	vector<int> res(len, -1);
-	vector<int> temp(len);
-	int index = 0;
-	temp[0] = 0;
-	for (int i = 1; i < len; i++)
-	{
-		while (index>-1 && a[i] > a[(temp[index])])
-		{
-			res[(temp[index])] = a[i];
-			index--;
+```cpp 
+vector<int> foo(vector<int> a)
+{   
+    int length = a.size();
+	vector<int> res(length, -1);
+	stack<int> indexes;
+	indexes.push(0);
+	for (int i = 1; i < length; i++){
+		while (!indexes.empty() && a[i]>a[(indexes.top())]){
+			res[(indexes.top())] = a[i];
+			indexes.pop();
 		}
-		index++;
-		temp[index] = i;
+		indexes.push(i);
 	}
 	return res;
 }
- 
-vector<int> get2(vector<int> a, int len)
-{
-	vector<int> res(len, -1);
-	stack<int> sta;
-	sta.push(0);
-	for (int i = 1; i < len; i++)
-	{
-		while (!sta.empty() && a[i]>a[(sta.top())])
-		{
-			res[(sta.top())] = a[i];
-			sta.pop();
-		}
-		sta.push(i);
-	}
-	return res;
-}
- 
-int main()
-{
-	vector<int> a = { 2, 5, 3, 7, 1, 2, 8 };
-	vector<int> b = get2(a, 7);
-	for (int i = 0; i < 7; i++)
-	{
-		cout << b[i] << " ";
-	}
-	system("pause");
-	return 0;
-}
-
 ```
 
 #### 使用位运算找无序数组中第一个顺位缺失数字
@@ -83,7 +53,6 @@ public:
             result ^= i;
             i++;
         }
-        
         return result;
     }
 };
@@ -91,25 +60,28 @@ public:
 
 #### 求一个无序数组求中位数
 中位数在奇数个元素的数组中就是中间那个数，在偶数个元素的数组中就是中间两个数的平均值。
-```cpp
-排序，找到元素，计算中位数
-```
 
 
 #### 有序数组去多个重复
-Given nums = [1,1,2],
+1. 使用cur作为哨兵维护无重复段的尾部的后一个位置。
+2. 从第nums[1]个数开始，只有当前数大于nums[cur-1]才nums[cur++]=val
+4. 否则for(int val:nums)进入nums数组下一个元素，而cur不自增仍然维持无重复段尾部。  
 
-Your function should return length = 2, with the first two elements of nums being 1 and 2 respectively.
+输入： [1,1,2],  
+输出: [1,2]
 
-It doesn't matter what you leave beyond the returned length.
+
 ```cpp
-int removeDuplicates(vector<int>& nums) {
-    int i = 0;
-    for (int n : nums)
-        if (!i || n > nums[i-1])
-            nums[i++] = n;
-    return i;
+class Solution {
+public:
+    int removeDuplicates(vector<int>& nums) {
+    int cur = 0;
+    for (int val : nums)
+        if (!cur || val > nums[cur-1])
+            nums[cur++] = val;
+    return cur;
 }
+};
 ```
 
 #### 查找数组中唯一的一个重复元素
@@ -149,22 +121,50 @@ int search(vector<int>& nums, int target) {
     
     while(left <= right) {
         int mid = (left + right)/2;
-        if(nums[mid] < target) {
+        if(nums[mid] < target) 
             left = mid+1;
-        } else if(nums[mid] > target) {
+        else if(nums[mid] > target) 
             right = mid-1;
-        } else {
+        else 
             return mid;
-        }
     }
-    
     return -1;
 }
 ```
 
 
 
+#### 用两个栈实现队列
+用两个栈来实现一个队列，完成队列的Push和Pop操作。 队列中的元素为int类型。
 
+本题没有什么特殊的东西，算是对队列FIFO和栈FILO的理解吧。
+
+```cpp
+class Solution{
+public:
+    void push(int V){
+        E1.push(V);
+    }
+
+    int pop(){
+      int RS, TMP;
+      RS = 0;
+      TMP = 0;
+      if (!E2.empty()){
+          RS = E2.top();
+          E2.pop();
+          return RS;
+      }
+      while(!E1.empty()){
+        TMP = E1.top();
+        E2.push(TMP);
+        E1.pop();
+      }
+    }
+private:
+    stack<int> E1, E2;
+}
+```
 
 
 
@@ -298,263 +298,101 @@ public:
 
 
 
-#### Intersection of Two Arrays  
-Given two arrays, write a function to compute their intersection.
-
-Example:
+#### 求两个有重复数组的交集
 Given nums1 = [1, 2, 2, 1], nums2 = [2, 2], return [2].
 
-Note:
-Each element in the result must be unique.
-The result can be in any order.
-
-**集合论的题目，虽然LC把它归在sort类别里， 但是，本题 应该属于那种查找操作较为频繁的问题，因此事实上更好的解决方法是使用Hash查找。**
-
-解题思路ver0.1:
-
-1. 先对两个集合A,B进行排序和去重，减少后面判断intersection时的麻烦。  
-
-2. 再对两个有序去重集合A,B进行遍历，具体思路参照归并排序时的merge方法:  
-	* (1)如果两个序列都没遍历完，则继续遍历.  
-	* (2)如果当前指向A的元素小于当前B的元素，那么根据有序的情况可知当前A元素不会与B有交集，因此指向A的指针++，B指针不动
-
-
-
-
-```cpp
-// 代码实现了： 原地去重算法unique， 这个算法经常会用到。
-
-#include "stdafx.h"
-#include <vector>
-#include <iostream>
-#include <algorithm>
-
-using namespace std;
-
-class Solution {
-private:
-	void unique(vector<int>& v) {
-		int s = v.size();
-		if (s == 0 || s == 1) return;
-		int f = 0;
-		for (int b = 1, i = 0, e = s; b != e; ++b) {
-			if (v[b] != v[f]) {
-				v[b - i] = v[b];
-				++f;
-			}
-			else
-			{
-				++i;
-			}
-		}
-		v.resize(f+1);
-	}
-public:
-	vector<int> intersection(vector<int>& nums1, vector<int>& nums2) {
-		if (nums1.size() == 0) return nums1;
-		else if (nums2.size() == 0) return nums2;
-		else {
-			sort(nums1.begin(), nums1.end());
-			sort(nums2.begin(), nums2.end());
-			unique(nums1);
-			unique(nums2);
-			vector<int> r;
-			int b1 = 0, b2 = 0, e1 = nums1.size(), e2 = nums2.size();
-			while (b1 != e1 && b2 != e2) {
-				if (nums1[b1] < nums2[b2]) {
-					++b1;
-				}
-				else if (nums1[b1] > nums2[b2]) {
-					++b2;
-				}
-				else {
-					r.push_back(nums1[b1]);
-					++b1;
-					++b2;
-				}
-			}
-			return r;
-		}
-	}
-};
-
-int main()
-{
-	vector<int> a{1 };
-	vector<int> b{1, 2};
-	Solution s;
-	vector<int> r = s.intersection(a, b);
-	for (vector<int>::iterator b = r.begin(), e = r.end(); b != e; ++b) {
-		cout << *b << ", ";
-	}
-    return 0;
-}
-```
-
-
-#### 698. Partition to K Equal Sum Subsets
-
-Given an array of integers nums and a positive integer k, find whether it's possible to divide this array into knon-empty subsets whose sums are all equal.
-
-Example 1:
-
-Input: nums = [4, 3, 2, 3, 5, 2, 1], k = 4
-Output: True
-Explanation: It's possible to divide it into 4 subsets (5), (1, 4), (2,3), (2,3) with equal sums.
-
-
-Note:
-
-1 <= k <= len(nums) <= 16.
-0 < nums[i] < 10000.
-
-解题思路：  
-这道题我们可以用递归来做:
-* 首先我们还是求出数组的所有数字之和sum，首先判断sum是否能整除k，不能整除的话直接返回false。
-* 然后需要一个visited数组来记录哪些数组已经被选中了，然后调用递归函数进行递归。  
-* 对于递归函数：  
-  * 我们的目标是组k个子集合，是的每个子集合之和为target = sum/k。
-  * 我们还需要变量start，表示从数组的某个位置开始查找，curSum为当前子集合之和.
-  * 如果k=1，说明此时只需要组一个子集合，那么当前的就是了，直接返回true。
-  * 如果curSum等于target了，说明凑够一个k的子集合。此时递归传入k-1，并将start和curSum都重置为0，开始继续找下一个。参见代码如下：
 
 ```cpp
 class Solution {
 public:
-    bool canPartitionKSubsets(vector<int>& nums, int k) {
-        //判断是否整除K
-        int sum = accumulate(nums.begin(), nums.end(), 0);
-        if (sum % k != 0) return false;
-        //创建一个访问数组标记
-        vector<bool> visited(nums.size(), false);
-        return helper(nums, k, sum / k, 0, 0, visited);
-    }
-    bool helper(vector<int>& nums, int k, int target, int start, int curSum, vector<bool>& visited) {
-        if (k == 1) return true;
-        if (curSum == target) return helper(nums, k - 1, target, 0, 0, visited);
-        for (int i = start; i < nums.size(); ++i) {
-            if (visited[i]) continue;
-            visited[i] = true;
-            if (helper(nums, k, target, i + 1, curSum + nums[i], visited)) return true;
-            visited[i] = false;
-        }
-        return false;
+    vector<int> intersection(vector<int>& nums1, vector<int>& nums2) {
+        //使用一个unordered_set存储其中一个数组nums1
+        unordered_set<int> dict(nums1.begin(), nums1.end());
+        vector<int> res;
+        //如果第一次在dict中查到nums2的元素a，则将a存入res
+        //并将数值a从dict中删去这样既保证查找到了两数组交集又保证交集不重复
+        for (auto a : nums2)
+            if (dict.count(a)) {
+                res.push_back(a);
+                dict.erase(a);
+            }
+        return res;
     }
 };
 ```
 
-#### 315. Count of Smaller Numbers After Self
-解题思路：  
-这道题给定我们一个数组，让我们计算每个数字右边所有小于这个数字的个数，目测我们不能用brute force，OJ肯定不答应。
-* 那么我们为了提高运算效率，首先可以使用用二分搜索法，思路是将给定数组从最后一个开始，用二分法插入到一个新的数组，这样新数组就是有序的，那么此时该数字在新数组中的坐标就是原数组中其右边所有较小数字的个数，参见代码如下：
+#### 计算数组中的每个元素右侧所有小于它的值的元素的个数
+1. 创建一个新数组空间tmp用于将原数组的元素从尾到头的排序
+2. 从原数组nums的最后一个元素nums[nums.size()-1]开始，用binary search
+插入tmp。
+3. 当一个元素插入tmp的right+1处后, 它左侧的元素个数即right的值就是它在原数组时右侧小它的元素的个数。
+
 ```cpp
 class Solution {
 public:
     vector<int> countSmaller(vector<int>& nums)
     {
-        vector<int> t, res(nums.size());
+        vector<int> tmp, res(nums.size());
         for (int i = nums.size() - 1; i >= 0; --i)
         {
-            int left = 0, right = t.size();
+            //这个地方和一般二分搜索有一个区别就是右界为tmp.size()
+            //而不是一般的tmp.size()-1，这是因为最开始的时候tmp是
+            //一个空数组需要特殊处理。因此即使右界取tmp.size()对
+            //mid和二分的影响不大
+            int left = 0, right = tmp.size();
             while (left < right)
             {
                 int mid = left + (right - left) / 2;
-                if (t[mid] >= nums[i])
-                {
-                  right = mid;
-                }
+                if (tmp[mid] >= nums[i])
+                    right = mid;
                 else
-                {
-                  left = mid + 1;
-                }
+                    left = mid + 1;
             }
+            //将当前元素nums[i]插入tmp的tmp[right]处
+            //此时tmp[right]右边有(right-0)即right个元素
+            tmp.insert(tmp.begin() + right, nums[i]);
             res[i] = right;
-            t.insert(t.begin() + right, nums[i]);
         }
         return res;
     }
 };
 ```
 
-#### 003二维数组中的查找
+#### 二维数组中的查找
 在一个二维数组中，每一行都按照从左到右递增的顺序排序，每一列都按照从上到下递增的顺序排序。请完成一个函数，输入这样的一个二维数组和一个整数，判断数组中是否含有该整数。
 
-##### 思路：
-先想想最直接的做法：暴力搜索解空间，找到则true,没找到则false。此时时间复杂度是O(n*m);
+1. 从二维数组的右上角开始查找
 
-* -->优化： 暴力搜索解空间，肯定是有冗余操作。如何找到本题冗余操作
-  * --->首先想到利用“从左到右递增，从上到下递增。”的规律去分割出子问题。
-  * --->显然，我们在每次判定target时，是缩小问题解空间的时机。
-* -->那么如何缩小问题解空间？
-  * ---->我们假设当前在判断数组中E[i][j]与target的大小。
-  * 二维数组从左到右递增， 从上到下递增。 此时查找一个数值，应该中右上角或者左下角开始使用分治法查找；
 ```cpp
 class Solution {
 public:
     bool Find(int T, vector<vector<int> > E) {
         if(E.size() == 0 || E[0].size() == 0)
-        {
             return false;
-        }
+        
         int x = 0, y = E[0].size()-1, rows = E.size();
         while(x < rows && y >= 0)
         {
             if(T == E[x][y])
-            {
                 return true;
-            }
             else if(T < E[x][y])
-            {
                 --y;
-            }
             else
-            {
                 ++x;
-            }
         }
         return false;
     }
 };
 ```
 
-
-#### 628. Maximum Product of Three Numbers (多种情况的数组元素相乘)(以“计算+比较”代替麻烦的“讨论多种情况+计算”)
-
-解题思路：  
-* 我们来考虑几种情况，如果全是负数，三个负数相乘还是负数，为了让负数最大，那么其绝对值就该最小，而负数排序后绝对值小的都在末尾，所以是末尾三个数字相乘，这个跟全是正数的情况一样。
-* 那么重点在于前半段是负数，后半段是正数，那么最好的情况肯定是两个最小的负数相乘得到一个正数，然后跟一个最大的正数相乘，这样得到的肯定是最大的数，所以我们让前两个数相乘，再和数组的最后一个数字相乘，就可以得到这种情况下的最大的乘积。
-* 实际上我们并不用分情况讨论数组的正负，只要把这两种情况的乘积都算出来，比较二者取较大值，就能涵盖所有的情况，从而得到正确的结果，参见代码如下：
-
-```cpp
-class Solution {
-public:
-    int maximumProduct(vector<int>& nums) {
-        int n = nums.size();
-        sort(nums.begin(), nums.end());
-        int p = nums[0] * nums[1] * nums[n - 1]; //带正负数的情况
-        int q = nums[n - 1] * nums[n - 2] * nums[n - 3]; //只有正数的情况
-        return max(p, q); //只有正数的情况和带正负数的情况比较
-    }
-};
-```
-
-
-
 #### 004将空格替换成为字符
 请实现一个函数，将一个字符串中的空格替换成“%20”。 例如，当字符串为We Are Happy.则经过替换之后的字符串为We%20Are%20Happy。
 
->We Are Happy   
-We%20Are%20Happy
-
-##### 思路：
-本质是扩大缩小数组的问题，往数组中填充元素。均先考虑，从数组的尾部开始进行迁移操作的方法。
-* 先确定空格在字符串中出现的数目
-* 在从后往前完成替换，每个非空格字符往后挪空格数目的位置
+1. 先确定空格在字符串中出现的数目
+2. 在从后往前完成替换，每个非空格字符往后挪空格数目的位置
 ```cpp
 #include <iostream>
-
 using namespace std;
-
 class Solution{
 public:
   void replaceSpace(char *str,int length)
@@ -563,12 +401,8 @@ public:
       int count = 0;
       int len = length;
       for(int i = 0; i < length; i++)
-      {
           if(str[i] == ' ')
-          {
               count++;
-          }
-      }
       len = length + count * 2;
       for(i = length - 1, j = len - 1;
           i >= 0 && j >= 0;)
@@ -581,49 +415,16 @@ public:
               i--;
           }
           else
-          {
               str[j--]  = str[i--];
-          }
       }
       str[len] = '\0';
   }
 };
 ```
 
-##### 007用两个栈实现队列
-用两个栈来实现一个队列，完成队列的Push和Pop操作。 队列中的元素为int类型。
 
-##### 思路*：
-本题没有什么特殊的东西，算是对队列FIFO和栈FILO的理解吧。
 
-```cpp
-class Solution{
-public:
-    void push(int V){
-        E1.push(V);
-    }
-
-    int pop(){
-      int RS, TMP;
-      RS = 0;
-      TMP = 0;
-      if (!E2.empty()){
-          RS = E2.top();
-          E2.pop();
-          return RS;
-      }
-      while(!E1.empty()){
-        TMP = E1.top();
-        E2.push(TMP);
-        E1.pop();
-      }
-    }
-private:
-    stack<int> E1, E2;
-}
-```
-
-#### 020顺时针打印矩阵
+#### 顺时针打印矩阵
 题目描述
 输入一个矩阵，按照从外向里以顺时针的顺序依次打印出每一个数字，
 例如， 如果输入如下矩阵：
@@ -666,48 +467,38 @@ public:
 };
 ```
 
-#### 008旋转数组的最小数字
-题目描述*:
-
-把一个数组最开始的若干个元素搬到数组的末尾，我们称之为数组的旋转。输入一个非递减序列的一个旋转，输出旋转数组的最小元素。
-
-例如
+#### 输出旋转数组中最小的数字
 
 > 数组{3,4,5,1,2}为{1,2,3,4,5}的一个旋转，该数组的最小值为1。
 
-##### 解题思路：
-这题应该归类为在数组中进行搜索的题目，常见的搜索算法一般就是顺序搜索，二分搜索。
-* 这题如果用顺序搜索解决，那么很明显需要先去找到旋转数组的顺序上的特点，这里可以发现旋转数组里最大
-的那个数字后面的就是最小的数字，因此根据这个规律就可以顺利写出顺序搜索的代码。
-* 如果这道题再要提高效率，那么可知必然和二分搜索有关系。那么就要再旋转数组里找到能够支持二分的搜索
-的特征，也就是如何确定每次搜索的时候搜索数组中的哪一半。
-  * 这里就需要发现，旋转数组可以被分为前后两个递增子序列。
-  * 因此，A[pivot]如果大于A[low]则说明A[pivot]属于前面的子序列则最小值在A[pivot]之后。
-  * 相反如果A[pivot]小于A[high]则说明A[pivot]属于后面的子序列则最大值在A[pivot]之前。
+
+对于旋转数组的二分搜索：
+1. 将旋转数组分为前后两个第增序列[[low....mid][mid+1....high]]，其中因为旋转过所有a[low] > a[high], a[mid-1] < a[mid] > a[mid+1]
+2. 如果A[pivot] > A[low],则说明A[pivot]属于[low...mid]的子序列
+3. 如果A[pivot]小于A[high]则说明A[pivot]属于后面的子序列则最大值在A[pivot]之前。
 
 ```cpp
 class Solution {
 public:
-    int minNumberInRotateArray(vector<int> E) {
-        int S;
-        if((S = E.size()) == 0)
-        {
-            return 0;
+    int findMin(vector<int> &num) {
+        int start=0, end=num.size()-1;
+        //二分出口情况2：数组大小为奇数个
+        //此时最终一定会有start==end，答案即为start
+        while (start<end) {
+            //二分搜索出口情况1：数组大小为偶数个
+            //start<end且num[start]<num[end]
+            if (num[start]<num[end])
+                return num[start];
+            //二分搜索，如果num[mid] > num[start]
+            //说明mid还在前一个子序列中，此时要向后查找最小元素
+            //因此让start = mid+1;
+            int mid = (start+end)/2;
+            if (num[mid]>=num[start]) 
+                start = mid+1;
+            else 
+                end = mid;
         }
-        int L = 0, R = S - 1, pivot;
-        while (R - L > 1)
-        {
-            pivot = L + (R - L)/2;
-            if (E[pivot] >= E[L])
-            {
-                L = pivot;
-            }
-            else
-            {
-                R = pivot;
-            }
-        }
-        return E[R];
+        return num[start];
     }
 };
 ```

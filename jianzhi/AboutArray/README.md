@@ -132,7 +132,79 @@ int search(vector<int>& nums, int target) {
 }
 ```
 
+#### 实现包含min功能的栈
+题目描述
 
+1. 需要用到一个存储实时min值的辅助栈，辅助栈的栈顶永远都是当前栈的最小值。min栈的栈顶只能越来越小
+2. 当入栈元素大于min栈栈顶元素时，该元素只入普通存储栈不入min栈。反之则既入普通栈又入min栈
+3. 在出栈时如果元素是min栈栈顶元素，则min栈也出栈。
+
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+class Solution {
+public:
+    stack<int> E, EMin;
+    
+    void push(int value) {
+        E.push(value);
+        if(EMin.empty())
+            EMin.push(value);
+        if(value<=EMin.top())
+            EMin.push(value);
+    }
+     
+    void pop() {
+        if(E.top()==EMin.top())
+            EMin.pop();
+        E.pop();
+    }
+   
+    int top() {
+        return E.top();       
+    }
+     
+    int min() {
+        return EMin.top();
+    }
+     
+};
+```
+
+#### 判断栈的压入、弹出序列是否正确
+
+* 利用到的性质：
+  * 当某个元素出栈时，早于其入栈的元素不会晚于其出栈
+* 解题过程：
+  1. 创建一个模拟栈，每次往其中push一个元素
+  2. 每次push元素之后，和出栈序列的第一个元素对比：
+        * 如果相等则说明当前元素已经出栈，此时也把这个元素从模拟栈中pop_back掉
+        * 然后继续这个比较过程，直到不相等
+  3. 最后返回模拟栈是否为空的结果
+
+```cpp
+class Solution {
+public:
+     bool IsPopOrder(vector<int> pushV, vector<int> popV) {
+        if (pushV.size() == 0) 
+            return false;
+
+        vector<int> stack;
+        for (int i = 0, j = 0; i < pushV.size();) {
+            stack.push_back(pushV[i++]);
+            while (j < popV.size() && 
+                stack.back() == popV[j]) {
+
+                tack.pop_back();
+                j++;
+            }
+        }
+        return stack.empty();
+    }
+};
+```
 
 #### 用两个栈实现队列
 用两个栈来实现一个队列，完成队列的Push和Pop操作。 队列中的元素为int类型。
@@ -508,9 +580,7 @@ public:
 这道题给了我们一个数组，说我们最多有1次修改某个数字的机会，问能不能将数组变为非递减数组。题目中给的例子太少，不能覆盖所有情况，我们再来看下面三个例子：  
 
 4，2，3  
-
 -1，4，2，3  
-
 2，3，3，2，4  
 
 我们通过分析上面三个例子可以发现，当我们发现后面的数字小于前面的数字产生冲突后，有时候需要修改前面较大的数字(比如前两个例子需要修改4)，有时候却要修改后面较小的那个数字(比如前第三个例子需要修改2)，那么有什么内在规律吗？
@@ -584,140 +654,53 @@ public:
 };
 ```
 
-#### 021 实现包含min功能的栈
-题目描述
-定义栈的数据结构，请在该类型中实现一个能够得到栈最小元素的min函数。
-
-##### 解题思路：
-这种题目如果每次min的时候查找确实是一种慢的方法。但是这种实现一个数据结构并且要维护
-这个数据结构的最大最小值，并且这个数据结构的大小会变化，因此大小值需要维护成一个
-列表，也随着整个数据结构的大小变化而变化。
-
-* 因此实现包含min功能的栈，就需要用到一个存储实时min值的辅助栈，辅助栈的栈顶永远都是
-当前栈的最小值。min栈的栈顶只能越来越小
-* 当入栈元素大于min栈栈顶元素时，该元素不入min栈。反之则既入普通栈又入min栈
-* 在出栈时如果元素是min栈栈顶元素，则min栈也出栈。
-
-```cpp
-#include <iostream>
-#include <vector>
-using namespace std;
-
-class Solution {
-public:
-     
-    stack<int> E, EMin;
-     
-    void push(int value) {
-        E.push(value);
-        if(EMin.empty())
-            EMin.push(value);
-        else if(value<=EMin.top())
-        {
-            EMin.push(value);
-        }
-    }
-     
-    void pop() {
-        if(E.top()==EMin.top())
-            EMin.pop();
-        E.pop();
-         
-    }
-     
-    int top() {
-        return E.top();       
-    }
-     
-    int min() {
-        return EMin.top();
-    }
-     
-};
-```
-
-#### 022 栈的压入、弹出序列
-题目描述
-输入两个整数序列，第一个序列表示栈的压入顺序，请判断第二个序列是否为该栈的弹出顺序。假设压入栈的所有数字均不相等。例如序列1,2,3,4,5是某栈的压入顺序，序列4，5,3,2,1是该压栈序列对应的一个弹出序列，但4,3,5,1,2就不可能是该压栈序列的弹出序列。（注意：这两个序列的长度是相等的）
-##### 解题思路：
-判断栈的压入弹出序列是否正确是典型和栈相关的问题。主要用到的解法就是模拟栈的出栈过程，到最后如果
-模拟栈为空则说明出栈序列是正确的。
-* 利用到的性质：
-  * 当某个元素出栈时，早于其入栈的元素不会晚于其出栈
-* 解题过程：
-  * 创建一个模拟栈，每次往其中push一个元素
-  * 每次push元素之后，和出栈序列的第一个元素对比：
-    * 如果相等则说明当前元素已经出栈，此时也把这个元素从模拟栈中pop_back掉
-    * 然后继续这个比较过程，直到不相等
-  * 最后返回模拟栈是否为空的结果
-
-```cpp
-class Solution {
-public:
-     bool IsPopOrder(vector<int> pushV, vector<int> popV) {
-                        if (pushV.size() == 0) return false;
-                        vector<int> stack;
-                        for (int i = 0, j = 0; i < pushV.size();) {
-                                stack.push_back(pushV[i++]);
-                                while (j < popV.size() && stack.back() == popV[j]) {
-                                        stack.pop_back();
-                                        j++;
-                                }
-                        }
-                        return stack.empty();
-                }
-};
-```
-
----
-
-### 数组元素的搜索
-
-
-#### Search for a Range 搜索一个范围(数组的范围搜索：先确定一个位置，然后左右向外延伸)
-Given a sorted array of integers, find the starting and ending position of a given target value.  
-
-Your algorithm's runtime complexity must be in the order of O(log n).  
-
-If the target is not found in the array, return [-1, -1].  
-
+#### 范围搜索一个有序且有重复元素的数组
 For example,  
 Given [5, 7, 7, 8, 8, 10] and target value 8,  
 return [3, 4].  
 
-解题思路：  
-* 这道题让我们在一个有序整数数组中寻找相同目标值的起始和结束位置，而且限定了时间复杂度为O(logn)，这是典型的二分查找法的时间复杂度，所以这道题我们也需要用此方法。
-* 我们的思路是首先对原数组使用二分查找法。
-    * 找出其中一个目标值的位置。
-    * 然后向两边搜索找出起始和结束的位置，代码如下：
+
+我们的思路是首先对原数组使用二分查找法。
+1. 先找出其中一个目标值的位置。
+2. 然后向两边搜索找出起始和结束的位置，代码如下：
 
 ```cpp
 class Solution {
 public:
     vector<int> searchRange(vector<int>& nums, int target) {
         int idx = search(nums, 0, nums.size() - 1, target);
-        if (idx == -1) return {-1, -1};
+        if (idx == -1) 
+            return {-1, -1};
         int left = idx, right = idx;
-        while (left > 0 && nums[left - 1] == nums[idx]) --left;
-        while (right < nums.size() - 1 && nums[right + 1] == nums[idx]) ++right;
+        while (left > 0 && nums[left - 1] == nums[idx]) 
+            --left;
+        while (right < nums.size() - 1 && 
+            nums[right + 1] == nums[idx]) 
+            ++right;
         return {left, right};
     }
     int search(vector<int>& nums, int left, int right, int target) {
-        if (left > right) return -1;
+        if (left > right) 
+            return -1;
         int mid = left + (right - left) / 2;
-        if (nums[mid] == target) return mid;
-        else if (nums[mid] < target) return search(nums, mid + 1, right, target);
-        else return search(nums, left, mid - 1, target);
+        if (nums[mid] == target) 
+            return mid;
+        else if (nums[mid] < target) 
+            return search(nums, mid + 1, right, target);
+        else 
+            return search(nums, left, mid - 1, target);
     }
 };
 ```
 
-
 #### Third Maximum Number 第三大的数 (变量记录元素值法)
-解题思路：  
-这道题让我们求数组中第三大的数，如果不存在的话那么就返回最大的数，题目中说明了这里的第三大不能和第二大相同，必须是严格的小于，而并非小于等于。这道题并不是很难，如果知道怎么求第二大的数，那么求第三大的数的思路都是一样的。
-* 那么我们用三个变量first, second, third来分别保存第一大，第二大，和第三大的数，然后我们遍历数组，如果遍历到的数字大于当前第一大的数first，那么三个变量各自错位赋值，如果当前数字大于second，小于first，那么就更新second和third，如果当前数字大于third，小于second，那就只更新third；
-* 注意这里有个坑，就是初始化要用长整型long的最小值，否则当数组中有INT_MIN存在时，程序就不知道该返回INT_MIN还是最大值first了，参见代码如下：
+
+1. 用三个变量first, second, third保存前三大的数字。
+2. 然后遍历数组，当前元素num[i]>first，third = second, second = first, first=num[i]。
+3. 如果first>num[i]>second，那么third = second, second = num[i]
+4. 如果first>second>num[i]>third, 那么third=num[i]
+
+注意这里有个坑，就是初始化要用长整型long的最小值，否则当数组中有INT_MIN存在时，程序就不知道该返回INT_MIN还是最大值first了，参见代码如下：
 
 ```cpp
 class Solution {
@@ -729,12 +712,13 @@ public:
                 third = second;
                 second = first;
                 first = num;
-            } else if (num > second && num < first) {
+            } 
+            else if (num > second && num < first) {
                 third = second;
                 second = num;
-            } else if (num > third && num < second) {
+            } 
+            else if (num > third && num < second)
                 third = num;
-            }
         }
         return (third == LONG_MIN || third == second) ? first : third;
     }
@@ -758,15 +742,11 @@ public:
 class Solution {
 public:
     int MoreThanHalfNum_Solution(vector<int> E) {
-        int S;
-        if ((S = E.size()) == 0)
-        {
+        int S = E.size()
+        if (S == 0)
             return 0;
-        }
         else if (S == 1)
-        {
             return E[0];
-        }
         else
         {
             int count = 1, res = E[0];
@@ -783,9 +763,7 @@ public:
             for (int i = 0; i < S; ++i)
             {
                 if (E[i] == res)
-                {
                     ++recount;
-                }
             }
             return 2*recount > S ? res : 0;
         }
@@ -839,81 +817,6 @@ public:
         {
             return a > b;
         }
-    }
-};
-```
-* 利用快速排序和分治思想：
-
- * 取中位数作为pivot的方法：  
-    * 类似快速排序的划分方法，N个数存储在数组S中。每次排序时从数组中随机选取一个数X作为pivot,这样可以把数组划分为Sa和Sb两部分，Sa<= X <=Sb。
-    * 如果要查找的K个小的元素小于Sa中的元素个数，则返回Sa中较小的K个元素，否则返回Sa中K个小的元素 + Sb中小的K-|Sa|个元素。  
-
- * **（随机选取枢纽元，可做到线性期望时间O(N)的复杂度）** 每次都是随机选择数列中的一个元素作为主元，使用快速排序在O(n)的时间内找到第K小的元素，然后遍历输出前面的K个小的元素。如果能的话，那么总的时间复杂度为线性期望时间：O(n+k) = O(n)（当n比较小时）；
-
-下面这个这个实现是按照kth一个一个的来搜索到的，而不是按块搜索到的
-```cpp
-class Solution {
-public:
-    vector<int> Solution(vector<int> E, int k)
-    {
-        int S;
-        vector<int> RES;
-
-        S = E.size();
-        if(S == 0 || S < k)
-        {
-            return RES;
-        }
-        kthQuick(E, 0, S-1, k);
-        int i = 0;
-        for(; i < k; ++i){
-            RES.push_back(E[i]);
-        }
-        return RES;
-    }
-
-    void kthQuick(vector<int> &E, int L, int R, int k){
-        if(L == R){
-            return;
-        }
-        int pivot = Partition(E, L, R);
-        if (pivot < k){
-            kthQuick(E, pivot+1, R, k);
-        }
-        else if (pivot > k){
-            kthQuick(E, L, pivot-1, k);
-        }
-        else{
-            return;
-        }
-    }
-
-    int Partition(vector<int> &E, int L, int R)
-    {
-        int i, j, pivot, pivotNum;
-
-        ///  我们选择第一个元素作为基准
-        ///  这个也可以随机选择
-        i = L;
-        j = R;
-        pivot = L;
-        pivotNum = E[pivot];
-        while(i < j)
-        {
-            while(i < j && E[j] >= pivotNum)
-            {
-                j--;
-            }
-            E[i] = E[j]; //这里因为pivot的值已经额外记录了所以可以这样
-
-            while(i < j && E[i] <= pivotNum)
-            {
-                i++;
-            }
-            E[j] = E[i];
-        }
-        E[i] = pivotNum; //确定pivot的位置             
-        return i;
     }
 };
 ```

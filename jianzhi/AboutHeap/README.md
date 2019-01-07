@@ -1,99 +1,51 @@
 ## 堆相关题目
 
 常见题型有：
-* K-th问题: 最大kth应该使用最小堆构造、最小kth应该使用最大堆构造，c++使用priority_queue实现最大最小堆；
+* K-th问题: 小顶堆可以保存最大Topk、大顶堆可以保存最小TopK.
+* c++使用priority_queue实现最大最小堆；
 
 * hash-set 应该使用 unordered_map；
-
----
-
-## Problem 1.海量数据处理的 Top K大的数问题 from:http://www.cnblogs.com/xudong-bupt/archive/2013/03/20/2971262.html
-* 解答：
-  * 中心思想：使用小顶堆存放海量数据中Top k大的数。
-  * 步骤：
-    * 首先取海量数据中前k个元素，作为size=k的小顶堆的初始数据。
-    * 然后从第i = k+1个元素开始，按顺序遍历一次所有的数据。
-    * 如果 data[i]的值小于或等于小顶堆的根结点，则i++，然后继续遍历余下数据。
-    * 如果 data[i]的值大于小顶堆的根结点，则用data[i]替代小顶堆根节点，然后调整一趟小顶堆，最后令i++，继续遍历余下数据。
-
-```cpp
-#include<stdio.h>
-int n;  ///数字个数，n很大(n>10000)
-int dui[10];
-#define K 10    ///Top K,K的取值
-
-void create_dui();　　///建堆
-void UpToDown(int);　　///从上到下调整
-int main()
-{
-    int i;
-    int tmp;
-    while(scanf("%d",&n)!=EOF)
-    {
-        for(i=1;i<=K;i++) ///先输入K个
-            scanf("%d",&dui[i]);
-        create_dui();  ///建小顶堆
-        for(i=K+1;i<=n;i++)
-        {
-            scanf("%d",&tmp);
-            if(tmp>dui[1])  ///只有大于根节点才处理
-            {
-                dui[1]=tmp;
-                UpToDown(1);    ///向下调整堆
-            }
-        }
-    }
-    return 1;
-}
-
-void create_dui()
-{
-    int i;
-    int pos=K/2;      ///从末尾数，第一个非叶节点的位置K/2
-    for(i=pos;i>=1;i--)
-        UpToDown(i);
-}
-
-void UpToDown(int i)
-{
-    int t1,t2,tmp,pos;
-    t1=2*i; ///左孩子(存在的话)
-    t2=t1+1;    ///右孩子(存在的话)
-    if(t1>K)    ///无孩子节点
-        return;
-    else
-    {
-        if(t2>K)  ///只有左孩子
-            pos=t1;
-        else
-            pos=dui[t1]>dui[t2]? t2:t1;
-
-        if(dui[i]>dui[pos]) ///pos保存在子孩子中，数值较小者的位置
-        {
-            tmp=dui[i];dui[i]=dui[pos];dui[pos]=tmp;
-            UpToDown(pos);
-        }
-    }
-}
-```
-
 
 
 
 ### k-th问题：
 
 #### 215. Kth Largest Element in an Array
+Input: [3,2,1,5,6,4] and k = 2
+Output: 5
 解题思路：  
-利用了priority_queue的自动排序的特性，跟上面的解法思路上没有什么区别，当然我们也可以换成multiset来做，一个道理，参见代码如下：
+
+* 使用STL库的priority_queue可以方便地制造大顶堆（priority-queue默认）和小顶堆：
+    * priority_queue<int, vector<int>, less<int>> maxHeap;
+    * priority_queue<int, vector<int>, greater<int>> minHeap;
+* 大顶堆更方便保存Kth smallest元素，小顶堆更方便保存Kth largest元素
+
 ```cpp
+
+//大顶堆解Kth-largest问题
 class Solution {
 public:
     int findKthLargest(vector<int>& nums, int k) {
-        priority_queue<int> q(nums.begin(), nums.end());
-        for (int i = 0; i < k - 1; ++i) {
-            q.pop();
+        priority_queue<int> pq(nums.begin(), nums.end());
+        for (int i = 0; i < k - 1; i++) {
+            pq.pop();
         }
-        return q.top();
+        return pq.top();
+    }
+};
+
+//小顶堆解Kth largest问题
+class Solution {
+public:
+    int findKthLargest(vector<int>& nums, int k) {
+        priority_queue<int, vector<int>, greater<int>> pq;
+        for (int num : nums) {
+            pq.push(num);
+            if (pq.size() > k) {
+                pq.pop();
+            }
+        }
+        return pq.top();
     }
 };
 ```
